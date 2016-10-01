@@ -3,7 +3,7 @@ import pygame,sys,os,random,math
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))) #directory from which this script is ran
 sys.path.insert(0, os.path.join(__location__))
 
-#Robot: the robot itself on the board
+
 class Robot():
 	coords = None
 	width = None
@@ -35,6 +35,9 @@ class Robot():
 		self.rel_coords = (self.coords[0]-self.GAMEBOARD.OFFSETS[0],self.coords[1]-self.GAMEBOARD.OFFSETS[1])
 		self.last_reference = [0,0]
 		self.sensors = []
+		#used for timing robot movement
+		self.counter = 1
+		self.counter_max = 144
 
 	def draw(self):
 		self.object.topleft = (self.GAMEBOARD.OFFSETS[0]+self.rel_coords[0],self.GAMEBOARD.OFFSETS[1]+self.rel_coords[1])
@@ -128,8 +131,11 @@ class Robot():
 		print str(readings)
 		return readings
 	def performMove(self):
-		pass
+		#pass
 		#insert code here
+		self.counter += 1
+		if self.counter % self.counter_max == 0:
+			self.counter = 0
 
 	def goForward(self):
 		self.drive(1)
@@ -232,6 +238,7 @@ class RobotMap():
 		col = self.cols.find(blockName[0])
 		row = self.rows.find(blockName[1])
 		return self.grid[col][row]
+
 
 	def putRobotInBlock(self,location):
 		block = self.get_block(location)
@@ -369,6 +376,7 @@ class MapBlock():
 		self.loc = grid_key
 		self.object = pygame.Rect(self.coords,(self.GRID_WIDTH,self.GRID_WIDTH))
 		self.color = self.color_EMPTY
+		self.visited = False		
 
 	def draw(self):
 		self.object.topleft = (self.GAMEBOARD.OFFSETS[0]+self.coords[0],self.GAMEBOARD.OFFSETS[1]+self.coords[1])
