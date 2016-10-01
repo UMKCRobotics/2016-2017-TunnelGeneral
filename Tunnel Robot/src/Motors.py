@@ -21,7 +21,7 @@ class MotorsNXT():
 			raise Exception("MotorsNXT Error: could not find a brick")
 
 		self.nxtC = NXTComm(brick)
-		self.nxtC.valid_commands = ['f','b']
+		self.nxtC.valid_commands = ['f','b','l','r']
 		self.nxtC.start()
 
 	def moveForward(self):
@@ -34,11 +34,21 @@ class MotorsNXT():
 		self.nxtC.requestCommand(commandObj)
 		return commandObj
 
+	def moveLeft(self):
+		commandObj = CommRequest('l')
+		self.nxtC.requestCommand(commandObj)
+		return commandObj
+
+	def moveRight(self):
+		commandObj = CommRequest('r')
+		self.nxtC.requestCommand(commandObj)
+		return commandObj
+
 	def stopThread(self):
 		self.nxtC.stopThread()
 
 
 
-class MotorsArduino(SerialComm):
+class MotorsArduino():
 	def __init__(self,serial):
-		SerialComm.__init__(self,serial)
+		arduino = SerialComm(self,serial)

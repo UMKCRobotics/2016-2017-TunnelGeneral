@@ -28,15 +28,15 @@ class DeviceComm(threading.Thread):
 	# class used as template for all other
 	# comms with outside devices; runs on
 	# own thread
-	keepRunning = True
-	name = None
-	commandList = []
-	commandLock = threading.Lock()
 
 	def __init__(self,comm):
 		self.comm = comm
+		self.keepRunning = True
+		self.deviceName = None
+		self.commandLock = threading.Lock()
 		threading.Thread.__init__(self)
 		self.daemon = True
+		self.commandList = []
 
 	def requestCommand(self, commReq):
 		self.commandLock.acquire()
