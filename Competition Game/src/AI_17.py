@@ -10,9 +10,17 @@ GRID_HEIGHT = 7
 DISPLAY_WIDTH = 8
 DISPLAY_HEIGHT = 8
 
+sim_robot = None
 
-def simulation_impl(sim_robot):
-    pass
+
+def simulation_impl(_sim_robot):
+    global sim_robot
+    """
+    Pull simulation robot from simulation.
+    :param _sim_robot: SimRobot
+    :return:
+    """
+    sim_robot = _sim_robot
 
 
 class Coordinate:
