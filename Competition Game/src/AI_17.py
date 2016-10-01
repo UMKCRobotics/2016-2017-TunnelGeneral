@@ -2,6 +2,7 @@ import random
 from collections import deque
 from enum import IntEnum
 import heapq
+from Robot import Robot as SimRobot
 
 import sys
 
@@ -9,6 +10,10 @@ GRID_WIDTH = 7
 GRID_HEIGHT = 7
 DISPLAY_WIDTH = 8
 DISPLAY_HEIGHT = 8
+
+
+def simulation_impl(sim_robot):
+    pass
 
 
 class Coordinate:
@@ -20,7 +25,7 @@ class Coordinate:
         return self.x == other.x and self.y == other.y
 
     def __ne__(self, other):
-        return (not self.__eq__(other))
+        return not self.__eq__(other)
 
     def __hash__(self):
         return self.x * DISPLAY_WIDTH + self.y
@@ -574,6 +579,7 @@ def test():
     robot = Robot(outside_grid)
     print(robot.report())
     robot.explore3()
+
 
 
 def main():
