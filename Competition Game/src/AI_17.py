@@ -90,13 +90,19 @@ SNAKE_AROUND_EDGE_SEQUENCE = [
 ]
 
 
-class Knowledge(IntEnum):
+class Knowledge:
+    def __init__(self):
+        pass
+
     unknown = -1
     yes = 1
     no = 0
 
 
-class Direction(IntEnum):
+class Direction():
+    def __init__(self):
+        pass
+
     east = 0
     north = 1
     west = 2
@@ -314,14 +320,14 @@ class Robot:
         if self.facing == Direction.east:
             self.facing = Direction.south
         else:
-            self.facing = Direction(self.facing - 1)
+            self.facing = self.facing - 1
 
     def left(self):
         """ use turn """
         if self.facing == Direction.south:
             self.facing = Direction.east
         else:
-            self.facing = Direction(self.facing + 1)
+            self.facing = self.facing + 1
 
     def report(self):
         return "coordinates: (" + str(self.position.x) + ", " + str(self.position.y) + \
