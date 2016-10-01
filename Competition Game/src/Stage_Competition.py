@@ -125,10 +125,10 @@ class GameBoard():
 	def get_block(self,blockName):
 		col = 'ABCDEFG'.find(blockName[0])
 		row = '1234567'.find(blockName[1])
-		return self.grid[row][col]
+		return self.grid[col][row]
 	def get_block_in_loc(self,blockCoord):
 		#print blockCoord
-		return self.grid[blockCoord[0]-1][blockCoord[1]-1]
+		return self.grid[blockCoord[0]][blockCoord[1]]
 
 	def draw_grid(self):
 		linecolor = (255,255,255)
@@ -140,19 +140,19 @@ class GameBoard():
 				(self.TOTAL_WIDTH+self.OFFSETS[0]-self.GRID_WIDTH/2,self.GRID_WIDTH/2+self.GRID_WIDTH*n+self.OFFSETS[1])],1)
 
 	def draw_blocks(self):
-		for row in self.grid:
-			for block in row:
+		for col in self.grid:
+			for block in col:
 				block.draw()
 
 	def generate_blocks(self):
 		rows = '1234567'
 		cols = 'ABCDEFG'
-		for row in range(0,7):
-			row_list = []
-			for col in range(0,7):
-				row_list.append(GridBlock(self.screen,self,(col*self.GRID_WIDTH+self.OFFSETS[0]+self.GRID_WIDTH/2,
+		for col in range(0,7):
+			col_list = []
+			for row in range(0,7):
+				col_list.append(GridBlock(self.screen,self,(col*self.GRID_WIDTH+self.OFFSETS[0]+self.GRID_WIDTH/2,
 					row*self.GRID_WIDTH+self.OFFSETS[1]+self.GRID_WIDTH/2),self.GRID_WIDTH,cols[col]+rows[row]))
-			self.grid.append(row_list)
+			self.grid.append(col_list)
 
 	def load_board(self,template):
 		self.powerlines = []
@@ -161,27 +161,27 @@ class GameBoard():
 		if len(template) != 7:
 			print "could not load in board; not the right num of rows"
 			return False
-		for row in range(0,7):
-			for col in range(0,7):
-				#print type(self.grid[row][col])
+		for col in range(0,7):
+			for row in range(0,7):
+				#print type(self.grid[col][row])
 				if 'T' in template[row][col]:
-					self.grid[row][col] = OT_Block(self.grid[row][col])
-					self.grid[row][col].visible = True
-					self.empty.append(self.grid[row][col])
-					self.powerlines.extend(self.grid[row][col].powerlines)
+					self.grid[col][row] = OT_Block(self.grid[col][row])
+					self.grid[col][row].visible = True
+					self.empty.append(self.grid[col][row])
+					self.powerlines.extend(self.grid[col][row].powerlines)
 				elif 'D' in template[row][col]:
-					self.grid[row][col] = DeadEnd_Block(self.grid[row][col])
-					self.grid[row][col].visible = True
-					self.empty.append(self.grid[row][col])
+					self.grid[col][row] = DeadEnd_Block(self.grid[col][row])
+					self.grid[col][row].visible = True
+					self.empty.append(self.grid[col][row])
 				if 'O' in template[row][col]:
-					self.grid[row][col].createObstruction()
-					self.obstructions.append(self.grid[row][col].obstruction)
+					self.grid[col][row].createObstruction()
+					self.obstructions.append(self.grid[col][row].obstruction)
 				if 'C' in template[row][col]:
-					self.grid[row][col].cache = random.randint(1,6)
+					self.grid[col][row].cache = random.randint(1,6)
 		print 'load completed, initializing powerlines...'
 		for row in range(0,7):
 			for col in range(0,7):
-					self.grid[row][col].initialize()
+					self.grid[col][row].initialize()
 		print 'done initializing powerlines'
 			
 	def handleMouseEvent(self,event):
@@ -222,12 +222,12 @@ class GridBlock():
 		self.visible = False
 
 	def get_location(self,blockName):
-		col = self.cols.find(blockName[0])+1
-		row = self.rows.find(blockName[1])+1
-		return [row,col]
+		col = self.cols.find(blockName[0])
+		row = self.rows.find(blockName[1])
+		return [col,row]
 	def make_location(self,coordList):
-		col = self.cols[coordList[1]-1]
-		row = self.rows[coordList[0]-1]
+		col = self.cols[coordList[1]]
+		row = self.rows[coordList[0]]
 		return col+row
 
 	def createObstruction(self):
@@ -264,28 +264,28 @@ class OT_Block(GridBlock):
 		currentGB = self.get_location(self.loc)
 		powerNum = 0
 		#check left
-		if powerNum < 2 and (currentGB[1] <= 1 or self.GAMEBOARD.get_block_in_loc((currentGB[0],currentGB[1]-1)).type == self.type):
+		if powerNum < 2 and (currentGB[0] <= 0 or self.GAMEBOARD.get_block_in_loc((currentGB[0]-1,currentGB[1])).type == self.type):
 			self.powerlines[powerNum].object.size = (self.GRID_WIDTH*2/3,self.GRID_WIDTH/3)
 			self.powerlines[powerNum].object.left = self.object.left
 			self.powerlines[powerNum].object.centery = self.object.centery
 			self.powerlines[powerNum].coords = (self.powerlines[powerNum].object.topleft[0]-self.object.topleft[0],self.powerlines[powerNum].object.topleft[1]-self.object.topleft[1])
 			powerNum += 1
 		#check right
-		if powerNum < 2 and (currentGB[1] >= 7 or self.GAMEBOARD.get_block_in_loc((currentGB[0],currentGB[1]+1)).type == self.type):
+		if powerNum < 2 and (currentGB[0] >= 6 or self.GAMEBOARD.get_block_in_loc((currentGB[0]+1,currentGB[1])).type == self.type):
 			self.powerlines[powerNum].object.size = (self.GRID_WIDTH*2/3,self.GRID_WIDTH/3)
 			self.powerlines[powerNum].object.right = self.object.right
 			self.powerlines[powerNum].object.centery = self.object.centery
 			self.powerlines[powerNum].coords = (self.powerlines[powerNum].object.topleft[0]-self.object.topleft[0],self.powerlines[powerNum].object.topleft[1]-self.object.topleft[1])
 			powerNum += 1
 		#check above
-		if powerNum < 2 and (currentGB[0] <= 1 or self.GAMEBOARD.get_block_in_loc((currentGB[0]-1,currentGB[1])).type == self.type):
+		if powerNum < 2 and (currentGB[1] <= 0 or self.GAMEBOARD.get_block_in_loc((currentGB[0],currentGB[1]-1)).type == self.type):
 			self.powerlines[powerNum].object.size = (self.GRID_WIDTH/3,self.GRID_WIDTH*2/3)
 			self.powerlines[powerNum].object.top = self.object.top
 			self.powerlines[powerNum].object.centerx = self.object.centerx
 			self.powerlines[powerNum].coords = (self.powerlines[powerNum].object.topleft[0]-self.object.topleft[0],self.powerlines[powerNum].object.topleft[1]-self.object.topleft[1])
 			powerNum += 1
 		#check below
-		if powerNum < 2 and (currentGB[0] >= 7 or self.GAMEBOARD.get_block_in_loc((currentGB[0]+1,currentGB[1])).type == self.type):
+		if powerNum < 2 and (currentGB[1] >= 6 or self.GAMEBOARD.get_block_in_loc((currentGB[0],currentGB[1]+1)).type == self.type):
 			self.powerlines[powerNum].object.size = (self.GRID_WIDTH/3,self.GRID_WIDTH*2/3)
 			self.powerlines[powerNum].object.bottom = self.object.bottom
 			self.powerlines[powerNum].object.centerx = self.object.centerx

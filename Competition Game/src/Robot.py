@@ -25,8 +25,8 @@ class Robot():
 		self.direction = 0
 		self.dirIndicator = pygame.Rect((self.coords), (10,10))
 		self.dirIndicatorColor = (100,100,100)
-		#self.errorMax = self.GRID_WIDTH/12
-		self.errorMax = 0
+		self.errorMax = self.GRID_WIDTH/12
+		#self.errorMax = 0
 		self.MAP = None
 		if offsets == None:
 			self.MAP = RobotMap(self.screen,self.GRID_WIDTH/2,(gameboard.TOTAL_WIDTH+20,20),self.direction)
@@ -98,27 +98,35 @@ class Robot():
 			return self.read_capacitive()
 
 	def read_distance(self):
-		for sensor in self.sensors:
+		readings = []
+		for sensor in self.sensors: #checks all sensors
 			if isinstance(sensor,Distance_Sensor):
 				collision_list = []
 				for item in self.GAMEBOARD.obstructions:
 					collision_list.append(item.object)
-				print sensor.read_sensor(collision_list)
+				readings.append(sensor.read_sensor(collision_list))
+		print str(readings)
+		return readings
 	def read_electromagnetic(self):
+		readings = []
 		for sensor in self.sensors:
 			if isinstance(sensor,Electromagnetic_Sensor):
 				collision_list = []
 				for item in self.GAMEBOARD.powerlines:
 					collision_list.append(item.object)
-				print sensor.read_sensor(collision_list)
+				readings.append(sensor.read_sensor(collision_list))
+		print str(readings)
+		return readings
 	def read_capacitive(self):
+		readings = []
 		for sensor in self.sensors:
 			if isinstance(sensor,Capacitive_Sensor):
 				collision_list = []
 				for item in self.GAMEBOARD.empty:
 					collision_list.append(item.object)
-				print sensor.read_sensor(collision_list)
-
+				readings.append(sensor.read_sensor(collision_list))
+		print str(readings)
+		return readings
 	def performMove(self):
 		pass
 		#insert code here
@@ -198,32 +206,32 @@ class RobotMap():
 		self.color_ROBOT = (26,148,49)
 		self.robotMini = pygame.Rect((0,0),(0,0))
 		self.putRobotInBlock('A7')
-		self.robotLoc = [7,1]
+		self.robotLoc = [0,6]
 		self.direction = direction
 		self.dirIndicator = pygame.Rect((self.robotMini.topleft), (5,5))
 		self.dirIndicatorColor = (100,100,100)
 
 	def generateBlocks(self):
-		for row in range(0,7):
-			row_list = []
-			for col in range(0,7):
-				row_list.append(MapBlock(self.screen,self,(col*self.GRID_WIDTH,
+		for col in range(0,7):
+			col_list = []
+			for row in range(0,7):
+				col_list.append(MapBlock(self.screen,self,(col*self.GRID_WIDTH,
 					row*self.GRID_WIDTH),self.GRID_WIDTH,self.cols[col]+self.rows[row]))
-			self.grid.append(row_list)
+			self.grid.append(col_list)
 
 	def get_location(self,blockName):
 		col = self.cols.find(blockName[0])
 		row = self.rows.find(blockName[1])
-		return [row,col]
+		return [col,row]
 	def make_location(self,coordList):
-		col = self.cols[coordList[1]-1]
-		row = self.rows[coordList[0]-1]
+		col = self.cols[coordList[0]]
+		row = self.rows[coordList[1]]
 		return col+row
 
 	def get_block(self,blockName):
 		col = self.cols.find(blockName[0])
 		row = self.rows.find(blockName[1])
-		return self.grid[row][col]
+		return self.grid[col][row]
 
 	def putRobotInBlock(self,location):
 		block = self.get_block(location)
@@ -247,26 +255,26 @@ class RobotMap():
 
 	def getBlockInFront(self):
 		if self.direction == 0:
-			if self.robotLoc[1] < 7:
-				reqLoc = (self.robotLoc[0],self.robotLoc[1]+1)
+			if self.robotLoc[0] < 6:
+				reqLoc = (self.robotLoc[0]+1,self.robotLoc[1])
 				return self.get_block(self.make_location(reqLoc))
 			else:
 				return None
 		elif self.direction == 1:
-			if self.robotLoc[0] > 1:
-				reqLoc = (self.robotLoc[0]-1,self.robotLoc[1])
-				return self.get_block(self.make_location(reqLoc))
-			else:
-				return None
-		elif self.direction == 2:
-			if self.robotLoc[1] > 1:
+			if self.robotLoc[1] > 0:
 				reqLoc = (self.robotLoc[0],self.robotLoc[1]-1)
 				return self.get_block(self.make_location(reqLoc))
 			else:
 				return None
+		elif self.direction == 2:
+			if self.robotLoc[0] > 0:
+				reqLoc = (self.robotLoc[0]-1,self.robotLoc[1])
+				return self.get_block(self.make_location(reqLoc))
+			else:
+				return None
 		elif self.direction == 3:
-			if self.robotLoc[0] < 7:
-				reqLoc = (self.robotLoc[0]+1,self.robotLoc[1])
+			if self.robotLoc[1] < 6:
+				reqLoc = (self.robotLoc[0],self.robotLoc[1]+1)
 				return self.get_block(self.make_location(reqLoc))
 			else:
 				return None
@@ -312,8 +320,8 @@ class RobotMap():
 		self.screen.fill(self.dirIndicatorColor,self.dirIndicator)
 
 	def draw_blocks(self):
-		for row in self.grid:
-			for block in row:
+		for col in self.grid:
+			for block in col:
 				block.draw()
 
 	def draw_grid(self):
@@ -327,21 +335,21 @@ class RobotMap():
 
 	def drive(self,val):
 		if self.direction == 0:
-			newval = self.robotLoc[1]+val
-			if newval >= 1 and newval <= 7:
-				self.robotLoc[1] = newval
-		elif self.direction == 2:
-			newval = self.robotLoc[1]-val
-			if newval >= 1 and newval <= 7:
-				self.robotLoc[1] = newval
-		elif self.direction == 1:
-			newval = self.robotLoc[0]-val
-			if newval >= 1 and newval <= 7:
-				self.robotLoc[0] = newval
-		elif self.direction == 3:
 			newval = self.robotLoc[0]+val
-			if newval >= 1 and newval <= 7:
+			if newval >= 0 and newval <= 6:
 				self.robotLoc[0] = newval
+		elif self.direction == 2:
+			newval = self.robotLoc[0]-val
+			if newval >= 0 and newval <= 6:
+				self.robotLoc[0] = newval
+		elif self.direction == 1:
+			newval = self.robotLoc[1]-val
+			if newval >= 0 and newval <= 6:
+				self.robotLoc[1] = newval
+		elif self.direction == 3:
+			newval = self.robotLoc[1]+val
+			if newval >= 0 and newval <= 6:
+				self.robotLoc[1] = newval
 		#self.putRobotInBlock(self.make_location(self.robotLoc))
 
 	def handleMouseEvent(self,event):
