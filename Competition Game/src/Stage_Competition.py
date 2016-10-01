@@ -54,6 +54,8 @@ class Stage_Competition(Stage):
 		self.global_objects.append(self.robot.MAP)
 		self.global_objects.append(self.options)
 		self.mouse = MouseEvents(self.global_objects)
+		self.counter = 1
+		self.delayCount = 144
 
 	def handleEvents(self):
 		mouse = self.mouse
@@ -81,6 +83,9 @@ class Stage_Competition(Stage):
 		self.screen.fill((220,220,220))
 		for obj in self.global_objects:
 			obj.draw()
+		self.counter += 1
+		if self.counter % self.delayCount == 0:
+			self.robot.performMove()
 		return returnVal
 
 

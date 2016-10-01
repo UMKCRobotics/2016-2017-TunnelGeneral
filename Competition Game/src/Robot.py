@@ -25,7 +25,8 @@ class Robot():
 		self.direction = 0
 		self.dirIndicator = pygame.Rect((self.coords), (10,10))
 		self.dirIndicatorColor = (100,100,100)
-		self.errorMax = self.GRID_WIDTH/12
+		#self.errorMax = self.GRID_WIDTH/12
+		self.errorMax = 0
 		self.MAP = None
 		if offsets == None:
 			self.MAP = RobotMap(self.screen,self.GRID_WIDTH/2,(gameboard.TOTAL_WIDTH+20,20),self.direction)
@@ -117,6 +118,10 @@ class Robot():
 				for item in self.GAMEBOARD.empty:
 					collision_list.append(item.object)
 				print sensor.read_sensor(collision_list)
+
+	def performMove(self):
+		pass
+		#insert code here
 
 	def goForward(self):
 		self.drive(1)
