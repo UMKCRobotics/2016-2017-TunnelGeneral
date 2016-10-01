@@ -2,6 +2,7 @@ import pygame
 import sys,os,getopt
 import random
 import math
+import threading
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))) #directory from which this script is ran
 sys.path.insert(0, os.path.join(__location__,'src/'))
@@ -9,6 +10,7 @@ sys.path.insert(0, os.path.join(__location__,'src/'))
 from Stage_Competition import Stage_Competition
 from Stage_Build import Stage_Build
 from Sensors import Sensor_Converter
+import AI_17
 
 robotNameToLoad = None
 
@@ -44,6 +46,10 @@ currentStage = 0
 previousStage = 0
 inputData = None
 
+
+threads = []
+
+
 def handle_returnVal(val):
 	global currentStage,inputData
 	if val[0] == 'QUIT':
@@ -68,6 +74,9 @@ while 1:
 		if isinstance(stages[currentStage],Stage_Competition):
 			sensorConv = Sensor_Converter(stages[currentStage].robot,inputData[0],inputData[1])
 			sensorConv.create_robot_sensors()
+			t1 = threading.Thread(target=AI_17.simulation_impl,args=(stages[currentStage].robot,))
+			t1.start()
+			threads.append(t1)
 		previousStage = currentStage
 	returnVal = stages[currentStage].performAllStageActions()
 	handle_returnVal(returnVal)

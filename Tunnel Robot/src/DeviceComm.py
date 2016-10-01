@@ -8,9 +8,9 @@ class CommRequest(object):
 	# a Device Comm as a request to an
 	# outside device
 	def __init__(self,request):
-		self.request = request
-		self.isDone = False
-		self.response = None
+		self.request = request #string
+		self.isDone = False #represents if command is done performing
+		self.response = None #optional string value from arduino
 
 	def checkDone(self):
 		return self.isDone
@@ -51,7 +51,7 @@ class DeviceComm(threading.Thread):
 	def run(self):
 		self.keepRunning = True
 		while (self.keepRunning):
-			if len(self.commandList) > 0:
+			if len(self.commandList) > 0: #check if commands to perform
 				print self.commandList
 				#do the item in queue
 				commandObj = self.commandList[0]
