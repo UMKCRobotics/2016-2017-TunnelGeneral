@@ -1,9 +1,8 @@
 import random
-from collections import deque
-import heapq
-from Robot import Robot as SimRobot
+from collections import deque  # stack and queue
+import heapq  # priority queue
+from Robot import Robot as SimRobot  # passed to simulation_impl
 import time
-
 import sys
 
 GRID_WIDTH = 7
@@ -11,7 +10,16 @@ GRID_HEIGHT = 7
 DISPLAY_WIDTH = 8
 DISPLAY_HEIGHT = 8
 
-sim_robot = None
+sim_robot = None  # global variable to hold robot passed from simulation
+
+
+# a decorator for static variables in python
+def static_vars(**kwargs):
+    def decorate(func):
+        for k in kwargs:
+            setattr(func, k, kwargs[k])
+        return func
+    return decorate
 
 
 def simulation_impl(_sim_robot):
@@ -47,6 +55,7 @@ class Coordinate:
         return "(" + str(self.x) + ", " + str(self.y) + ")"
 
 
+# this is not used
 SNAKE_AROUND_EDGE_SEQUENCE = [
     Coordinate(0, 0),
     Coordinate(0, 1),
@@ -100,7 +109,8 @@ SNAKE_AROUND_EDGE_SEQUENCE = [
 ]
 
 
-class Knowledge:
+# these two classes are enumerations, but we can't use enumerations because someone doesn't update their python
+class Knowledge:  # class Knowledge(IntEnum:
     def __init__(self):
         pass
 
@@ -109,7 +119,7 @@ class Knowledge:
     no = 0
 
 
-class Direction():
+class Direction:  # class Direction(IntEnum):
     def __init__(self):
         pass
 
@@ -119,6 +129,7 @@ class Direction():
     south = 3
     count = 4
 
+# To get the next coordinate in a given direction, add this coordinate
 COORDINATE_CHANGE = {
     Direction.east: Coordinate(1, 0),
     Direction.west: Coordinate(-1, 0),
@@ -128,6 +139,7 @@ COORDINATE_CHANGE = {
 
 
 class GridSpaceData:
+    """ information collected and learned about 1 space on the grid """
     def __init__(self):
         self.tunnelHere = Knowledge.unknown
         self.wireHere = Knowledge.unknown
@@ -156,6 +168,7 @@ class GridSpaceData:
 
 
 def cost_of_this_move(grid_space_data, coordinate):
+    """ calculate the cost of 1 grid space move for Dijkstra's algorithm """
     cost = 5  # default
     if not grid_space_data.visited:
         cost -= 3
@@ -170,6 +183,8 @@ def cost_of_this_move(grid_space_data, coordinate):
 
 
 class HeapqItem:
+    """ object that goes in the priority queue for Dijkstra's algorithm
+        a coordinate, the directions of how to get there, and the cost of taking those directions """
     def __init__(self, _coordinate, _directions, _cost):
         self.coordinate = _coordinate
         self.directions = _directions
@@ -195,6 +210,7 @@ class HeapqItem:
 
 
 class GridData:
+    """ collection of all the GridSpaceData for the whole grid """
     def __init__(self):
         self.data = []
         self.needToVisit = set()
@@ -206,6 +222,7 @@ class GridData:
         self.set_begin_known_information()
 
     def get(self, x_or_coordinate, y=-1):
+        """ :return GridSpaceData """
         if isinstance(x_or_coordinate, Coordinate):
             x = x_or_coordinate.x
             y = x_or_coordinate.y
@@ -237,7 +254,7 @@ class GridData:
 
     def find_shortest_known_path(self, from_coordinate, to_coordinate):
 
-        # BFS
+        # BFS / Dijkstra's
         visited_in_this_bfs = set()
         bfs_queue = []
         current_path = HeapqItem(from_coordinate, [], 0)  # Coord, directions we took to get there, cost
@@ -261,7 +278,7 @@ class GridData:
         return current_path.directions
 
     def find_path_to_side(self, from_coordinate):
-        # BFS
+        # BFS  TODO: undo copied code
         visited_in_this_bfs = set()
         bfs_queue = []
         current_path = HeapqItem(from_coordinate, [], 0)  # Coord, directions we took to get there, cost
@@ -298,6 +315,7 @@ class Robot:
         self.display_grid_wait_enter()
 
     def reverse(self):
+        # TODO: this hasn't been updated for simulation (because it's not used)
         self.move(-1)
 
     def move(self, move_amount):
@@ -334,7 +352,7 @@ class Robot:
         if self.facing == Direction.east:
             self.facing = Direction.south
         else:
-            self.facing = self.facing - 1
+            self.facing -= 1  # self.facing = Direction(self.facing - 1)
 
     def left(self):
         """ use turn """
@@ -343,25 +361,25 @@ class Robot:
         if self.facing == Direction.south:
             self.facing = Direction.east
         else:
-            self.facing = self.facing + 1
+            self.facing += 1  # self.facing = Direction(self.facing + 1)
 
     def report(self):
         return "coordinates: (" + str(self.position.x) + ", " + str(self.position.y) + \
                ") facing: " + str(self.facing)[10:]
 
-    def display_grid_in_console(self):
-        ROBOT_SYMBOLS = {
+    @static_vars(ROBOT_SYMBOLS={
             Direction.north: "^",
             Direction.south: "v",
             Direction.west: "<",
             Direction.east: ">"
-        }
+        })
+    def display_grid_in_console(self):
 
         for y in range(GRID_HEIGHT - 1, -1, -1):
             for x in range(GRID_WIDTH):
                 if x == self.position.x and y == self.position.y:
                     # display robot facing
-                    sys.stdout.write(ROBOT_SYMBOLS[self.facing] + " ")
+                    sys.stdout.write(self.display_grid_in_console.ROBOT_SYMBOLS[self.facing] + " ")
                 else:
                     if self.gridData.get(x, y).get_obstacle_here() == Knowledge.yes:
                         sys.stdout.write("X" + " ")
@@ -383,7 +401,7 @@ class Robot:
 
         # which sensor
         # 0 right, 1 front, 2 left, 3 back
-        which_sensor = (((direction - self.facing) % 4) + 1)%4
+        which_sensor = (((direction - self.facing) % 4) + 1) % 4  # do we need the middle mod 4?
         return sim_robot.readSensor(1)[which_sensor]
 
     def visit(self):
@@ -421,7 +439,8 @@ class Robot:
         # TODO: take readings and look for surrounding obstacles
 
     def explore(self):
-        """ visit all possible grid spaces"""
+        """ visit all possible grid spaces """
+        # old one, probably missing something
 
         dfs_stack = deque()
         dfs_stack.append(self.position)
@@ -602,11 +621,10 @@ class OutsideGrid:
 def test():
     outside_grid = OutsideGrid()
     outside_grid.random_obstacles()
-    #outside_grid.input_from_console()
+    # outside_grid.input_from_console()
     robot = Robot(outside_grid)
     print(robot.report())
     robot.explore3()
-
 
 
 def main():
