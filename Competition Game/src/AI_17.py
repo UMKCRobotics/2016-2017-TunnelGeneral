@@ -2,6 +2,7 @@ import random
 from collections import deque
 import heapq
 from Robot import Robot as SimRobot
+import time
 
 import sys
 
@@ -290,6 +291,8 @@ class Robot:
 
     def forward(self):
         self.move(1)
+        sim_robot.goForward()
+        time.sleep(0.2)
         self.display_grid_wait_enter()
 
     def reverse(self):
@@ -324,6 +327,8 @@ class Robot:
 
     def right(self):
         """ use turn """
+        sim_robot.rotateClockwise()
+        time.sleep(0.2)
         if self.facing == Direction.east:
             self.facing = Direction.south
         else:
@@ -331,6 +336,8 @@ class Robot:
 
     def left(self):
         """ use turn """
+        sim_robot.rotateCounterClockwise()
+        time.sleep(0.2)
         if self.facing == Direction.south:
             self.facing = Direction.east
         else:
@@ -370,7 +377,12 @@ class Robot:
     def see_obstacle(self, direction):
         # TODO: replace this with readings from sensors
         coord_looking = self.position + COORDINATE_CHANGE[direction]
-        return self.outside_grid.data[coord_looking.x * GRID_HEIGHT + coord_looking.y].obstacle_here
+        # return self.outside_grid.data[coord_looking.x * GRID_HEIGHT + coord_looking.y].obstacle_here
+
+        # which sensor
+        # 0 right, 1 front, 2 left, 3 back
+        which_sensor = ((direction - self.facing) % 4) + 1
+        return sim_robot.readSensor(1)[which_sensor]
 
     def visit(self):
         self.gridData.get(self.position).visited = True
