@@ -22,6 +22,8 @@ def simulation_impl(_sim_robot):
     :return:
     """
     sim_robot = _sim_robot
+    robot = Robot(OutsideGrid())
+    robot.explore3()
 
 
 class Coordinate:
@@ -381,7 +383,7 @@ class Robot:
 
         # which sensor
         # 0 right, 1 front, 2 left, 3 back
-        which_sensor = ((direction - self.facing) % 4) + 1
+        which_sensor = (((direction - self.facing) % 4) + 1)%4
         return sim_robot.readSensor(1)[which_sensor]
 
     def visit(self):
