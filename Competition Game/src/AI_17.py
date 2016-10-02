@@ -10,8 +10,6 @@ GRID_HEIGHT = 7
 DISPLAY_WIDTH = 8
 DISPLAY_HEIGHT = 8
 
-sim_robot = None  # global variable to hold robot passed from simulation
-
 
 # a decorator for static variables in python
 def static_vars(**kwargs):
@@ -23,14 +21,12 @@ def static_vars(**kwargs):
 
 
 def simulation_impl(_sim_robot):
-    global sim_robot
     """
     Pull simulation robot from simulation.
     :param _sim_robot: SimRobot
     :return:
     """
-    sim_robot = _sim_robot
-    robot = Robot(OutsideGrid())
+    robot = Robot(_sim_robot)
     robot.explore3()
 
 
@@ -302,17 +298,30 @@ class GridData:
 
 
 class Robot:
-    def __init__(self, _outside_grid):
+    SLEEP_TIME = 0.2
+
+    def __init__(self, outside_grid_or_sim_robot_interface):
         self.gridData = GridData()
         self.position = Coordinate()
-        self.facing = Direction.east
-        self.outside_grid = _outside_grid
+        if isinstance(outside_grid_or_sim_robot_interface, OutsideGrid):
+            self.outside_grid = outside_grid_or_sim_robot_interface
+            self.using_outside_grid = True
+        elif isinstance(outside_grid_or_sim_robot_interface, SimRobot):
+            self.sim_robot = outside_grid_or_sim_robot_interface
+            self.using_outside_grid = False
+        else:
+            raise TypeError("Invalid argument passed to constructor")
+
+        self.facing = Direction.east  # TODO: can we get this from the SimRobot?
 
     def forward(self):
         self.move(1)
-        sim_robot.goForward()
-        time.sleep(0.2)
-        self.display_grid_wait_enter()
+        if self.using_outside_grid:
+            self.display_grid_wait_enter()
+        else:  # using simulation
+            self.sim_robot.goForward()
+            time.sleep(Robot.SLEEP_TIME)
+            self.display_grid_in_console()
 
     def reverse(self):
         # TODO: this hasn't been updated for simulation (because it's not used)
@@ -342,13 +351,17 @@ class Robot:
             self.left()
             self.left()
         # recalibrate if possible
-        self.display_grid_wait_enter()
+        if self.using_outside_grid:
+            self.display_grid_wait_enter()
+        else:  # simulation
+            self.display_grid_in_console()
         return
 
     def right(self):
         """ use turn """
-        sim_robot.rotateClockwise()
-        time.sleep(0.2)
+        if not self.using_outside_grid:
+            self.sim_robot.rotateClockwise()
+            time.sleep(Robot.SLEEP_TIME)
         if self.facing == Direction.east:
             self.facing = Direction.south
         else:
@@ -356,8 +369,9 @@ class Robot:
 
     def left(self):
         """ use turn """
-        sim_robot.rotateCounterClockwise()
-        time.sleep(0.2)
+        if not self.using_outside_grid:
+            self.sim_robot.rotateCounterClockwise()
+            time.sleep(Robot.SLEEP_TIME)
         if self.facing == Direction.south:
             self.facing = Direction.east
         else:
@@ -392,17 +406,18 @@ class Robot:
 
     def display_grid_wait_enter(self):
         self.display_grid_in_console()
-        # raw_input()
+        raw_input()
 
     def see_obstacle(self, direction):
         # TODO: replace this with readings from sensors
-        coord_looking = self.position + COORDINATE_CHANGE[direction]
-        # return self.outside_grid.data[coord_looking.x * GRID_HEIGHT + coord_looking.y].obstacle_here
-
-        # which sensor
-        # 0 right, 1 front, 2 left, 3 back
-        which_sensor = (((direction - self.facing) % 4) + 1) % 4  # do we need the middle mod 4?
-        return sim_robot.readSensor(1)[which_sensor]
+        if self.using_outside_grid:
+            coord_looking = self.position + COORDINATE_CHANGE[direction]
+            return self.outside_grid.data[coord_looking.x * GRID_HEIGHT + coord_looking.y].obstacle_here
+        else:  # simulation
+            # which sensor
+            # 0 right, 1 front, 2 left, 3 back
+            which_sensor = (((direction - self.facing) % 4) + 1) % 4  # do we need the middle mod 4?
+            return self.sim_robot.readSensor(1)[which_sensor]
 
     def visit(self):
         self.gridData.get(self.position).visited = True
@@ -620,8 +635,21 @@ class OutsideGrid:
 
 def test():
     outside_grid = OutsideGrid()
-    outside_grid.random_obstacles()
-    # outside_grid.input_from_console()
+
+    answer = ""
+    while not answer:
+        answer = raw_input("(n)o obstacles or (r)andom obstacles or (t)ype in obstacles? ")
+        if answer:
+            answer = answer[0].lower()
+            if answer == "n":
+                break
+            elif answer == "r":
+                outside_grid.random_obstacles()
+                break
+            elif answer == "t":
+                outside_grid.input_from_console()
+                break
+            answer = ""
     robot = Robot(outside_grid)
     print(robot.report())
     robot.explore3()
