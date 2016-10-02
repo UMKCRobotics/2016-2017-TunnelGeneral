@@ -286,7 +286,7 @@ class Robot:
     def __init__(self, _outside_grid):
         self.gridData = GridData()
         self.position = Coordinate()
-        self.facing = Direction.north
+        self.facing = Direction.east
         self.outside_grid = _outside_grid
 
     def forward(self):
@@ -372,7 +372,7 @@ class Robot:
 
     def display_grid_wait_enter(self):
         self.display_grid_in_console()
-        raw_input()
+        # raw_input()
 
     def see_obstacle(self, direction):
         # TODO: replace this with readings from sensors
