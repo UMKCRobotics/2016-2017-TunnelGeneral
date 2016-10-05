@@ -11,6 +11,7 @@ from Stage_Competition import Stage_Competition
 from Stage_Build import Stage_Build
 from Sensors import Sensor_Converter
 import AI_17
+import AI_JED
 
 robotNameToLoad = None
 
@@ -31,7 +32,9 @@ if __name__ == "__main__":
 	main(sys.argv[1:])
 
 
+#pygame.mixer.pre_init()
 pygame.init()
+pygame.mixer.init()
 global_grid_width = 100
 screen = pygame.display.set_mode((1220,800))
 pygame.display.set_caption('IEEE 2017 UMKC Robotics')
@@ -74,7 +77,9 @@ while 1:
 		if isinstance(stages[currentStage],Stage_Competition):
 			sensorConv = Sensor_Converter(stages[currentStage].robot,inputData[0],inputData[1])
 			sensorConv.create_robot_sensors()
-			t1 = threading.Thread(target=AI_17.simulation_impl,args=(stages[currentStage].robot,))
+			#t1 = threading.Thread(target=AI_17.simulation_impl,args=(stages[currentStage].robot,))
+			t1 = threading.Thread(target=AI_JED.simulation_impl,args=(stages[currentStage].robot,))
+			t1.daemon = True
 			t1.start()
 			threads.append(t1)
 		previousStage = currentStage

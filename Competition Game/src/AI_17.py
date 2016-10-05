@@ -323,6 +323,10 @@ class Robot:
             time.sleep(Robot.SLEEP_TIME)
             self.display_grid_in_console()
 
+    def calibrate(self): #alias for going forward (for sim)
+        self.sim_robot.goForward()
+        time.sleep(Robot.SLEEP_TIME)
+
     def reverse(self):
         # TODO: this hasn't been updated for simulation (because it's not used)
         self.move(-1)
@@ -452,6 +456,11 @@ class Robot:
                 self.gridData.needToVisit.add(coord_to_check)
 
         # TODO: take readings and look for surrounding obstacles
+        # take readings of capacity + EMF
+        if (self.sim_robot.readSensor(2)[0] == 1):
+            self.sim_robot.MAP.markOT()
+        elif (self.sim_robot.readSensor(3)[0] == 1):
+            self.sim_robot.MAP.markDeadend()
 
     def explore(self):
         """ visit all possible grid spaces """
@@ -570,7 +579,7 @@ class Robot:
                         if self.position != coord_at_top:
                             print("appending: " + str(self.position))
                             dfs_stack.append(Coordinate(self.position.x, self.position.y))
-
+                self.calibrate()
             # put adjacent unvisited nodes in stack and visit them
             coord_at_top = dfs_stack[-1]
             # TODO: change this to use COORDINATE_CHANGE? (keep order)

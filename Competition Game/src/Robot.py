@@ -1,13 +1,17 @@
-import pygame,sys,os,random,math
+import pygame,sys,os,random,math,time,threading
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))) #directory from which this script is ran
-sys.path.insert(0, os.path.join(__location__))
+print "location:: %s" % __location__
+#sys.path.insert(0, os.path.join(__location__))
+#SOUND_FOLDER = os.path.join(__location__,'soundfx')
+#print "sound_folder:: %s" % SOUND_FOLDER
 
 
 class Robot():
 	coords = None
 	width = None
 	def __init__(self,screen,gameboard,coords=None,offsets=None):
+		global __location__
 		self.screen = screen
 		self.coords = coords
 		self.GAMEBOARD = gameboard
@@ -26,6 +30,7 @@ class Robot():
 		self.dirIndicator = pygame.Rect((self.coords), (10,10))
 		self.dirIndicatorColor = (100,100,100)
 		self.errorMax = self.GRID_WIDTH/12
+		#self.errorMax = self.GRID_WIDTH/2
 		#self.errorMax = 0
 		self.MAP = None
 		if offsets == None:
@@ -38,6 +43,35 @@ class Robot():
 		#used for timing robot movement
 		self.counter = 1
 		self.counter_max = 144
+		#load sounds
+		self.SOUND_FOLDER = os.path.join(__location__,'soundfx')
+		self.sound1 = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER,'smb_jump-small.wav'))
+		self.sound2 = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER,'smb_jump-super.wav'))
+		self.sound3 = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER,'smb_coin.wav'))
+		self.sound4 = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER,'smb_fireball.wav'))
+		self.sound5 = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER,'smb_stomp.wav'))
+		#self.song = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER,'01-super-mario-bros.wav'))
+		pygame.mixer.music.load(os.path.join(self.SOUND_FOLDER,'01-super-mario-bros.wav'))
+		pygame.mixer.music.play(-1)
+		#self.play_sound(self.song)
+
+	def play_sound(self,sound):
+		soundT = threading.Thread(target=self.__play_sound__,args=(sound,))
+		soundT.daemon = True
+		soundT.start()
+
+	def play_song(self,song):
+		soundT = threading.Thread(target=self.__play_song__,args=(song,))
+		soundT.daemon = True
+		soundT.start()
+
+	def __play_sound__(self,sound):
+		sound.play()
+		time.sleep(sound.get_length())
+
+	def __play_song__(self,sound):
+		sound.play()
+		time.sleep(sound.get_length())
 
 	def draw(self):
 		self.object.topleft = (self.GAMEBOARD.OFFSETS[0]+self.rel_coords[0],self.GAMEBOARD.OFFSETS[1]+self.rel_coords[1])
@@ -139,15 +173,18 @@ class Robot():
 
 	def goForward(self):
 		self.drive(1)
+		self.play_sound(self.sound1)
 
 	def goBackward(self):
 		self.drive(-1)
 
 	def rotateCounterClockwise(self):
 		self.changeDirection(1)
+		self.play_sound(self.sound5)
 
 	def rotateClockwise(self):
 		self.changeDirection(-1)
+		self.play_sound(self.sound5)
 
 	def changeDirection(self,val):
 		self.direction = (self.direction+val)%4
@@ -216,6 +253,20 @@ class RobotMap():
 		self.direction = direction
 		self.dirIndicator = pygame.Rect((self.robotMini.topleft), (5,5))
 		self.dirIndicatorColor = (100,100,100)
+		#load sounds
+		self.SOUND_FOLDER = os.path.join(__location__,'soundfx')
+		self.soundOT = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER,'smb_coin.wav'))
+		self.soundDeadend = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER,'smb_fireball.wav'))
+
+	def play_sound(self,sound):
+		soundT = threading.Thread(target=self.__play_sound__,args=(sound,))
+		soundT.daemon = True
+		soundT.start()
+
+	def __play_sound__(self,sound):
+		sound.play()
+		time.sleep(sound.get_length())
+
 
 	def generateBlocks(self):
 		for col in range(0,7):
@@ -249,10 +300,12 @@ class RobotMap():
 
 	def markOT(self):
 		self.markCurrent('OT')
+		self.play_sound(self.soundOT)
 	def markEmpty(self):
 		self.markCurrent('E')
 	def markDeadend(self):
 		self.markCurrent('D')
+		self.play_sound(self.soundDeadend)
 	def markOT_Front(self):
 		self.markInFront('OT')
 	def markEmpty_Front(self):
@@ -304,7 +357,18 @@ class RobotMap():
 			elif type == 'D':
 				reqBlock.color = MapBlock.color_DEADEND
 
-
+	def get_adjacent_blocks(self,block):
+		blockLoc = self.get_location(block.loc)
+		block_list = []
+		if blockLoc[0] >= 0 and blockLoc[0] < 6:
+			block_list.append(self.grid[blockLoc[0]+1][blockLoc[1]])
+		if blockLoc[0] > 0 and blockLoc[0] <= 6:
+			block_list.append(self.grid[blockLoc[0]-1][blockLoc[1]])
+		if blockLoc[1] >= 0 and blockLoc[1] < 6:
+			block_list.append(self.grid[blockLoc[0]][blockLoc[1]+1])
+		if blockLoc[1] > 0 and blockLoc[1] <= 6:
+			block_list.append(self.grid[blockLoc[0]][blockLoc[1]-1])
+		return block_list
 
 	def draw(self):
 		#draw base board
@@ -376,7 +440,9 @@ class MapBlock():
 		self.loc = grid_key
 		self.object = pygame.Rect(self.coords,(self.GRID_WIDTH,self.GRID_WIDTH))
 		self.color = self.color_EMPTY
-		self.visited = False		
+		self.visited = False
+		self.obstructed = False
+		self.observed = False		
 
 	def draw(self):
 		self.object.topleft = (self.GAMEBOARD.OFFSETS[0]+self.coords[0],self.GAMEBOARD.OFFSETS[1]+self.coords[1])
