@@ -1,6 +1,8 @@
 from Robot import Robot
 from time import sleep
+import os
 
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))) #directory from which this script is ran
 
 
 def simulation_impl(sim_robot):
@@ -10,13 +12,14 @@ def simulation_impl(sim_robot):
 
 
 class RobotAlg():
-	SLEEP_TIME = 0.2
+	SLEEP_TIME = 0.1
 
 	def __init__(self,sim_robot):
 		self.sim_robot = sim_robot
 		self.MAP = self.sim_robot.MAP
 		self.moves_since_cal = [0,0]
 		self.max_moves = [15,15]
+		self.goList = None
 
 	def turn(self,desired_dir): #turn robot to desired direction
 		if desired_dir == self.MAP.direction:
@@ -82,21 +85,36 @@ class RobotAlg():
 	def visit(self):
 		#set curr block to visited
 		self.MAP.grid[self.MAP.robotLoc[0]][self.MAP.robotLoc[1]].visited = True
+		self.MAP.grid[self.MAP.robotLoc[0]][self.MAP.robotLoc[1]].color = (75,75,75)
+		visited_key = self.MAP.make_location(self.MAP.robotLoc)
+		if visited_key in self.goList:
+			self.goList.remove(visited_key)
+		with open(os.path.join(__location__,'gridstates.txt'),'ab') as gridstates:
+				gridstates.write('VISITED {}'.format(str(visited_key)) +'\n')
+
 		robotLoc = self.MAP.robotLoc
 		#check adjacent blocks for obstructions
 		#dir = 0
 		if self.MAP.robotLoc[0] >= 0 and self.MAP.robotLoc[0] < 6:
 			self.MAP.grid[robotLoc[0]+1][robotLoc[1]].obstructed = self.see_obstacle(0)
 			self.MAP.grid[robotLoc[0]+1][robotLoc[1]].observed = True
+			if self.MAP.grid[robotLoc[0]+1][robotLoc[1]].obstructed:
+				self.MAP.grid[robotLoc[0]+1][robotLoc[1]].color = (255,165,0)
 		if self.MAP.robotLoc[0] > 0 and self.MAP.robotLoc[0] <= 6:
 			self.MAP.grid[robotLoc[0]-1][robotLoc[1]].obstructed = self.see_obstacle(2)
 			self.MAP.grid[robotLoc[0]-1][robotLoc[1]].observed = True
+			if self.MAP.grid[robotLoc[0]-1][robotLoc[1]].obstructed:
+				self.MAP.grid[robotLoc[0]-1][robotLoc[1]].color = (255,165,0)
 		if self.MAP.robotLoc[1] >= 0 and self.MAP.robotLoc[1] < 6:
 			self.MAP.grid[robotLoc[0]][robotLoc[1]+1].obstructed = self.see_obstacle(3)
 			self.MAP.grid[robotLoc[0]][robotLoc[1]+1].observed = True
+			if self.MAP.grid[robotLoc[0]][robotLoc[1]+1].obstructed:
+				self.MAP.grid[robotLoc[0]][robotLoc[1]+1].color = (255,165,0)
 		if self.MAP.robotLoc[1] > 0 and self.MAP.robotLoc[1] <= 6:
 			self.MAP.grid[robotLoc[0]][robotLoc[1]-1].obstructed = self.see_obstacle(1)
 			self.MAP.grid[robotLoc[0]][robotLoc[1]-1].observed = True
+			if self.MAP.grid[robotLoc[0]][robotLoc[1]-1].obstructed:
+				self.MAP.grid[robotLoc[0]][robotLoc[1]-1].color = (255,165,0)
 		#take readings of cap + EMF
 		if (self.sim_robot.readSensor(2)[0] == 1):
 			self.MAP.markOT()
@@ -114,7 +132,7 @@ class RobotAlg():
 		'D1','D2','D3','D4','D5','D6','D7',
 		'E7','E6','E5','E4','E3','E2','E1',
 		'F1','F2','F3','F4','F5','F6','F7',
-		'G7','G6','G5','G4','G3','G2','G1','A7']
+		'G7','G6','G5','G4','G3','G2','G1']
 
 	def get_spiral_path(self):
 		return ['A6','A5','A4','A3','A2','A1',
@@ -128,7 +146,7 @@ class RobotAlg():
 		'C5','C4','C3',
 		'D3','E3',
 		'E4','E5',
-		'D5','D4','A7']
+		'D5','D4']
 
 	def get_perimeter_blocks(self):
 		#returns horizontal + vertical calib blocks
@@ -145,18 +163,32 @@ class RobotAlg():
 		return (hor_blocks,ver_blocks,hor,ver) #return tuple of lists
 
 	def doStuff(self):
-		goList = self.get_vertical_path()
-		#goList = self.get_spiral_path()
+		self.goList = self.get_vertical_path()
+		#self.goList = self.get_spiral_path()
 		
+		with open(os.path.join(__location__,'gridstates.txt'),'wb') as gridstates:
+			pass
+
 		calib_color = (255,255,255)
 		#get all perimeter blocks
 		perimeter_blocks_full = self.get_perimeter_blocks()
 		self.moves_since_cal = [0,0]
 		self.max_moves = [15,15]
+		done = False
+		while not done:
+			with open(os.path.join(__location__,'gridstates.txt'),'ab') as gridstates:
+				gridstates.write(str(self.goList)+'\n')
 
-		while len(goList) != 0:
-			self.visit()
-			goal = goList.pop(0)
+			if not self.MAP.grid[self.MAP.robotLoc[0]][self.MAP.robotLoc[1]].visited:
+				self.visit()
+			if len(self.goList) == 0:
+				self.goList.append('A7')
+				done = True
+				#break
+			with open(os.path.join(__location__,'gridstates.txt'),'ab') as gridstates:
+				gridstates.write(str(self.goList)+'\n')
+
+			goal = self.goList.pop(0)
 			#get path to the goal block, if NOT obstructed
 			if self.MAP.get_block(goal).obstructed:
 				continue #skip this block if obstructed
@@ -165,7 +197,7 @@ class RobotAlg():
 			if self.moves_since_cal[0] >= self.max_moves[0] or self.moves_since_cal[1] >= self.max_moves[1]:
 				if self.moves_since_cal[0] >= self.max_moves[0]:
 					#if next 4 blocks will include wanted perim, dont go yet
-					if len(set(perimeter_blocks_full[2]).intersection(set(goList[:4]))) == 0 or goal in perimeter_blocks_full[0]: 
+					if len(set(perimeter_blocks_full[2]).intersection(set(self.goList[:4]))) == 0 or goal in perimeter_blocks_full[0]: 
 						calib_path = self.get_path_to_block_multi(perimeter_blocks_full[0])
 						self.moves_since_cal[0] = 0
 						if len(calib_path) == 0:
@@ -179,7 +211,7 @@ class RobotAlg():
 						dest_block.color = old_color
 				elif self.moves_since_cal[1] >= self.max_moves[1]:
 					#if next 4 blocks will include wanted perim, dont go yet
-					if len(set(perimeter_blocks_full[3]).intersection(set(goList[:4]))) == 0 or goal in perimeter_blocks_full[1]:
+					if len(set(perimeter_blocks_full[3]).intersection(set(self.goList[:4]))) == 0 or goal in perimeter_blocks_full[1]:
 						calib_path = self.get_path_to_block_multi(perimeter_blocks_full[1])
 						self.moves_since_cal[1] = 0
 						if len(calib_path) == 0:
@@ -193,17 +225,35 @@ class RobotAlg():
 						dest_block.color = old_color
 
 			#if not, do normal movements
-			path = self.get_path_to_block_multi([self.MAP.get_block(goal)])
-			self.perform_path(path)
+			do_pathfinding = True
+			while do_pathfinding:
+				print 'finding path to %s' % str(goal)
+				path = self.get_path_to_block_multi([self.MAP.get_block(goal)])
+				finished_following = self.perform_path(path)
+				if finished_following:
+					do_pathfinding = False
+				else:
+					print 'could not follow'
+			#go to A7 if done visiting all blocks
+			#if len(self.goList) == 0:
+			#	self.goList.append('A7')
 		print 'done! %s' % str(self.moves_since_cal)
 
 	def perform_path(self,path):
+		if path == None:
+			return False
 		while len(path) > 0:
+			if not self.MAP.grid[self.MAP.robotLoc[0]][self.MAP.robotLoc[1]].visited:
+				self.visit()
 			desired_block = path.pop(len(path)-1)
+			if desired_block.obstructed:
+				return False
 			desired_dir = self.calculate_direction(self.MAP.robotLoc,self.MAP.get_location(desired_block.loc))
 			print desired_dir
 			self.turn(desired_dir)
 			self.forward()
+		return True
+
 
 
 	def get_path_to_block_multi(self,desired_blocks): #block from robot MAP
@@ -243,6 +293,7 @@ class RobotAlg():
 				adj_blocks = self.MAP.get_adjacent_blocks(block)
 				print '%s adj blocks: %s' % (val,len(adj_blocks))
 				new_list = []
+				unvisited_list = []
 				#filter out obstructed or unvisited blocks
 				for block in adj_blocks:
 					if not block.obstructed:
@@ -250,10 +301,20 @@ class RobotAlg():
 							block_loc = self.MAP.get_location(block.loc)
 							if grid[block_loc[0]][block_loc[1]] == -1:
 								new_list.append(block)
+						#save into list of unvisited blocks if desired block is unvisited
+						if len(desired_blocks) == 1 and desired_blocks[0].visited != True:
+							block_loc = self.MAP.get_location(block.loc)
+							if grid[block_loc[0]][block_loc[1]] == -1:
+								new_list.append(block)
+								#unvisited_list.append(block)
 				print '%s new blocks: %s' % (val,len(new_list))
 				#if there were any adjacent blocks, set to true
 				if len(new_list) > 0:
 					got_adjacent = True
+				#otherwise, try to use unvisited blocks
+				#elif len(unvisited_list) > 0:
+				#	got_adjacent = True
+				#	new_list.extend(unvisited_list)
 				#update block_list
 				new_block_list.extend(new_list)
 			#update val for next iteration
@@ -350,96 +411,3 @@ class RobotAlg():
 				return 2
 			elif point1[0] < point2[0]:
 				return 0
-
-	def get_path_to_block(self,desired_block): #block from robot MAP
-		grid = self.generate_blank_grid() #get blank grid
-		start_block = self.MAP.get_block(self.MAP.make_location(self.MAP.robotLoc)) #starting location
-		term_loc = self.MAP.get_location(desired_block.loc) #termination block
-		curr_loc = self.MAP.robotLoc
-		block_list = [start_block]
-
-		val = 0
-		found = False
-		possible = True
-		while not found:
-			got_adjacent = False
-			new_block_list = []
-			for block in block_list:
-				#set blocks in list to current value
-				curr_loc = self.MAP.get_location(block.loc)
-				print 'curr loc: %s,%s' % (curr_loc[0],curr_loc[1])
-				if grid[curr_loc[0]][curr_loc[1]] == -1:
-					grid[curr_loc[0]][curr_loc[1]] = val
-				if curr_loc[0] == term_loc[0] and curr_loc[1] == term_loc[1]:
-					found = True
-					break
-				#get adjacent blocks from map
-				adj_blocks = self.MAP.get_adjacent_blocks(block)
-				print '%s adj blocks: %s' % (val,len(adj_blocks))
-				new_list = []
-				#filter out obstructed or unvisited blocks
-				for block in adj_blocks:
-					if not block.obstructed:
-						if block.visited or block.observed:
-							block_loc = self.MAP.get_location(block.loc)
-							if grid[block_loc[0]][block_loc[1]] == -1:
-								new_list.append(block)
-				print '%s new blocks: %s' % (val,len(new_list))
-				#if there were any adjacent blocks, set to true
-				if len(new_list) > 0:
-					got_adjacent = True
-				#update block_list
-				new_block_list.extend(new_list)
-			#update val for next iteration
-			if found:
-				break
-			val += 1
-			block_list = new_block_list
-			if not got_adjacent:
-				possible = False
-				break
-			print str(grid)
-		print str(grid)
-
-		#return None if impossible to get to
-		if not possible:
-			print 'not possible'
-			return None
-		#otherwise, build path
-		path = [desired_block]
-		curr_loc = term_loc
-		best_dir = None
-		while val != 1:
-			print "curr val: %s" % val
-			loc_list = self.get_adjacent_grid_blocks(grid,curr_loc)
-			new_loc_list = []
-			for loc in loc_list:
-				print str(grid)
-				print "x:%s y:%s val:%s" % (loc[0],loc[1],grid[loc[0]][loc[1]])
-				if grid[loc[0]][loc[1]] == val-1:
-					new_loc_list.append(loc)
-			#with new loc list, find best loc
-			new_curr_loc = None
-			if len(new_loc_list) > 1:
-				if best_dir == None:
-					new_curr_loc = new_loc_list[0]
-				else:
-					for new_loc in new_loc_list:
-						if self.calculate_direction(curr_loc,new_loc) == best_dir:
-							new_curr_loc = new_loc
-							break
-					if new_curr_loc == None:
-						new_curr_loc = new_loc_list[0]
-			else:
-				new_curr_loc = new_loc_list[0]
-			best_dir = self.calculate_direction(curr_loc,new_curr_loc)
-			curr_loc = new_curr_loc
-			path.append(self.MAP.grid[curr_loc[0]][curr_loc[1]])
-			val -= 1
-		return path #returns path (list of blocks in reverse order)
-
-
-
-
-	
-

@@ -29,9 +29,9 @@ class Robot():
 		self.direction = 0
 		self.dirIndicator = pygame.Rect((self.coords), (10,10))
 		self.dirIndicatorColor = (100,100,100)
-		self.errorMax = self.GRID_WIDTH/12
-		#self.errorMax = self.GRID_WIDTH/2
-		#self.errorMax = 0
+		#self.errorMax = self.GRID_WIDTH/12
+		#self.errorMax = self.GRID_WIDTH/3
+		self.errorMax = 0
 		self.MAP = None
 		if offsets == None:
 			self.MAP = RobotMap(self.screen,self.GRID_WIDTH/2,(gameboard.TOTAL_WIDTH+20,20),self.direction)
@@ -442,7 +442,9 @@ class MapBlock():
 		self.color = self.color_EMPTY
 		self.visited = False
 		self.obstructed = False
-		self.observed = False		
+		self.observed = False
+		self.perimeter = False
+		self.corner = False		
 
 	def draw(self):
 		self.object.topleft = (self.GAMEBOARD.OFFSETS[0]+self.coords[0],self.GAMEBOARD.OFFSETS[1]+self.coords[1])

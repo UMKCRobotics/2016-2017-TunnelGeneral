@@ -32,6 +32,21 @@ class Stage_Competition(Stage):
 					 ['E','E','T','E','E','E','E'],
 					 ['E','D','T','E','EO','E','E'],
 					 ['E','E','T','E','E','E','E']]
+	FixExample = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+				['E', 'E', 'EO', 'E', 'E', 'E', 'E'],
+				['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+				['E', 'E', 'E', 'TO', 'T', 'TO', 'T'],
+				['E', 'E', 'TO', 'T', 'E', 'E', 'E'],
+				['E', 'EO', 'T', 'E', 'EO', 'E', 'E'],
+				['E', 'E', 'T', 'E', 'E', 'E', 'E']]
+	FixExample2 = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
+				['E', 'EO', 'E', 'EO', 'T', 'EO', 'E'],
+				['E', 'E', 'EO', 'E', 'TO', 'E', 'E'],
+				['E', 'EO', 'E', 'E', 'T', 'E', 'E'],
+				['E', 'E', 'E', 'T', 'TO', 'E', 'E'],
+				['T', 'T', 'TO', 'T', 'E', 'EO', 'E'],
+				['E', 'E', 'E', 'E', 'E', 'E', 'E']]
+
 	#BOARD OFFSET VARIABLES
 	global_grid_width = 100
 	map_grid_width = 50
@@ -43,8 +58,12 @@ class Stage_Competition(Stage):
 		#self.global_grid_width = global_grid_width
 		self.gameboard = GameBoard(self.screen,self.global_grid_width,self.global_offsets)
 		self.robot = Robot(self.screen,self.gameboard,offsets=self.map_offsets)
+
 		#load in a board
-		self.gameboard.load_board(self.Round3Example)
+		#self.gameboard.load_board(self.Round3Example)
+		self.gameboard.load_board(self.gameboard.generate_board_round(3))
+		#self.gameboard.load_board(self.FixExample2)
+
 		self.gameboard.visible = False
 		#set up options menu
 		self.options = Options(self.screen,(850,450))
@@ -109,6 +128,184 @@ class GameBoard():
 		self.powerlines = []
 		self.empty = []
 
+	def generate_board_round(self,roundNumber):
+		if roundNumber == 1:
+			#at most 2 turns, no obstructions, no deadends
+			return self.generate_random_board((0,2),(0,0),False)
+		elif roundNumber == 2:
+			#at most 3 turns, no obstructions, possible deadends
+			return self.generate_random_board((0,3),(0,0),True)
+		elif roundNumber == 3:
+			#at most 3 turns, at least 1 obstruction, possible deadends
+			return self.generate_random_board((0,3),(1,5),True)
+
+
+	def generate_random_board(self,turnsRange,obstaclesRange,haveDeadends):
+		#turnsRange is (minTurns,maxTurns)
+		#obstaclesRange is (minObstacles,maxObstacles)
+		#haveDeadends is True or False
+
+		#create list of perimeter blocks to choose from
+		per_lists = self.get_perimeter_locations()
+		COMPLETED = False
+		while not COMPLETED:
+			template_grid = self.generate_blank_grid('E')
+	
+			try:
+				#first, choose a starting side + block for tunnel
+				starting_side = random.choice(per_lists)
+				starting_loc = random.choice(starting_side)
+				template_grid[starting_loc[0]][starting_loc[1]] = 'T'
+
+				min_length = 7
+				#initialize counters for generation
+				FIRST_RUN = True
+				old_direction = None
+				done = False
+				turns = 0
+				length = 1
+				obstacles = 0
+				curr_loc = starting_loc
+				print 'STARTING LOC: %s' % str(curr_loc)
+				#main loop
+				while not done:
+					print 'CURR LOC: %s' % str(curr_loc)
+					print str(template_grid)
+					#get adjacent blocks
+					adjacent_blocks = self.get_adjacent_grid_blocks(template_grid,curr_loc)
+					#if length not at minimum, exclude perimeter blocks
+					if length < min_length or turns < turnsRange[0]:
+						new_adjacent_blocks = []
+						for block in adjacent_blocks:
+							if self.grid[block[0]][block[1]].perimeter == True:
+								continue
+							else:
+								new_adjacent_blocks.append(block)
+					else: #otherwise, do nothing of note here
+						new_adjacent_blocks = adjacent_blocks
+					#exclude any blocks that are adjacent to tunnel; ignore 
+					adjacent_blocks = new_adjacent_blocks
+					new_adjacent_blocks = []
+					for block in adjacent_blocks:
+						temp_adjacent_blocks = self.get_adjacent_grid_blocks(template_grid,block)
+						total_adj_tunnels = 0
+						#check if this location includes a T
+						if 'T' in template_grid[block[0]][block[1]]:
+							continue #skip this block
+						print 'TEMP BLOCKS FOR %s: %s' % (str(block),str(temp_adjacent_blocks))
+						for temp_block in temp_adjacent_blocks:
+							print 'VAL IN TEMP %s: %s' % (str(temp_block),template_grid[temp_block[0]][temp_block[1]])
+							if 'T' in template_grid[temp_block[0]][temp_block[1]]:
+								total_adj_tunnels += 1
+						if total_adj_tunnels < 2:
+							if turns == turnsRange[1]:
+								if self.calculate_direction(curr_loc,block) != old_direction:
+									continue
+							new_adjacent_blocks.append(block)
+
+					print 'FILTERED BLOCKS: %s' % str(new_adjacent_blocks)
+					#now that a finalized list of available blocks is available, choose it
+					new_curr_loc = random.choice(new_adjacent_blocks)
+					#check if perimeter block chosen: if so, done creating path
+					if new_curr_loc[0] in [0,6] or new_curr_loc[1] in [0,6]:
+						done = True
+					
+					if FIRST_RUN: #set old_direction on first run
+						old_direction = self.calculate_direction(curr_loc,new_curr_loc)
+						FIRST_RUN = False
+					else: #compare to old direction on subsequent runs
+						new_direction = self.calculate_direction(curr_loc,new_curr_loc)
+						if new_direction != old_direction:
+							turns += 1
+						old_direction = new_direction
+
+					curr_loc = new_curr_loc
+					length += 1
+					template_grid[curr_loc[0]][curr_loc[1]] = 'T'
+			except IndexError:
+				print 'CANT FINISH TUNNEL, RETRYING...'
+			else:
+				#check if both endpoints are not on the same side
+				valid = True
+				for perim in per_lists:
+					tunnel_count = 0
+					for block in perim:
+						if 'T' in template_grid[block[0]][block[1]]:
+							tunnel_count += 1
+					if tunnel_count >= 2:
+						valid = False
+						'ENDPOINTS ON SAME SIDE, INVALID'
+						break
+				#if endpoints on diff sides, good to go
+				if valid:
+					COMPLETED = True
+
+		#add obstructions (if any)
+		obs_num = random.randint(obstaclesRange[0],obstaclesRange[1])
+		for n in range(0,obs_num):
+			found_loc = False
+			x_num = None
+			y_num = None
+			while not found_loc:
+				found_loc = True
+				x_num = random.randint(1,5)
+				y_num = random.randint(1,5)
+				blocks = self.get_adjacent_grid_blocks(template_grid,[x_num,y_num])
+				blocks.append([x_num,y_num])
+				for block in blocks:
+					if 'O' in template_grid[block[0]][block[1]]:
+						found_loc = False
+			template_grid[x_num][y_num] += 'O'
+
+		#return completed template
+		with open(os.path.join(__location__,'genmap.txt'),'wb') as genmap:
+			for col in template_grid:
+				genmap.write(str(col)+'\n')
+		return template_grid
+
+	def get_adjacent_grid_blocks(self,grid,loc): #provide loc as [col,row]
+		block_list = []
+		print 'checking loc: %s,%s' % (loc[0],loc[1])
+		if loc[0] >= 0 and loc[0] < 6:
+			block_list.append([loc[0]+1,loc[1]])
+		if loc[0] > 0 and loc[0] <= 6:
+			block_list.append([loc[0]-1,loc[1]])
+		if loc[1] >= 0 and loc[1] < 6:
+			block_list.append([loc[0],loc[1]+1])
+		if loc[1] > 0 and loc[1] <= 6:
+			block_list.append([loc[0],loc[1]-1])
+		return block_list
+
+	def calculate_direction(self,point1,point2): #get dirfrom 1 to 2
+		if point1[0] == point2[0]:
+			if point1[1] > point2[1]:
+				return 1
+			elif point1[1] < point2[1]:
+				return 3
+		if point1[1] == point2[1]:
+			if point1[0] > point2[0]:
+				return 2
+			elif point1[0] < point2[0]:
+				return 0
+
+	def generate_blank_grid(self,default_content): #generate 7x7 grid for path algorithm
+		#initialize all values to -1
+		grid = []
+		for col in range(0,7):
+			col_temp = []
+			for row in range(0,7):
+				col_temp.append(default_content)
+			grid.append(col_temp)
+		return grid
+
+	def get_perimeter_locations(self):
+		top = [[1,0],[2,0],[3,0],[4,0],[5,0]]
+		bottom = [[1,6],[2,6],[3,6],[4,6],[5,6]]
+		left = [[0,1],[0,2],[0,3],[0,4],[0,5]]
+		right = [[6,1],[6,2],[6,3],[6,4],[6,5]]
+		#return in order from dir 0 - 3
+		return (right,top,left,bottom)
+
 	def draw(self):
 		#draw base board
 		self.BASE.topleft = self.OFFSETS
@@ -153,6 +350,16 @@ class GameBoard():
 				col_list.append(GridBlock(self.screen,self,(col*self.GRID_WIDTH+self.OFFSETS[0]+self.GRID_WIDTH/2,
 					row*self.GRID_WIDTH+self.OFFSETS[1]+self.GRID_WIDTH/2),self.GRID_WIDTH,cols[col]+rows[row]))
 			self.grid.append(col_list)
+		#set perimeter + corner values
+		for n in range(0,7):
+			self.grid[n][0].perimeter = True
+			self.grid[n][6].perimeter = True
+			if n == 0 or n == 6:
+				self.grid[n][0].corner = True
+				self.grid[n][6].corner = True
+		for n in range(1,6):
+			self.grid[0][n].perimeter = True
+			self.grid[6][n].perimeter = True
 
 	def load_board(self,template):
 		self.powerlines = []
@@ -220,6 +427,8 @@ class GridBlock():
 		self.type = 'EMPTY'
 		self.cache = None
 		self.visible = False
+		self.perimeter = False
+		self.corner = False
 
 	def get_location(self,blockName):
 		col = self.cols.find(blockName[0])
