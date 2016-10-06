@@ -64,7 +64,9 @@ class Stage_Competition(Stage):
 		self.gameboard.load_board(self.gameboard.generate_board_round(3))
 		#self.gameboard.load_board(self.FixExample2)
 
-		self.gameboard.visible = False
+		#choose visibility options to start
+		self.gameboard.visible = True
+		self.gameboard.showGrid = True
 		#set up options menu
 		self.options = Options(self.screen,(850,450))
 		#set up objects to be drawn

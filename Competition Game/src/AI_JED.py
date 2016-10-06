@@ -20,6 +20,7 @@ class RobotAlg():
 		self.moves_since_cal = [0,0]
 		self.max_moves = [15,15]
 		self.goList = None
+		self.DEBUG_MODE = False
 
 	def turn(self,desired_dir): #turn robot to desired direction
 		if desired_dir == self.MAP.direction:
@@ -55,7 +56,7 @@ class RobotAlg():
 		sleep(self.SLEEP_TIME)
 
 	def calibrate_x(self): #calibrate on edge
-		print 'CALIBRATING X'
+		if self.DEBUG_MODE: print 'CALIBRATING X'
 		if self.MAP.robotLoc[0] == 0:
 			self.turn(2)
 		elif self.MAP.robotLoc[0] == 6:
@@ -64,7 +65,7 @@ class RobotAlg():
 		sleep(self.SLEEP_TIME)
 
 	def calibrate_y(self):
-		print 'CALIBRATING Y'
+		if self.DEBUG_MODE: print 'CALIBRATING Y'
 		if self.MAP.robotLoc[1] == 0:
 			self.turn(1)
 		elif self.MAP.robotLoc[1] == 6:
@@ -227,13 +228,13 @@ class RobotAlg():
 			#if not, do normal movements
 			do_pathfinding = True
 			while do_pathfinding:
-				print 'finding path to %s' % str(goal)
+				if self.DEBUG_MODE: print 'finding path to %s' % str(goal)
 				path = self.get_path_to_block_multi([self.MAP.get_block(goal)])
 				finished_following = self.perform_path(path)
 				if finished_following:
 					do_pathfinding = False
 				else:
-					print 'could not follow'
+					if self.DEBUG_MODE: print 'could not follow'
 			#go to A7 if done visiting all blocks
 			#if len(self.goList) == 0:
 			#	self.goList.append('A7')
@@ -249,7 +250,7 @@ class RobotAlg():
 			if desired_block.obstructed:
 				return False
 			desired_dir = self.calculate_direction(self.MAP.robotLoc,self.MAP.get_location(desired_block.loc))
-			print desired_dir
+			if self.DEBUG_MODE: print desired_dir
 			self.turn(desired_dir)
 			self.forward()
 		return True
@@ -279,7 +280,7 @@ class RobotAlg():
 			for block in block_list:
 				#set blocks in list to current value
 				curr_loc = self.MAP.get_location(block.loc)
-				print 'curr loc: %s,%s' % (curr_loc[0],curr_loc[1])
+				if self.DEBUG_MODE: print 'curr loc: %s,%s' % (curr_loc[0],curr_loc[1])
 				if grid[curr_loc[0]][curr_loc[1]] == -1:
 					grid[curr_loc[0]][curr_loc[1]] = val
 				for term_loc in term_locs:
@@ -291,7 +292,7 @@ class RobotAlg():
 					break
 				#get adjacent blocks from map
 				adj_blocks = self.MAP.get_adjacent_blocks(block)
-				print '%s adj blocks: %s' % (val,len(adj_blocks))
+				if self.DEBUG_MODE: print '%s adj blocks: %s' % (val,len(adj_blocks))
 				new_list = []
 				unvisited_list = []
 				#filter out obstructed or unvisited blocks
@@ -307,7 +308,7 @@ class RobotAlg():
 							if grid[block_loc[0]][block_loc[1]] == -1:
 								new_list.append(block)
 								#unvisited_list.append(block)
-				print '%s new blocks: %s' % (val,len(new_list))
+				if self.DEBUG_MODE: print '%s new blocks: %s' % (val,len(new_list))
 				#if there were any adjacent blocks, set to true
 				if len(new_list) > 0:
 					got_adjacent = True
@@ -325,24 +326,24 @@ class RobotAlg():
 			if not got_adjacent:
 				possible = False
 				break
-			print str(grid)
-		print str(grid)
+			if self.DEBUG_MODE: print str(grid)
+		if self.DEBUG_MODE: print str(grid)
 
 		#return None if impossible to get to
 		if not possible:
-			print 'not possible'
+			if self.DEBUG_MODE: print 'not possible'
 			return None
 		#otherwise, build path
 		path = [term_block]
 		curr_loc = term_loc
 		best_dir = None
 		while val != 1:
-			print "curr val: %s" % val
+			if self.DEBUG_MODE: print "curr val: %s" % val
 			loc_list = self.get_adjacent_grid_blocks(grid,curr_loc)
 			new_loc_list = []
 			for loc in loc_list:
-				print str(grid)
-				print "x:%s y:%s val:%s" % (loc[0],loc[1],grid[loc[0]][loc[1]])
+				if self.DEBUG_MODE: print str(grid)
+				if self.DEBUG_MODE: print "x:%s y:%s val:%s" % (loc[0],loc[1],grid[loc[0]][loc[1]])
 				if grid[loc[0]][loc[1]] == val-1:
 					new_loc_list.append(loc)
 			#with new loc list, find best loc
@@ -355,16 +356,16 @@ class RobotAlg():
 					new_curr_loc = None
 					for new_loc in new_loc_list:
 						temp_turns = self.get_turn_amount(self.calculate_direction(curr_loc,new_loc))
-						print temp_turns
+						if self.DEBUG_MODE: print temp_turns
 						if temp_turns < min_turns:
 							min_turns = temp_turns
 							new_curr_loc = new_loc
-					print "MIN TURNS: %s" % min_turns
+					if self.DEBUG_MODE: print "MIN TURNS: %s" % min_turns
 					#new_curr_loc = new_loc_list[0]
 				else:
 					for new_loc in new_loc_list:
 						if self.calculate_direction(curr_loc,new_loc) == best_dir:
-							print 'MATCHES DIRECTION'
+							if self.DEBUG_MODE: print 'MATCHES DIRECTION'
 							new_curr_loc = new_loc
 							break
 					if new_curr_loc == None:
@@ -373,11 +374,11 @@ class RobotAlg():
 						new_curr_loc = None
 						for new_loc in new_loc_list:
 							temp_turns = self.get_turn_amount(self.calculate_direction(curr_loc,new_loc))
-							print temp_turns
+							if self.DEBUG_MODE: print temp_turns
 							if temp_turns < min_turns:
 								min_turns = temp_turns
 								new_curr_loc = new_loc
-						print "MIN TURNS: %s" % min_turns
+						if self.DEBUG_MODE: print "MIN TURNS: %s" % min_turns
 						#new_curr_loc = new_loc_list[0]
 			else:
 				new_curr_loc = new_loc_list[0]
@@ -389,7 +390,7 @@ class RobotAlg():
 
 	def get_adjacent_grid_blocks(self,grid,loc): #provide loc as [col,row]
 		block_list = []
-		print 'checking loc: %s,%s' % (loc[0],loc[1])
+		if self.DEBUG_MODE: print 'checking loc: %s,%s' % (loc[0],loc[1])
 		if loc[0] >= 0 and loc[0] < 6:
 			block_list.append([loc[0]+1,loc[1]])
 		if loc[0] > 0 and loc[0] <= 6:

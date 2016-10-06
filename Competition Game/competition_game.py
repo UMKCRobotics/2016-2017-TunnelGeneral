@@ -31,6 +31,8 @@ if __name__ == "__main__":
 		os.mkdir(os.path.join(__location__,'src/robots'))
 	main(sys.argv[1:])
 
+if robotNameToLoad == None:
+	robotNameToLoad = 'robot3'
 
 #pygame.mixer.pre_init()
 pygame.init()
