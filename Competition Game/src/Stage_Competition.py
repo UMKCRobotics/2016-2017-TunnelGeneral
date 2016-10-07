@@ -242,6 +242,54 @@ class GameBoard():
 				if valid:
 					COMPLETED = True
 
+		#add deadends (if any)
+		if haveDeadends:
+			deadend_count = 0
+			should_add = True
+			while should_add:
+				if deadend_count < 1:
+					should_add = True
+				else:
+					should_add = random.choice([False,True])
+				#if should not add, don't add any more
+				if not should_add:
+					continue
+				#get all relevant OT and DE blocks thus far
+				relevant_blocks = []
+				for x in range(1,6):
+					for y in range(1,6):
+						if 'T' in template_grid[x][y]:
+							relevant_blocks.append([x,y])
+						if 'D' in template_grid[x][y]:
+							relevant_blocks.append([x,y])
+				#get list of possible choices
+				possible_blocks = []
+				for rel_block in relevant_blocks:
+					blocks = self.get_adjacent_grid_blocks(template_grid,rel_block)
+					for block in blocks:
+						if block not in relevant_blocks:
+							if block[0] not in [0,6] and block[1] not in [0,6]:
+								possible_blocks.append(block)
+				#remove any blocks that have invalid adjacent blocks
+				choice_blocks = []
+				for pos_block in possible_blocks:
+					adj_tunnel_count = 0
+					blocks = self.get_adjacent_grid_blocks(template_grid,pos_block)
+					for block in blocks:
+						if 'T' in template_grid[block[0]][block[1]] or 'D' in template_grid[block[0]][block[1]]:
+							adj_tunnel_count += 1
+					if adj_tunnel_count < 2:
+						choice_blocks.append(pos_block)
+				if len(choice_blocks) > 0:
+					block_to_add = random.choice(choice_blocks)
+					template_grid[block_to_add[0]][block_to_add[1]] = 'D'
+				else:
+					should_add = False
+				deadend_count += 1
+
+
+
+
 		#add obstructions (if any)
 		obs_num = random.randint(obstaclesRange[0],obstaclesRange[1])
 		for n in range(0,obs_num):
@@ -256,6 +304,8 @@ class GameBoard():
 				blocks.append([x_num,y_num])
 				for block in blocks:
 					if 'O' in template_grid[block[0]][block[1]]:
+						found_loc = False
+					elif 'D' in template_grid[block[0]][block[1]]:
 						found_loc = False
 			template_grid[x_num][y_num] += 'O'
 
