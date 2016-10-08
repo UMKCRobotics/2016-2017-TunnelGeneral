@@ -24,8 +24,7 @@ globalThreads.append(motors)
 #resp2 = motors.moveBackward()
 #resp3 = motors.moveLeft()
 #resp4 = motorsself.moveRight()
-for i in range(0,3):
-	resp = motors.moveForward()
+
 
 print 'EMF commands: %s' % str(emf.ard.commandList)
 
@@ -57,32 +56,49 @@ print 'we still doin stuff'
 #		break
 #	time.sleep(0.1)
 
+stuff_to_do = [motors.moveForward,motors.moveForward,motors.moveForward,motors.moveLeft,motors.moveForward,motors.moveLeft,motors.moveForward,motors.moveForward,motors.moveForward,motors.moveRight,motors.moveForward,motors.moveRight,motors.moveForward,motors.moveForward,motors.moveForward,motors.moveLeft,motors.moveForward,motors.moveLeft,motors.moveForward,motors.moveForward,motors.moveForward]
+#stuff_to_do = [motors.moveForward]
+#stuff_to_do = [motors.moveLeft]
+
 emf_data = []
 data = None
 
+data0 = emf.checkEMF1()
+while not data0.checkDone():
+	#	print 'not done yet...'
+	time.sleep(0.01)	
+emf_data.append(data0.response)
 
-while True:
-	if resp.checkDone():
-		print 'done!'
-		if data:
-			print 'waiting for data to be saved...'
-			while not data.checkDone():
-				time.sleep(0.01)
-		break
-	else:
-		if data == None:
-			data = emf.checkEMF1()
+
+for command in stuff_to_do:
+	resp = command()
+	while True:
+		if resp.checkDone():
+			print 'done!'
+			#if data:
+			#	print 'waiting for data to be saved...'
+			#	while not data.checkDone():
+			#		time.sleep(0.01)
+			break
 		else:
-			if data.checkDone():
-				emf_data.append(data.response)
-				data = None
-	time.sleep(0.01)
-data = emf.checkEMF1()
-while not data.checkDone():
-#	print 'not done yet...'
-	time.sleep(0.01)
-emf_data.append(data.response)
-#data = emf.checkEMF1()
+			pass
+			#if data == None:
+			#	data = emf.checkEMF1()
+			#else:
+			#	if data.checkDone():
+			#		data = None
+		time.sleep(0.01)
+	data1 = emf.checkEMF1()
+	while not data1.checkDone():
+	#	print 'not done yet...'
+		time.sleep(0.01)
+	#data2 = emf.checkEMF1()
+	#while not data2.checkDone():
+	#	print 'not done yet...'
+	#	time.sleep(0.01)	
+	emf_data.append(data1.response)
+	#emf_data.append(data2.response)
+	#data = emf.checkEMF1()
 
 
 print emf_data
