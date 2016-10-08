@@ -1,0 +1,122 @@
+int foot = 722;
+int turn = 265;
+int power = 60;
+int lowPower = 20;
+
+int goCounter = 0;
+
+
+void goForward()
+{
+     ResetTachoCount(OUT_BC);
+     goCounter = (goCounter+1)%2;
+     if (goCounter)
+     {
+        OnFwd(OUT_B, power);
+        OnFwd(OUT_C, power);
+     }
+     else
+     {
+        OnFwd(OUT_C, power);
+        OnFwd(OUT_B, power);
+     }
+     bool leftChanged = false;
+     bool rightChanged = false;
+     int margin = foot-(foot/12);
+     while (MotorTachoCount(OUT_B) < foot || MotorTachoCount(OUT_C) < foot)
+     {
+           /*if (!leftChanged && MotorTachoCount(OUT_B) > margin)
+           {
+              OnFwd(OUT_B,lowPower);
+              leftChanged = true;
+           }
+           if (!rightChanged && MotorTachoCount(OUT_C) > margin)
+           {
+              OnFwd(OUT_C,lowPower);
+              rightChanged = true;
+           }*/
+     }
+     Off(OUT_BC);
+     SendMessage(MAILBOX2, "d");
+}
+
+void goBackward()
+{
+     ResetTachoCount(OUT_BC);
+     OnRev(OUT_BC, power);
+     while (MotorTachoCount(OUT_B) > -foot || MotorTachoCount(OUT_C) > -foot)
+     {
+           //do nothing
+     }
+     Off(OUT_BC);
+     SendMessage(MAILBOX2, "d");
+}
+
+void goLeft()
+{
+     ResetTachoCount(OUT_BC);
+     OnRev(OUT_B, power);
+     OnFwd(OUT_C, power);
+     while (MotorTachoCount(OUT_B) > -turn || MotorTachoCount(OUT_C) < turn)
+     {
+           //do nothing
+     }
+     Off(OUT_BC);
+     SendMessage(MAILBOX2, "d");
+}
+
+void goRight()
+{
+     ResetTachoCount(OUT_BC);
+     OnFwd(OUT_B, power);
+     OnRev(OUT_C, power);
+     while (MotorTachoCount(OUT_B) < turn || MotorTachoCount(OUT_C) > -turn)
+     {
+           //do nothing
+     }
+     Off(OUT_BC);
+     SendMessage(MAILBOX2, "d");
+}
+
+
+void waitForMessage()
+{
+     string buffer = "ayylmao";
+
+     while (buffer != "EXIT") {
+           string buffer;
+           string bufferOld;
+           string bufferMain;
+           char x = ReceiveMessage(MAILBOX1, true, buffer);
+           if (x != NO_ERR) { //these chars mean things
+              continue;
+           }
+           else {
+                bufferMain = buffer;
+                ResetScreen();
+                TextOut(5, LCD_LINE3, buffer);
+                if (bufferMain[0] == 'f') {
+                   goForward();
+                }
+                else if (bufferMain[0] == 'b') {
+                   goBackward();
+                }
+                else if (bufferMain[0] == 'l') {
+                   goLeft();
+                }
+                else if (bufferMain[0] == 'r') {
+                   goRight();
+                }
+                //char y = SendMessage(MAILBOX2, "RECEIVED");
+           }
+           Wait(50);
+     }
+}
+
+task main()
+{
+     SetSensorType(IN_2, SENSOR_TYPE_LIGHT_ACTIVE);
+     SetSensorType(IN_3, SENSOR_TYPE_LIGHT_ACTIVE);
+     waitForMessage();
+
+}
