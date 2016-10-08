@@ -530,11 +530,14 @@ class Robot:
                 for direction in directions:
                     self.turn(direction)
                     self.forward()
+
                     # count if away from sides
                     if 0 < self.position.x < GRID_WIDTH - 1:
                         away_from_sides_count += 1
                     else:
                         away_from_sides_count = 0
+                    print "away from side count: " + str(away_from_sides_count)
+
                     # visit everywhere along the way
                     if self.position in self.gridData.needToVisit:
                         self.visit()
@@ -553,6 +556,14 @@ class Robot:
                 for direction in directions:
                     self.turn(direction)
                     self.forward()
+
+                    # count if away from sides
+                    if 0 < self.position.x < GRID_WIDTH - 1:
+                        away_from_sides_count += 1
+                    else:
+                        away_from_sides_count = 0
+                    print "away from side count: " + str(away_from_sides_count)
+
                     # visit everywhere along the way
                     if self.position in self.gridData.needToVisit:
                         self.visit()
