@@ -409,7 +409,7 @@ class Robot:
                             sys.stdout.write("@" + " ")
                         else:  # not visited
                             sys.stdout.write("O" + " ")
-            print()  # new line
+            sys.stdout.write("\n")  # new line
 
     def display_grid_wait_enter(self):
         self.display_grid_in_console()
@@ -662,3 +662,14 @@ if __name__ == "__main__":
 # OOOOOOO
 
 # need to put every visit in queue
+
+# TODO: interrupt path to recalibrate
+"""
+@ @ @ @ @ @ @
+@ @ @ @ @ X @
+@ X @ X X @ @
+@ > X X @ @ @
+@ X @ * @ @ @
+@ X X X @ @ @
+@ @ @ @ @ @ @
+"""
