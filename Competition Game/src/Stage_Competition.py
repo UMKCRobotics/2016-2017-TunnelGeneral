@@ -8,6 +8,8 @@ from Stage import Stage
 from MouseEvents import MouseEvents
 from Robot import Robot
 
+MAX_OBSTACLES = 7
+
 
 class Stage_Competition(Stage):
     Round1Example = [['E', 'E', 'E', 'E', 'TC', 'E', 'E'],
@@ -143,7 +145,7 @@ class GameBoard():
             return self.generate_random_board((0, 3), (0, 0), True)
         elif roundNumber == 3:
             # at most 3 turns, at least 1 obstruction, possible deadends
-            return self.generate_random_board((0, 3), (1, 5), True)
+            return self.generate_random_board((0, 3), (1, MAX_OBSTACLES), True)
 
     def generate_random_board(self, turnsRange, obstaclesRange, haveDeadends):
         # turnsRange is (minTurns,maxTurns)

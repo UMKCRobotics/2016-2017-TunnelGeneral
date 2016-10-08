@@ -34,7 +34,7 @@ if __name__ == "__main__":
         os.mkdir(os.path.join(__location__, 'src/robots'))
     main(sys.argv[1:])
 
-if robotNameToLoad == None:
+if robotNameToLoad is None:
     robotNameToLoad = 'robot3'
 
 # pygame.mixer.pre_init()
@@ -81,8 +81,8 @@ while 1:
         if isinstance(stages[currentStage], Stage_Competition):
             sensorConv = Sensor_Converter(stages[currentStage].robot, inputData[0], inputData[1])
             sensorConv.create_robot_sensors()
-            # t1 = threading.Thread(target=AI_17.simulation_impl,args=(stages[currentStage].robot,))
-            t1 = threading.Thread(target=AI_JED.simulation_impl, args=(stages[currentStage].robot,))
+            t1 = threading.Thread(target=AI_17.simulation_impl,args=(stages[currentStage].robot,))
+            # t1 = threading.Thread(target=AI_JED.simulation_impl, args=(stages[currentStage].robot,))
             t1.daemon = True
             t1.start()
             threads.append(t1)
