@@ -62,9 +62,10 @@ class Stage_Build(Stage):
         self.screen.fill((220, 220, 220))
         for obj in self.global_objects:
             obj.draw()
-        if self.focused != None:
-            pygame.draw.rect(self.screen, self.color_HIGHLIGHT, (
-            self.focused.object.x, self.focused.object.y, self.focused.object.w, self.focused.object.h), 3)
+        if self.focused is not None:
+            pygame.draw.rect(self.screen, self.color_HIGHLIGHT,
+                             (self.focused.object.x, self.focused.object.y, self.focused.object.w,
+                              self.focused.object.h), 3)
         return returnVal
 
     def clean_up_sensors(self):
@@ -91,7 +92,7 @@ class Stage_Build(Stage):
         files = os.listdir(robotpath)
         while True:
             filename = 'robot' + str(counter) + '.txt'
-            if not filename in files:
+            if filename not in files:
                 break
             else:
                 counter += 1
@@ -123,22 +124,22 @@ class Stage_Build(Stage):
                     if len(data) != 5:
                         print 'sensor could not be loaded; not enough data'
                         continue
-                    type = data[0]
+                    data_type = data[0]
                     offsets = make_tuple(data[1])
                     size = make_tuple(data[2])
                     color = make_tuple(data[3])
                     direction = int(data[4])
                     newSensor = None
-                    if type == 'Distance':
+                    if data_type == 'Distance':
                         newSensor = Distance_Sensor_Template(self.screen, self, offsets, size, color)
-                    elif type == 'Electromagnetic':
+                    elif data_type == 'Electromagnetic':
                         newSensor = Electromagnetic_Sensor_Template(self.screen, self, offsets, size, color)
-                    elif type == 'Capacitive':
+                    elif data_type == 'Capacitive':
                         newSensor = Capacitive_Sensor_Template(self.screen, self, offsets, size, color)
-                    if newSensor != None:
+                    if newSensor is not None:
                         newSensor.direction = direction
                         sensor_list.append(newSensor)
-                    # sensor_list.reverse()
+                        # sensor_list.reverse()
             for item in sensor_list:
                 print item.type
             return sensor_list
