@@ -323,7 +323,7 @@ class Robot:
             time.sleep(Robot.SLEEP_TIME)
             self.display_grid_in_console()
 
-    def calibrate(self): #alias for going forward (for sim)
+    def calibrate(self):  # alias for going forward (for sim)
         self.sim_robot.goForward()
         time.sleep(Robot.SLEEP_TIME)
 
@@ -457,9 +457,9 @@ class Robot:
 
         # TODO: take readings and look for surrounding obstacles
         # take readings of capacity + EMF
-        if (self.sim_robot.readSensor(2)[0] == 1):
+        if self.sim_robot.readSensor(2)[0] == 1:
             self.sim_robot.MAP.markOT()
-        elif (self.sim_robot.readSensor(3)[0] == 1):
+        elif self.sim_robot.readSensor(3)[0] == 1:
             self.sim_robot.MAP.markDeadend()
 
     def explore(self):
