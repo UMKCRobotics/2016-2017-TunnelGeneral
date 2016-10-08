@@ -324,8 +324,11 @@ class Robot:
             self.display_grid_in_console()
 
     def calibrate(self):  # alias for going forward (for sim)
-        self.sim_robot.goForward()
-        time.sleep(Robot.SLEEP_TIME)
+        if self.using_outside_grid:
+            pass  # TODO: calibrate
+        else:
+            self.sim_robot.goForward()
+            time.sleep(Robot.SLEEP_TIME)
 
     def reverse(self):
         # TODO: this hasn't been updated for simulation (because it's not used)
@@ -457,10 +460,13 @@ class Robot:
 
         # TODO: take readings and look for surrounding obstacles
         # take readings of capacity + EMF
-        if self.sim_robot.readSensor(2)[0] == 1:
-            self.sim_robot.MAP.markOT()
-        elif self.sim_robot.readSensor(3)[0] == 1:
-            self.sim_robot.MAP.markDeadend()
+        if self.using_outside_grid:
+            pass  # TODO:
+        else:
+            if self.sim_robot.readSensor(2)[0] == 1:
+                self.sim_robot.MAP.markOT()
+            elif self.sim_robot.readSensor(3)[0] == 1:
+                self.sim_robot.MAP.markDeadend()
 
     def explore(self):
         """ visit all possible grid spaces """
