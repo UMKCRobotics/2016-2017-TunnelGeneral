@@ -463,6 +463,9 @@ class Robot:
         if self.using_outside_grid:
             pass  # TODO:
         else:
+            # change color to mark visited
+            self.sim_robot.MAP.grid[self.sim_robot.MAP.robotLoc[0]][self.sim_robot.MAP.robotLoc[1]].color = (75, 75, 75)
+            # TODO: That ^ is not very modular
             if self.sim_robot.readSensor(2)[0] == 1:
                 self.sim_robot.MAP.markOT()
             elif self.sim_robot.readSensor(3)[0] == 1:
