@@ -50,6 +50,14 @@ class Stage_Competition(Stage):
                    ['T', 'T', 'TO', 'T', 'E', 'EO', 'E'],
                    ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
 
+    One_with_a_bug = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
+                      ['E', 'E', 'E', 'E', 'T', 'E', 'E'],
+                      ['E', 'E', 'E', 'E', 'T', 'E', 'E'],
+                      ['E', 'E', 'E', 'E', 'T', 'D', 'E'],
+                      ['E', 'EO', 'T', 'T', 'TO', 'E', 'E'],
+                      ['T', 'T', 'T', 'E', 'E', 'EO', 'E'],
+                      ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
+
     # BOARD OFFSET VARIABLES
     global_grid_width = 100
     map_grid_width = 50
@@ -65,8 +73,8 @@ class Stage_Competition(Stage):
 
         # load in a board
         # self.gameboard.load_board(self.Round3Example)
-        self.gameboard.load_board(self.gameboard.generate_board_round(3))
-        # self.gameboard.load_board(self.FixExample2)
+        # self.gameboard.load_board(self.gameboard.generate_board_round(3))
+        self.gameboard.load_board(self.One_with_a_bug)
 
         # choose visibility options to start
         self.gameboard.visible = True
@@ -576,7 +584,7 @@ class OT_Block(GridBlock):
             self.powerlines[powerNum].coords = (self.powerlines[powerNum].object.topleft[0] - self.object.topleft[0],
                                                 self.powerlines[powerNum].object.topleft[1] - self.object.topleft[1])
             powerNum += 1
-        # print "%s:%s:%s" % (self.loc,powerNum,currentGB)
+            # print "%s:%s:%s" % (self.loc,powerNum,currentGB)
 
 
 class PowerLine():
@@ -588,7 +596,7 @@ class PowerLine():
 
     def draw(self):
         self.object.topleft = (
-        self.gridblock.object.topleft[0] + self.coords[0], self.gridblock.object.topleft[1] + self.coords[1])
+            self.gridblock.object.topleft[0] + self.coords[0], self.gridblock.object.topleft[1] + self.coords[1])
         self.gridblock.screen.fill(self.color, self.object)
 
 

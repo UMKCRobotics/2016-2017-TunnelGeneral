@@ -320,7 +320,7 @@ class Robot:
             self.display_grid_wait_enter()
         else:  # using simulation
             self.sim_robot.goForward()
-            time.sleep(Robot.SLEEP_TIME)
+            self.sleep_wait()
             self.display_grid_in_console()
 
     def calibrate(self):  # alias for going forward (for sim)
@@ -328,7 +328,7 @@ class Robot:
             pass  # TODO: calibrate
         else:
             self.sim_robot.goForward()
-            time.sleep(Robot.SLEEP_TIME)
+            Robot.sleep_wait()
 
     def reverse(self):
         # TODO: this hasn't been updated for simulation (because it's not used)
@@ -368,7 +368,7 @@ class Robot:
         """ use turn """
         if not self.using_outside_grid:
             self.sim_robot.rotateClockwise()
-            time.sleep(Robot.SLEEP_TIME)
+            Robot.sleep_wait()
         if self.facing == Direction.east:
             self.facing = Direction.south
         else:
@@ -378,7 +378,7 @@ class Robot:
         """ use turn """
         if not self.using_outside_grid:
             self.sim_robot.rotateCounterClockwise()
-            time.sleep(Robot.SLEEP_TIME)
+            Robot.sleep_wait()
         if self.facing == Direction.south:
             self.facing = Direction.east
         else:
@@ -430,35 +430,17 @@ class Robot:
         self.gridData.get(self.position).visited = True
         self.gridData.needToVisit.remove(self.position)
 
-        # look 4 directions for obstacles  TODO: change this to use COORDINATE_CHANGE?
-        # west
-        coord_to_check = Coordinate(self.position.x - 1, self.position.y)
-        if self.position.x and self.gridData.get(coord_to_check).get_obstacle_here() == Knowledge.unknown:
-            if self.gridData.get(coord_to_check).set_obstacle(self.see_obstacle(Direction.west)):
-                self.gridData.canMoveHere.add(coord_to_check)
-                self.gridData.needToVisit.add(coord_to_check)
-        # east
-        coord_to_check = Coordinate(self.position.x + 1, self.position.y)
-        if self.position.x < GRID_WIDTH - 1 and \
-                self.gridData.get(coord_to_check).get_obstacle_here() == Knowledge.unknown:
-            if self.gridData.get(coord_to_check).set_obstacle(self.see_obstacle(Direction.east)):
-                self.gridData.canMoveHere.add(coord_to_check)
-                self.gridData.needToVisit.add(coord_to_check)
-        # north
-        coord_to_check = Coordinate(self.position.x, self.position.y + 1)
-        if self.position.y < GRID_HEIGHT - 1 and \
-                self.gridData.get(coord_to_check).get_obstacle_here() == Knowledge.unknown:
-            if self.gridData.get(coord_to_check).set_obstacle(self.see_obstacle(Direction.north)):
-                self.gridData.canMoveHere.add(coord_to_check)
-                self.gridData.needToVisit.add(coord_to_check)
-        # south
-        coord_to_check = Coordinate(self.position.x, self.position.y - 1)
-        if self.position.y and self.gridData.get(coord_to_check).get_obstacle_here() == Knowledge.unknown:
-            if self.gridData.get(coord_to_check).set_obstacle(self.see_obstacle(Direction.south)):
-                self.gridData.canMoveHere.add(coord_to_check)
-                self.gridData.needToVisit.add(coord_to_check)
+        # look 4 directions for obstacles
+        for direction in COORDINATE_CHANGE:  # for each of the 4 directions
+            coord_to_check = self.position + COORDINATE_CHANGE[direction]  # the coordinate in this direction
+            if (0 < coord_to_check.x < GRID_WIDTH - 1) and \
+                    (0 < coord_to_check.y < GRID_HEIGHT - 1) and \
+                    self.gridData.get(coord_to_check).get_obstacle_here() == Knowledge.unknown:
+                if self.gridData.get(coord_to_check).set_obstacle(self.see_obstacle(direction)):
+                    self.gridData.canMoveHere.add(coord_to_check)
+                    self.gridData.needToVisit.add(coord_to_check)
 
-        # TODO: take readings and look for surrounding obstacles
+        # TODO: take readings
         # take readings of capacity + EMF
         if self.using_outside_grid:
             pass  # TODO:
@@ -495,26 +477,15 @@ class Robot:
             # put adjacent unvisited nodes in stack and visit them
             # TODO: change this to use COORDINATE_CHANGE? (keep order)
             # order: south north west east, to touch walls often and fill holes early
-            # south
-            coord_to_check = Coordinate(coord_at_top.x, coord_at_top.y - 1)
-            if coord_to_check in self.gridData.needToVisit:
-                dfs_stack.append(coord_to_check)
-                continue
-            # north
-            coord_to_check = Coordinate(coord_at_top.x, coord_at_top.y + 1)
-            if coord_to_check in self.gridData.needToVisit:
-                dfs_stack.append(coord_to_check)
-                continue
-            # west
-            coord_to_check = Coordinate(coord_at_top.x - 1, coord_at_top.y)
-            if coord_to_check in self.gridData.needToVisit:
-                dfs_stack.append(coord_to_check)
-                continue
-            # east
-            coord_to_check = Coordinate(coord_at_top.x + 1, coord_at_top.y)
-            if coord_to_check in self.gridData.needToVisit:
-                dfs_stack.append(coord_to_check)
-                continue
+            found_adjacent_block_to_visit = False
+            for direction in (Direction.south, Direction.north, Direction.west, Direction.east):
+                coord_to_check = COORDINATE_CHANGE[direction] + coord_at_top
+                if coord_to_check in self.gridData.needToVisit:
+                    dfs_stack.append(coord_to_check)
+                    found_adjacent_block_to_visit = True
+                    break
+            if found_adjacent_block_to_visit:
+                continue  # visit it
 
             # if we arrive here, none of the adjacent blocks need to be visited
             dfs_stack.pop()
@@ -588,40 +559,31 @@ class Robot:
                         if self.position != coord_at_top:
                             print("appending: " + str(self.position))
                             dfs_stack.append(Coordinate(self.position.x, self.position.y))
-                self.calibrate()
+                self.calibrate()  # TODO: put this at every edge
             # put adjacent unvisited nodes in stack and visit them
             coord_at_top = dfs_stack[-1]
             # TODO: change this to use COORDINATE_CHANGE? (keep order)
             # order: south north west east, to touch walls often and fill holes early
-            # south
-            coord_to_check = Coordinate(coord_at_top.x, coord_at_top.y - 1)
-            if coord_to_check in self.gridData.needToVisit:
-                print("appending: " + str(coord_to_check))
-                dfs_stack.append(coord_to_check)
-                continue
-            # north
-            coord_to_check = Coordinate(coord_at_top.x, coord_at_top.y + 1)
-            if coord_to_check in self.gridData.needToVisit:
-                print("appending: " + str(coord_to_check))
-                dfs_stack.append(coord_to_check)
-                continue
-            # west
-            coord_to_check = Coordinate(coord_at_top.x - 1, coord_at_top.y)
-            if coord_to_check in self.gridData.needToVisit:
-                print("appending: " + str(coord_to_check))
-                dfs_stack.append(coord_to_check)
-                continue
-            # east
-            coord_to_check = Coordinate(coord_at_top.x + 1, coord_at_top.y)
-            if coord_to_check in self.gridData.needToVisit:
-                print("appending: " + str(coord_to_check))
-                dfs_stack.append(coord_to_check)
-                continue
+            found_adjacent_block_to_visit = False
+            for direction in (Direction.south, Direction.north, Direction.west, Direction.east):
+                coord_to_check = COORDINATE_CHANGE[direction] + coord_at_top
+                if coord_to_check in self.gridData.needToVisit:
+                    print("appending: " + str(coord_to_check))
+                    dfs_stack.append(coord_to_check)
+                    found_adjacent_block_to_visit = True
+                    break  # for loop
+            if found_adjacent_block_to_visit:
+                continue  # while loop, visit it
 
             # if we arrive here, none of the adjacent blocks need to be visited
             print("removing: " + str(dfs_stack[-1]))
             dfs_stack.pop()
             print(dfs_stack)
+
+    @staticmethod
+    def sleep_wait():
+        # raw_input()
+        time.sleep(Robot.SLEEP_TIME)
 
 
 class OutsideGrid:
