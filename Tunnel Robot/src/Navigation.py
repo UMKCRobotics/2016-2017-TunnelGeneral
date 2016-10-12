@@ -1,6 +1,8 @@
 import threading,os,sys,serial,time
 
 
+import Robot
+
 #     directions:
 #
 #		  1
