@@ -8,8 +8,8 @@ int goCounter = 0;
 
 void goForward()
 {
-     int oldTacho;
-     oldTacho = 0;
+     int oldTacho, newTacho;
+     oldTacho = newTacho = 0;
      ResetTachoCount(OUT_BC);
      goCounter = (goCounter+1)%2;
      if (goCounter)

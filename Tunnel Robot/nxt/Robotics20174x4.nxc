@@ -1,5 +1,6 @@
 int foot = 722;
-int turn = 265;
+//int turn = 265;
+int turn = 280;
 int power = 60;
 int lowPower = 20;
 
@@ -14,19 +15,32 @@ void goForward()
      goCounter = (goCounter+1)%2;
      if (goCounter)
      {
-        OnFwd(OUT_B, power);
-        OnFwd(OUT_C, power);
+        OnFwd(OUT_B, lowPower);
+        OnFwd(OUT_C, lowPower);
      }
      else
      {
-        OnFwd(OUT_C, power);
-        OnFwd(OUT_B, power);
+        OnFwd(OUT_C, lowPower);
+        OnFwd(OUT_B, lowPower);
      }
      int tachoGoalLeft = foot;
      int tachoGoalRight = foot;
      bool leftChanged = false;
      bool rightChanged = false;
+     int low_margin = foot/12;
      int margin = foot-(foot/12);
+     while (MotorTachoCount(OUT_B) < low_margin || MotorTachoCount(OUT_C) < low_margin)
+     {
+           //do nothing
+     }
+     //speed up now
+     oldTacho =  MotorTachoCount(OUT_B);
+     OnFwd(OUT_B,power);
+     tachoGoalLeft -= oldTacho;
+     oldTacho =  MotorTachoCount(OUT_C);
+     OnFwd(OUT_C,power);
+     tachoGoalRight -= oldTacho;
+     //keep track of how far to go
      while (MotorTachoCount(OUT_B) < tachoGoalLeft || MotorTachoCount(OUT_C) < tachoGoalRight)
      {
            if (!leftChanged && MotorTachoCount(OUT_B) > margin)
@@ -50,8 +64,12 @@ void goForward()
 
 void goBackward()
 {
+
      ResetTachoCount(OUT_BC);
      OnRev(OUT_BC, power);
+
+     
+     
      while (MotorTachoCount(OUT_B) > -foot || MotorTachoCount(OUT_C) > -foot)
      {
            //do nothing
@@ -63,8 +81,8 @@ void goBackward()
 void goLeft()
 {
      ResetTachoCount(OUT_BC);
-     OnRev(OUT_B, power);
-     OnFwd(OUT_C, power);
+     OnRev(OUT_B, lowPower);
+     OnFwd(OUT_C, lowPower);
      while (MotorTachoCount(OUT_B) > -turn || MotorTachoCount(OUT_C) < turn)
      {
            //do nothing
@@ -76,8 +94,8 @@ void goLeft()
 void goRight()
 {
      ResetTachoCount(OUT_BC);
-     OnFwd(OUT_B, power);
-     OnRev(OUT_C, power);
+     OnFwd(OUT_B, lowPower);
+     OnRev(OUT_C, lowPower);
      while (MotorTachoCount(OUT_B) < turn || MotorTachoCount(OUT_C) > -turn)
      {
            //do nothing
@@ -125,6 +143,27 @@ task main()
 {
      SetSensorType(IN_2, SENSOR_TYPE_LIGHT_ACTIVE);
      SetSensorType(IN_3, SENSOR_TYPE_LIGHT_ACTIVE);
-     waitForMessage();
+     //waitForMessage();
+     //goForward();
+     //goForward();
+     goForward();
+     goLeft();
+     goForward();
+     goLeft();
+     goForward();
+     goForward();
+     goForward();
+     goRight();
+     goForward();
+     goRight();
+     goForward();
+     goForward();
+     goForward();
+     goLeft();
+     goForward();
+     goLeft();
+     goForward();
+     goForward();
+     goForward();
 
 }
