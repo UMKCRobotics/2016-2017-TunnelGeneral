@@ -298,7 +298,7 @@ class GridData:
 
 
 class Robot:
-    SLEEP_TIME = 0.2
+    SLEEP_TIME = 0.1
 
     def __init__(self, outside_grid_or_sim_robot_interface):
         self.gridData = GridData()
@@ -521,7 +521,12 @@ class Robot:
         away_from_sides_count = 0
         dfs_stack = deque()
         dfs_stack.append(Coordinate(self.position.x, self.position.y))
-        while len(self.gridData.needToVisit):
+        keep_going = True
+        while keep_going:
+            if not len(self.gridData.needToVisit):
+                self.gridData.needToVisit.add(Coordinate(0,0))
+                dfs_stack.append(Coordinate(0,0))
+                keep_going = False
             coord_at_top = dfs_stack[-1]
             if coord_at_top in self.gridData.needToVisit:
                 # find directions

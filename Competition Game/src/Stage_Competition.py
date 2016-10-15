@@ -72,8 +72,8 @@ class Stage_Competition(Stage):
         self.robot = Robot(self.screen, self.gameboard, offsets=self.map_offsets)
 
         # load in a board
-        # self.gameboard.load_board(self.Round3Example)
-        # self.gameboard.load_board(self.gameboard.generate_board_round(3))
+        #self.gameboard.load_board(self.Round3Example)
+        #self.gameboard.load_board(self.gameboard.generate_board_round(3))
         self.gameboard.load_board(self.One_with_a_bug)
 
         # choose visibility options to start

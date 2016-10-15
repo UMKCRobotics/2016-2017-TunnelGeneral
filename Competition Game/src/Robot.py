@@ -37,6 +37,11 @@ class Robot():
         # self.errorMax = self.GRID_WIDTH/12
         # self.errorMax = self.GRID_WIDTH/3
         self.errorMax = 0
+
+        #move counters
+        self.turnCounter = 0
+        self.forwardCounter = 0
+
         self.MAP = None
         if offsets == None:
             self.MAP = RobotMap(self.screen, self.GRID_WIDTH / 2, (gameboard.TOTAL_WIDTH + 20, 20), self.direction)
@@ -183,18 +188,26 @@ class Robot():
 
     def goForward(self):
         self.drive(1)
+        self.forwardCounter += 1
         self.play_sound(self.sound1)
+
+        print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
 
     def goBackward(self):
         self.drive(-1)
+        self.forwardCounter += 1
 
     def rotateCounterClockwise(self):
         self.changeDirection(1)
+        self.turnCounter += 1
         self.play_sound(self.sound5)
+        print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
 
     def rotateClockwise(self):
         self.changeDirection(-1)
+        self.turnCounter += 1
         self.play_sound(self.sound5)
+        print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
 
     def changeDirection(self, val):
         self.direction = (self.direction + val) % 4
