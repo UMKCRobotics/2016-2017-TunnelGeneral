@@ -42,5 +42,30 @@ void loop() {
 
 String interpretCommand(String command, String value) {
 	//do motor things here
-	return "1";
+	String responseString = "n";
+	if (command == "f") {
+		goForward();
+		responseString = "1";
+	}
+	else if (command == "l") {
+		turnLeft();
+		responseString = "1";
+	}
+	else if (command == "r") {
+		turnLeft();
+		responseString = "1";
+	}
+	return responseString;
+}
+
+void goForward() {
+ //put code here
+}
+
+void turnLeft() {
+  //put code here
+}
+
+void turnRight() {
+  //put code here
 }
