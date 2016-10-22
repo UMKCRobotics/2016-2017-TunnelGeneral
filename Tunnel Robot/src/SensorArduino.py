@@ -26,3 +26,20 @@ class EMF_Sensors():
 		commandObj = CommRequest('2')
 		self.ard.requestCommand(commandObj)
 		return commandObj
+
+class Sensors():
+
+	def __init__(self,serial):
+		self.ard = SerialComm(serial)
+		self.ard.start()
+		#remove bad data
+		self.checkEMF()
+
+	def checkEMF(self):
+		pass
+
+	def checkCapacitive(self):
+		pass
+
+	def checkObstacles(self):
+		pass

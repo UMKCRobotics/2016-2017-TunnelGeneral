@@ -1,10 +1,7 @@
 import threading,os,sys,serial,time
 
-try:
-	import nxt
-	import usb
-except ImportError:
-	print 'NXT or USB library not installed; no problemo'
+import nxt
+import usb
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))) #directory from which this script is ran
 sys.path.insert(0, os.path.join(__location__))
@@ -73,11 +70,6 @@ class MotorsArduino():
 
 	def moveRight(self):
 		commandObj = CommRequest('r')
-		self.ard.requestCommand(commandObj)
-		return commandObj
-
-	def goCalibrate(self):
-		commandObj = CommRequest('c')
 		self.ard.requestCommand(commandObj)
 		return commandObj
 

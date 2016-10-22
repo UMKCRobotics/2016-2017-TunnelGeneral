@@ -8,34 +8,34 @@ import SensorArduino
 class Robot():
 
 
-	def __init__(self):
-		self.motors = None
-		self.sensors = None
+	def __init__(self,motors,sensors):
+		self.motors = motors
+		self.sensors = sensors
 
-	def moveForward(self):
+	def goForward(self):
 		#forward 1 foot, returns command object
-		pass
+		return motors.moveForward()
 
-	def moveLeft(self):
+	def rotateCounterClockwise(self):
 		#left 90 degrees, returns command object
-		pass
+		return motors.moveLeft()
 
-	def moveRight(self):
+	def rotateClockwise(self):
 		#right 90 degrees, returns command object
-		pass
+		return motors.moveRight()
 
 	def moveCalibrate(self):
 		#use perimeter to fix possible rotation/translation errors
-		pass
+		return motors.goCalibrate()
 
 	def getEMF_Reading(self):
 		#get readings from EMF sensor(s) via a list
-		pass
+		return sensors.checkEMF()
 
 	def getCapacitive_Reading(self):
 		#get readings from Capacitive sensor(s) via a list
-		pass
+		return sensors.checkCapacitive()
 
 	def getObstacle_Reading(self):
 		#get locations of obstacles in adjacent blocks via a list
-		pass
+		return sensors.checkObstacles()

@@ -6,5 +6,5 @@ import threading,os,sys,serial,time
 
 class Interface():
 
-	def __init__(self):
-		pass
+	def __init__(self,display):
+		self.display

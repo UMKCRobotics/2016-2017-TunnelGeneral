@@ -1,7 +1,10 @@
 import threading,os,sys,serial,time
 #specific to NXT comm:
-import nxt
-import usb
+try:
+	import nxt
+	import usb
+except ImportError:
+	print 'NXT or USB library not installed; no problemo'
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))) #directory from which this script is ran
 sys.path.insert(0, os.path.join(__location__))

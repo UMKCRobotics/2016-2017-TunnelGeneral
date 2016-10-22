@@ -20,14 +20,42 @@ while not display.ard.connected:
 
 globalThreads = []
 
-#resp = motors.moveForward()
-#resp2 = motors.moveBackward()
-#resp3 = motors.moveLeft()
-#resp4 = motorsself.moveRight()
-#resp = display.set8x8((2,2),'T')
+
+def wait_till_done(resp):
+	intermediateDelay = 0.01
+	while not resp.isDone:
+		time.sleep(intermediateDelay)
+
+
+delayTime = 0.01
+intermediateDelay = 0.01
+
 resp = display.set7segment(3);
-while not resp.isDone:
-	time.sleep(0.1)
+wait_till_done(resp)
+
+coordinate = (0,5)
+resp = display.set8x8(coordinate,'T');
+wait_till_done(resp)
+time.sleep(delayTime)
+
+resp = display.set8x8(coordinate,'E');
+wait_till_done(resp)
+
+coordinate = (0,4)
+resp = display.set8x8(coordinate,'T');
+wait_till_done(resp)
+time.sleep(delayTime)
+
+resp = display.set8x8(coordinate,'E');
+wait_till_done(resp)
+
+coordinate = (0,3)
+resp = display.set8x8(coordinate,'T');
+wait_till_done(resp)
+time.sleep(delayTime)
+
+resp = display.set8x8(coordinate,'E');
+wait_till_done(resp)
 
 print 'all done!!'
 print resp.getResponse()
