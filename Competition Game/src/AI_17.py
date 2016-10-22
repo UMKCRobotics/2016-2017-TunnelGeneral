@@ -89,6 +89,26 @@ class Knowledge:  # class Knowledge(IntEnum:
     no = 0
 
 
+def translate_coordinate_to_index(coordinate):
+    """
+    change a coordinate to the index on the display
+    index is 0 in top left, counting up to the right
+    :param coordinate: Coordinate
+    :return: int
+    """
+    return ((DISPLAY_HEIGHT - 1) - coordinate.y) * DISPLAY_WIDTH + coordinate.x
+
+
+def unit_tests_for_translate_coordinates_to_index():
+    assert translate_coordinate_to_index(Coordinate(0, 6)) == 8
+    assert translate_coordinate_to_index(Coordinate(0, 0)) == 56
+    assert translate_coordinate_to_index(Coordinate(6, 1)) == 54
+    assert translate_coordinate_to_index(Coordinate(2, 2)) == 42
+
+# TODO: comment out this line for faster loading in deployment:
+unit_tests_for_translate_coordinates_to_index()
+
+
 class GridSpaceData:
     """ information collected and learned about 1 space on the grid """
     def __init__(self):
