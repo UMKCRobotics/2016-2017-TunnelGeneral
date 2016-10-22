@@ -4,20 +4,15 @@ import heapq  # priority queue
 from Robot import Robot as SimRobot  # passed to simulation_impl
 import time
 import sys
+from Grid_Util import *
+from Static_Decorator import static_vars
+
+MOVE_COUNT_ALLOWED_AWAY_FROM_SIDES = 13
 
 GRID_WIDTH = 7
 GRID_HEIGHT = 7
 DISPLAY_WIDTH = 8
 DISPLAY_HEIGHT = 8
-
-
-# a decorator for static variables in python
-def static_vars(**kwargs):
-    def decorate(func):
-        for k in kwargs:
-            setattr(func, k, kwargs[k])
-        return func
-    return decorate
 
 
 def simulation_impl(_sim_robot):
@@ -28,27 +23,6 @@ def simulation_impl(_sim_robot):
     """
     robot = Robot(_sim_robot)
     robot.explore3()
-
-
-class Coordinate:
-    def __init__(self, _x=0, _y=0):
-        self.x = _x
-        self.y = _y
-
-    def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return self.x * DISPLAY_WIDTH + self.y
-
-    def __add__(self, other):
-        return Coordinate(self.x + other.x, self.y + other.y)
-
-    def __repr__(self):
-        return "(" + str(self.x) + ", " + str(self.y) + ")"
 
 
 # this is not used
@@ -105,7 +79,7 @@ SNAKE_AROUND_EDGE_SEQUENCE = [
 ]
 
 
-# these two classes are enumerations, but we can't use enumerations because someone doesn't update their python
+# this is an enumeration, but we can't use enumerations because someone doesn't update their python
 class Knowledge:  # class Knowledge(IntEnum:
     def __init__(self):
         pass
@@ -113,25 +87,6 @@ class Knowledge:  # class Knowledge(IntEnum:
     unknown = -1
     yes = 1
     no = 0
-
-
-class Direction:  # class Direction(IntEnum):
-    def __init__(self):
-        pass
-
-    east = 0
-    north = 1
-    west = 2
-    south = 3
-    count = 4
-
-# To get the next coordinate in a given direction, add this coordinate
-COORDINATE_CHANGE = {
-    Direction.east: Coordinate(1, 0),
-    Direction.west: Coordinate(-1, 0),
-    Direction.north: Coordinate(0, 1),
-    Direction.south: Coordinate(0, -1)
-}
 
 
 class GridSpaceData:
@@ -550,7 +505,7 @@ class Robot:
                 if self.position in self.gridData.needToVisit:
                     self.visit()
 
-            if away_from_sides_count > 13:
+            if away_from_sides_count > MOVE_COUNT_ALLOWED_AWAY_FROM_SIDES:
                 directions = self.gridData.find_path_to_side(self.position)
                 # go there
                 for direction in directions:
