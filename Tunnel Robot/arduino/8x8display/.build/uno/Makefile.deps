@@ -1,0 +1,34 @@
+
+
+
+
+
+
+
+
+	
+
+
+
+.build/uno/Adafruit_NeoPixel/Adafruit_NeoPixel.d : lib/Adafruit_NeoPixel/Adafruit_NeoPixel.cpp
+	@mkdir -p .build/uno/Adafruit_NeoPixel
+	@/usr/share/arduino/hardware/tools/avr/bin/avr-gcc -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=105 -I/usr/share/arduino/hardware/arduino/cores/arduino -ffunction-sections -fdata-sections -g -Os -w -I/usr/share/arduino/hardware/arduino/variants/standard -I/usr/share/arduino/hardware/arduino/cores/arduino -I/usr/share/arduino/hardware/arduino/cores/arduino/avr-libc -Ilib/Adafruit_NeoPixel -Ilib/Adafruit-GFX-Library -Ilib/Adafruit-GFX-Library/fontconvert -Ilib/Adafruit-GFX-Library/Fonts -Ilib/Adafruit_NeoMatrix -Ilib/Adafruit_NeoMatrix/extras -I/usr/share/arduino/libraries/Esplora -I/usr/share/arduino/libraries/Robot_Control -I/usr/share/arduino/libraries/Robot_Control/utility -I/usr/share/arduino/libraries/LiquidCrystal -I/usr/share/arduino/libraries/SD -I/usr/share/arduino/libraries/SD/utility -I/usr/share/arduino/libraries/GSM -I/usr/share/arduino/libraries/Robot_Motor -I/usr/share/arduino/libraries/SoftwareSerial -I/usr/share/arduino/libraries/TFT -I/usr/share/arduino/libraries/TFT/utility -I/usr/share/arduino/libraries/WiFi -I/usr/share/arduino/libraries/WiFi/utility -I/usr/share/arduino/libraries/Firmata -I/usr/share/arduino/libraries/EEPROM -I/usr/share/arduino/libraries/Servo -I/usr/share/arduino/libraries/Ethernet -I/usr/share/arduino/libraries/Ethernet/utility -I/usr/share/arduino/libraries/Wire -I/usr/share/arduino/libraries/Wire/utility -I/usr/share/arduino/libraries/Stepper -I/usr/share/arduino/libraries/SPI  -MM $^ > $@
+	
+	@printf ".build/uno/Adafruit_NeoPixel/Adafruit_NeoPixel.d .build/uno/Adafruit_NeoPixel/" | cat - $@ > $@~ && mv $@~ $@
+
+.build/uno/Adafruit_NeoPixel/esp8266.d : lib/Adafruit_NeoPixel/esp8266.c
+	@mkdir -p .build/uno/Adafruit_NeoPixel
+	@/usr/share/arduino/hardware/tools/avr/bin/avr-gcc -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=105 -I/usr/share/arduino/hardware/arduino/cores/arduino -ffunction-sections -fdata-sections -g -Os -w -I/usr/share/arduino/hardware/arduino/variants/standard -I/usr/share/arduino/hardware/arduino/cores/arduino -I/usr/share/arduino/hardware/arduino/cores/arduino/avr-libc -Ilib/Adafruit_NeoPixel -Ilib/Adafruit-GFX-Library -Ilib/Adafruit-GFX-Library/fontconvert -Ilib/Adafruit-GFX-Library/Fonts -Ilib/Adafruit_NeoMatrix -Ilib/Adafruit_NeoMatrix/extras -I/usr/share/arduino/libraries/Esplora -I/usr/share/arduino/libraries/Robot_Control -I/usr/share/arduino/libraries/Robot_Control/utility -I/usr/share/arduino/libraries/LiquidCrystal -I/usr/share/arduino/libraries/SD -I/usr/share/arduino/libraries/SD/utility -I/usr/share/arduino/libraries/GSM -I/usr/share/arduino/libraries/Robot_Motor -I/usr/share/arduino/libraries/SoftwareSerial -I/usr/share/arduino/libraries/TFT -I/usr/share/arduino/libraries/TFT/utility -I/usr/share/arduino/libraries/WiFi -I/usr/share/arduino/libraries/WiFi/utility -I/usr/share/arduino/libraries/Firmata -I/usr/share/arduino/libraries/EEPROM -I/usr/share/arduino/libraries/Servo -I/usr/share/arduino/libraries/Ethernet -I/usr/share/arduino/libraries/Ethernet/utility -I/usr/share/arduino/libraries/Wire -I/usr/share/arduino/libraries/Wire/utility -I/usr/share/arduino/libraries/Stepper -I/usr/share/arduino/libraries/SPI  -MM $^ > $@
+	
+	@printf ".build/uno/Adafruit_NeoPixel/esp8266.d .build/uno/Adafruit_NeoPixel/" | cat - $@ > $@~ && mv $@~ $@
+
+
+
+.build/uno/Adafruit_NeoPixel/dependencies.d : .build/uno/Adafruit_NeoPixel/Adafruit_NeoPixel.d .build/uno/Adafruit_NeoPixel/esp8266.d
+	@echo [96mScanning dependencies of Adafruit_NeoPixel[0m
+	@mkdir -p .build/uno/Adafruit_NeoPixel
+	@cat $^ > $@;
+
+all : .build/uno/Adafruit_NeoPixel/dependencies.d
+	@true
+
