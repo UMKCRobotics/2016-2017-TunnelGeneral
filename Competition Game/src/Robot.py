@@ -21,7 +21,7 @@ class Robot():
         self.GAMEBOARD = gameboard
         self.GRID_WIDTH = gameboard.GRID_WIDTH
         gameboard.ROBOT = self  # add self to gameboard
-        if coords == None:
+        if coords is None:
             A7_coords = gameboard.get_block('A7').coords
             self.coords = (A7_coords[0] + self.GRID_WIDTH / 8, A7_coords[1] + self.GRID_WIDTH / 8)
         self.width = self.GRID_WIDTH * 3 / 4
@@ -38,12 +38,12 @@ class Robot():
         # self.errorMax = self.GRID_WIDTH/3
         self.errorMax = 0
 
-        #move counters
+        # move counters
         self.turnCounter = 0
         self.forwardCounter = 0
 
         self.MAP = None
-        if offsets == None:
+        if offsets is None:
             self.MAP = RobotMap(self.screen, self.GRID_WIDTH / 2, (gameboard.TOTAL_WIDTH + 20, 20), self.direction)
         else:
             self.MAP = RobotMap(self.screen, self.GRID_WIDTH / 2, offsets, self.direction)
@@ -76,17 +76,19 @@ class Robot():
         soundT.daemon = True
         soundT.start()
 
-    def __play_sound__(self, sound):
+    @staticmethod
+    def __play_sound__(sound):
         sound.play()
         time.sleep(sound.get_length())
 
-    def __play_song__(self, sound):
+    @staticmethod
+    def __play_song__(sound):
         sound.play()
         time.sleep(sound.get_length())
 
     def draw(self):
-        self.object.topleft = (
-        self.GAMEBOARD.OFFSETS[0] + self.rel_coords[0], self.GAMEBOARD.OFFSETS[1] + self.rel_coords[1])
+        self.object.topleft = (self.GAMEBOARD.OFFSETS[0] + self.rel_coords[0],
+                               self.GAMEBOARD.OFFSETS[1] + self.rel_coords[1])
         self.movable_rect.topleft = (self.GAMEBOARD.PLEXI.x + self.GRID_WIDTH / 8,
                                      self.GAMEBOARD.PLEXI.y + self.GRID_WIDTH / 8)
         self.screen.fill(self.color, self.object)
@@ -289,7 +291,8 @@ class RobotMap():
         soundT.daemon = True
         soundT.start()
 
-    def __play_sound__(self, sound):
+    @staticmethod
+    def __play_sound__(sound):
         sound.play()
         time.sleep(sound.get_length())
 

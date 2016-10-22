@@ -37,6 +37,12 @@ if __name__ == "__main__":
 if robotNameToLoad is None:
     robotNameToLoad = 'robot3'
 
+# window position
+# so that it isn't placed off-screen on small screens
+x = 50
+y = 5
+os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x, y)
+
 # pygame.mixer.pre_init()
 pygame.init()
 pygame.mixer.init()
@@ -81,8 +87,8 @@ while 1:
         if isinstance(stages[currentStage], Stage_Competition):
             sensorConv = Sensor_Converter(stages[currentStage].robot, inputData[0], inputData[1])
             sensorConv.create_robot_sensors()
-            #t1 = threading.Thread(target=AI_17.simulation_impl,args=(stages[currentStage].robot,))
-            t1 = threading.Thread(target=AI_JED.simulation_impl, args=(stages[currentStage].robot,))
+            t1 = threading.Thread(target=AI_17.simulation_impl,args=(stages[currentStage].robot,))
+            #t1 = threading.Thread(target=AI_JED.simulation_impl, args=(stages[currentStage].robot,))
             t1.daemon = True
             t1.start()
             threads.append(t1)
