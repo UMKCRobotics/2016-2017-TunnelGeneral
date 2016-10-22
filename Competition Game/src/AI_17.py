@@ -521,12 +521,7 @@ class Robot:
         away_from_sides_count = 0
         dfs_stack = deque()
         dfs_stack.append(Coordinate(self.position.x, self.position.y))
-        keep_going = True
-        while keep_going:
-            if not len(self.gridData.needToVisit):
-                self.gridData.needToVisit.add(Coordinate(0,0))
-                dfs_stack.append(Coordinate(0,0))
-                keep_going = False
+        while len(self.gridData.needToVisit):
             coord_at_top = dfs_stack[-1]
             if coord_at_top in self.gridData.needToVisit:
                 # find directions
@@ -595,6 +590,14 @@ class Robot:
             print("removing: " + str(dfs_stack[-1]))
             dfs_stack.pop()
             print(dfs_stack)
+
+        # TODO: look for dice in caches
+        # go back to start
+        directions = self.gridData.find_shortest_known_path(self.position, Coordinate(0, 0))
+        # go there
+        for direction in directions:
+            self.turn(direction)
+            self.forward()
 
     @staticmethod
     def sleep_wait():
