@@ -11,6 +11,22 @@ def simulation_impl(sim_robot):
     robot.doStuff()
 
 
+def translate_coordinate_to_index(coord):
+    """
+    change a coordinate to the index on the 8x8 display
+    index is 0 in top left, counting up to the right
+
+    :param coord: a coordinate using this robot brain's system of coordinates
+    :return: int - the index to be shown on the display
+    """
+    x = coord[0]
+    y = coord[1]
+
+    index = y * 8 + x + 8
+
+    return index
+
+
 class RobotAlg():
     SLEEP_TIME = 0.1
 
