@@ -20,6 +20,21 @@ while not display.ard.connected:
 
 globalThreads = []
 
+def translate_coordinate_to_index(coord):
+    """
+    change a coordinate to the index on the 8x8 display
+    index is 0 in top left, counting up to the right
+
+    :param coord: a coordinate using this robot brain's system of coordinates
+    :return: int - the index to be shown on the display
+    """
+    x = coord[0]
+    y = coord[1]
+
+    index = y * 8 + x + 8
+
+    return index
+
 
 def wait_till_done(resp):
 	intermediateDelay = 0.01
@@ -33,7 +48,7 @@ intermediateDelay = 0.01
 resp = display.set7segment(3);
 wait_till_done(resp)
 
-coordinate = (0,5)
+coordinate = translate_coordinate_to_index((0,5))
 resp = display.set8x8(coordinate,'T');
 wait_till_done(resp)
 time.sleep(delayTime)
@@ -41,7 +56,7 @@ time.sleep(delayTime)
 resp = display.set8x8(coordinate,'E');
 wait_till_done(resp)
 
-coordinate = (0,4)
+coordinate = translate_coordinate_to_index((0,4))
 resp = display.set8x8(coordinate,'T');
 wait_till_done(resp)
 time.sleep(delayTime)
@@ -49,7 +64,7 @@ time.sleep(delayTime)
 resp = display.set8x8(coordinate,'E');
 wait_till_done(resp)
 
-coordinate = (0,3)
+coordinate = translate_coordinate_to_index((0,3))
 resp = display.set8x8(coordinate,'T');
 wait_till_done(resp)
 time.sleep(delayTime)

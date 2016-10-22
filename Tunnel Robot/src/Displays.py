@@ -14,8 +14,6 @@ class Displays():
         # T = objective tunnel,
         # D = dead end,
         # E = empty
-        print index
-
         commandObj = CommRequest(gridType + '|' + str(index))
         self.ard.requestCommand(commandObj)
         return commandObj

@@ -52,7 +52,6 @@ class DeviceComm(threading.Thread):
 		self.keepRunning = True
 		while (self.keepRunning):
 			if len(self.commandList) > 0: #check if commands to perform
-				print self.commandList
 				#do the item in queue
 				commandObj = self.commandList[0]
 				self.performCommand(commandObj)
