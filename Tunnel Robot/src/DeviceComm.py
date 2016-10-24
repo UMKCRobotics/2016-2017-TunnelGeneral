@@ -58,7 +58,7 @@ class DeviceComm(threading.Thread):
 				#now remove the command from queue
 				self.removeCommand(commandObj)
 			#wait a little
-			time.sleep(0.1)
+			time.sleep(0.01)
 		#marked for stopping
 
 	def stopThread(self):

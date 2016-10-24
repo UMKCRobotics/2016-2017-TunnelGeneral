@@ -35,6 +35,7 @@ void setup() {
   //set 7segment pins
   segmentDisplay.segmentPins(0, 1, 2, 3, 4, 5, 6, 7, HIGH);  // set high for common anode, and low for common cathode
   segmentDisplay.registerPins(serialPIN, registerClockPIN, serialClockPIN, 1);
+  segmentDisplay.write(2);
   //start serial
   Serial.begin(115200);
   Serial.write('1');
