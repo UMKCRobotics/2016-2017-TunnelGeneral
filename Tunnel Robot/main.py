@@ -45,8 +45,11 @@ def wait_till_done(resp):
 delayTime = 0.01
 intermediateDelay = 0.01
 
-resp = display.set7segment(3);
-wait_till_done(resp)
+for i in range(1,7):
+	resp = display.set7segment(i);
+	wait_till_done(resp)
+	print resp.getResponse()
+	time.sleep(0.25)
 
 coordinate = translate_coordinate_to_index((0,5))
 resp = display.set8x8(coordinate,'T');
@@ -69,11 +72,14 @@ resp = display.set8x8(coordinate,'T');
 wait_till_done(resp)
 time.sleep(delayTime)
 
-resp = display.set8x8(coordinate,'E');
-wait_till_done(resp)
+#resp = display.set8x8(coordinate,'E');
+#wait_till_done(resp)
 
 print 'all done!!'
 print resp.getResponse()
+
+time.sleep(3);
+
 
 
 
