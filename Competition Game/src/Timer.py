@@ -6,23 +6,28 @@ PAUSE_VERIFICATION_FAIL_MESSAGE = "Timer not paused"
 
 
 class Timer:
+    """
+    basically a stopwatch
+    """
     def __init__(self):
         self._start_time = None  # value returned from time()
         self._paused_time = None  # amount
 
     def clear(self):
+        """
+        return timer to non-started state
+        """
         self.__init__()
 
     def start(self):
         """
         starts the timer counting from 0
-        :return: None
         """
         self._start_time = time()
 
     def get_elapsed_time(self):
         """
-        :return: the number of seconds the timer has been running
+        :return: float - the number of seconds the timer has been running
         """
         self._verify_started()
         if self._paused_time is not None:
@@ -30,10 +35,16 @@ class Timer:
         return time() - self._start_time
 
     def pause(self):
+        """
+        pause the timer so the time will not increment
+        """
         # self._verify_started()  # get_elapsed_time() does this
         self._paused_time = self.get_elapsed_time()
 
     def unpause(self):
+        """
+        un-pause the timer - it will increment from where it was paused
+        """
         self._verify_paused()
         self._start_time = time() - self._paused_time
         self._paused_time = None
@@ -86,7 +97,7 @@ def unit_tests():
 
     a.start()
     assert a.get_elapsed_time() < .01
-    
+
     print("all tests passed")
 
 
