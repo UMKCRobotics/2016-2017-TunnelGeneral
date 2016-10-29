@@ -54,7 +54,8 @@ class MotorsNXT():
 
 class MotorsArduino():
 	def __init__(self,serial):
-		self.ard = SerialComm(self,serial)
+		self.ard = SerialComm(serial)
+		self.ard.start()
 
 	def moveForward(self):
 		commandObj = CommRequest('f')

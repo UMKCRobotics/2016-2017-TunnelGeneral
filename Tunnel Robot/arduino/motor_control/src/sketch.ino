@@ -1,4 +1,10 @@
+#include <SoftwareSerial.h>
+
 //import things here
+
+
+SoftwareSerial motorControl1(8,9);
+SoftwareSerial motorControl2(10,11);
 
 String command = "";
 String value = "";
@@ -8,6 +14,9 @@ void setup() {
  //start serial
   Serial.begin(115200);
   Serial.write('1');
+  motorControl1.begin(115200);
+  motorControl2.begin(115200);
+
 }
 
 void loop() { 
@@ -59,7 +68,11 @@ String interpretCommand(String command, String value) {
 }
 
 void goForward() {
- //put code here
+ motorControl1.write("1f9\r");
+ motorControl2.write("1f9\r");
+ delay(500);
+ motorControl1.write("1f0\r");
+ motorControl2.write("1f0\r");
 }
 
 void turnLeft() {

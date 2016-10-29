@@ -25,3 +25,13 @@ class Displays():
         commandObj = CommRequest('N' + '|' + str(number))
         self.ard.requestCommand(commandObj)
         return commandObj
+
+    def getGoButton(self):
+    	commandObj = CommRequest('B' + '|G')
+        self.ard.requestCommand(commandObj)
+        return commandObj
+
+    def getStopButton(self):
+    	commandObj = CommRequest('B' + '|S')
+        self.ard.requestCommand(commandObj)
+        return commandObj
