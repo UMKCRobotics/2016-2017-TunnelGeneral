@@ -1,0 +1,3 @@
+SUBSYSTEM=="tty", ATTRS{serial}=="009F1909", SYMLINK+="arduino_motors"
+
+SUBSYSTEM=="tty", ATTRS{serial}=="A5027J1S", SYMLINK+="arduino_display"
