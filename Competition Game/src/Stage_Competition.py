@@ -619,6 +619,8 @@ class Options():
         self.TOTAL_HEIGHT = 250
         self.color = (100, 100, 100)
         self.object = pygame.Rect(self.OFFSETS, (self.TOTAL_WIDTH, self.TOTAL_HEIGHT))
+        self.GoButton = None
+        self.StopButton = None
         self.createButtons()
 
     def draw(self):
@@ -633,14 +635,21 @@ class Options():
         goButton.color = (0, 255, 0)
         goButton.text_content = 'GO'
         self.OBJECTS.append(goButton)
+        self.GoButton = goButton
         # STOP BUTTON
         stopButton = Button(self, (self.TOTAL_WIDTH - 60, self.TOTAL_HEIGHT - 70), (50, 50))
         stopButton.color = (255, 0, 0)
         stopButton.text_content = 'STOP'
         self.OBJECTS.append(stopButton)
+        self.StopButton = stopButton
 
     def handleMouseEvent(self, event):
-        pass
+        self.coords = pygame.mouse.get_pos()
+        for obj in self.OBJECTS:
+            tempRect = obj.object
+            if tempRect.collidepoint(self.coords):
+                obj.handleMouseEvent(event)
+
 
 
 class Button():
@@ -654,6 +663,7 @@ class Button():
         self.text_color = (255, 255, 255)
         self.text_content = "Sample"
         self.font = pygame.font.Font(None, 16)
+        self.clicked = False
 
     def draw(self):
         self.text = self.font.render(self.text_content, 1, self.text_color)
@@ -665,4 +675,7 @@ class Button():
         self.MENU.screen.blit(self.text, textpos)
 
     def handleMouseEvent(self, event):
-        pass
+        #if clicked, set clicked state to true
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            self.clicked = True
+            print 'CLICKED %s' % self.text_content

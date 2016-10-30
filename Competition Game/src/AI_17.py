@@ -15,13 +15,15 @@ DISPLAY_WIDTH = 8
 DISPLAY_HEIGHT = 8
 
 
-def simulation_impl(_sim_robot):
+def simulation_impl(_sim_parameters):
     """
     Pull simulation robot from simulation.
-    :param _sim_robot: SimRobot
+    :param _sim_parameters: [SimRobot]
     :return:
     """
-    robot = Robot(_sim_robot)
+    _sim_robot = _sim_parameters[0]
+    _sim_buttons = _sim_parameters[1]
+    robot = Robot(_sim_robot,_sim_buttons)
     robot.explore3()
 
 
@@ -275,7 +277,7 @@ class GridData:
 class Robot:
     SLEEP_TIME = 0.1
 
-    def __init__(self, outside_grid_or_sim_robot_interface):
+    def __init__(self, outside_grid_or_sim_robot_interface, outside_buttons=None):
         self.gridData = GridData()
         self.position = Coordinate()
         if isinstance(outside_grid_or_sim_robot_interface, OutsideGrid):
@@ -284,6 +286,7 @@ class Robot:
         elif isinstance(outside_grid_or_sim_robot_interface, SimRobot):
             self.sim_robot = outside_grid_or_sim_robot_interface
             self.using_outside_grid = False
+            self.sim_buttons = outside_buttons
         else:
             raise TypeError("Invalid argument passed to constructor")
 
@@ -492,6 +495,11 @@ class Robot:
     def explore3(self):
         """ visit all possible grid spaces
             go back to sides, when away for a long time """
+
+        #wait for Go Button to be pressed
+        if not self.using_outside_grid:
+            while not self.sim_buttons.GoButton.clicked:
+                time.sleep(0.1)
 
         away_from_sides_count = 0
         dfs_stack = deque()

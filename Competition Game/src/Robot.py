@@ -375,21 +375,21 @@ class RobotMap():
 
     def markCurrent(self, type):
         if type == 'OT':
-            self.get_block(self.make_location(self.robotLoc)).color = MapBlock.color_OT
+            self.get_block(self.make_location(self.robotLoc)).setOT()
         elif type == 'E':
-            self.get_block(self.make_location(self.robotLoc)).color = MapBlock.color_EMPTY
+            self.get_block(self.make_location(self.robotLoc)).setEmpty()
         elif type == 'D':
-            self.get_block(self.make_location(self.robotLoc)).color = MapBlock.color_DEADEND
+            self.get_block(self.make_location(self.robotLoc)).setDeadend()
 
     def markInFront(self, type):
         reqBlock = self.getBlockInFront()
         if reqBlock != None:
             if type == 'OT':
-                reqBlock.color = MapBlock.color_OT
+                reqBlock.setOT()
             elif type == 'E':
-                reqBlock.color = MapBlock.color_EMPTY
+                reqBlock.setEmpty()
             elif type == 'D':
-                reqBlock.color = MapBlock.color_DEADEND
+                reqBlock.setDeadend()
 
     def get_adjacent_blocks(self, block):
         blockLoc = self.get_location(block.loc)

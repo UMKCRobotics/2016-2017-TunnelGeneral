@@ -6,8 +6,10 @@ __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))  # directory from which this script is ran
 
 
-def simulation_impl(sim_robot):
-    robot = RobotAlg(sim_robot)
+def simulation_impl(sim_parameters):
+    sim_robot = sim_parameters[0]
+    sim_buttons = sim_parameters[1]
+    robot = RobotAlg(sim_robot,sim_buttons)
     robot.doStuff()
 
 
@@ -30,8 +32,9 @@ def translate_coordinate_to_index(coord):
 class RobotAlg():
     SLEEP_TIME = 0.1
 
-    def __init__(self, sim_robot):
+    def __init__(self, sim_robot, sim_buttons):
         self.sim_robot = sim_robot
+        self.sim_buttons = sim_buttons
         self.MAP = self.sim_robot.MAP
         self.moves_since_cal = [0, 0]
         self.max_moves = [15, 15]
@@ -180,6 +183,11 @@ class RobotAlg():
         return (hor_blocks, ver_blocks, hor, ver)  # return tuple of lists
 
     def doStuff(self):
+
+        #wait for Go Button to be pressed
+        while not self.sim_buttons.GoButton.clicked:
+            sleep(0.1)
+
         self.goList = self.get_vertical_path()
         # self.goList = self.get_spiral_path()
 
@@ -192,6 +200,7 @@ class RobotAlg():
         self.moves_since_cal = [0, 0]
         self.max_moves = [15, 15]
         done = False
+
         while not done:
             with open(os.path.join(__location__, 'gridstates.txt'), 'ab') as gridstates:
                 gridstates.write(str(self.goList) + '\n')
