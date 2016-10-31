@@ -501,16 +501,22 @@ class Robot:
             while not self.sim_buttons.GoButton.clicked:
                 time.sleep(0.1)
 
+        keep_going = True
         away_from_sides_count = 0
         dfs_stack = deque()
         dfs_stack.append(Coordinate(self.position.x, self.position.y))
-        while len(self.gridData.needToVisit):
+        while len(self.gridData.needToVisit) and keep_going:
             coord_at_top = dfs_stack[-1]
             if coord_at_top in self.gridData.needToVisit:
                 # find directions
                 directions = self.gridData.find_shortest_known_path(self.position, coord_at_top)
                 # go there
                 for direction in directions:
+                    #stop algorithm is stop button is pressed
+                    if self.sim_buttons.StopButton.clicked:
+                        keep_going = False
+                        break
+
                     self.turn(direction)
                     self.forward()
 
@@ -537,6 +543,11 @@ class Robot:
                 directions = self.gridData.find_path_to_side(self.position)
                 # go there
                 for direction in directions:
+                    #stop algorithm is stop button is pressed
+                    if self.sim_buttons.StopButton.clicked:
+                        keep_going = False
+                        break
+
                     self.turn(direction)
                     self.forward()
 
@@ -579,6 +590,8 @@ class Robot:
         directions = self.gridData.find_shortest_known_path(self.position, Coordinate(0, 0))
         # go there
         for direction in directions:
+            if self.sim_buttons.StopButton.clicked:
+                break
             self.turn(direction)
             self.forward()
 

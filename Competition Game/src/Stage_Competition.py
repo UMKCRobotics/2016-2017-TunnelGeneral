@@ -74,7 +74,9 @@ class Stage_Competition(Stage):
         # load in a board
         #self.gameboard.load_board(self.Round3Example)
         #self.gameboard.load_board(self.gameboard.generate_board_round(3))
-        self.gameboard.load_board(self.One_with_a_bug)
+        #self.board_template = self.One_with_a_bug
+        self.board_template = self.gameboard.generate_board_round(2)
+        self.gameboard.load_board(self.board_template)
 
         # choose visibility options to start
         self.gameboard.visible = True
@@ -87,6 +89,7 @@ class Stage_Competition(Stage):
         self.global_objects.append(self.robot.MAP)
         self.global_objects.append(self.options)
         self.mouse = MouseEvents(self.global_objects)
+        self.scored = False
 
     # self.counter = 1
     # self.delayCount = 144
@@ -120,7 +123,97 @@ class Stage_Competition(Stage):
         # self.counter += 1
         # if self.counter % self.delayCount == 0:
         self.robot.performMove()
+        #perform scoring if necessary
+        if not self.scored and self.options.StopButton.clicked:
+            self.performScoring()
+            self.scored = True
         return returnVal
+
+    def performScoring(self):
+        print 'starting to score...'
+        total = 0
+        obsTouched = 0
+        #deduct 50 points per obstruction hit
+        for obstruction in self.gameboard.obstructions:
+            if obstruction.touched:
+                total -= 50
+                obsTouched += 1
+        #count points from mapped blocks
+        allOT_Correct = True
+        wrongOT = 0
+        missedOT = 0
+        correctOT = 0
+        allDE_Correct = True
+        correctDE = 0
+        missedDE = 0
+        wrongDE = 0
+
+        robotMap = self.robot.MAP
+        for col in range(0, 7):
+            for row in range(0, 7):
+                if 'T' in self.board_template[row][col]:
+                    if robotMap.grid[col][row].type == 'T':
+                        correctOT += 1
+                    else:
+                        allOT_Correct = False
+                        missedOT += 1
+                elif 'D' in self.board_template[row][col]:
+                    if robotMap.grid[col][row].type == 'D':
+                        correctDE += 1
+                    elif robotMap.grid[col][row].type == 'T':
+                        allDE_Correct = False
+                        allOT_Correct = False
+                        missedDE += 1
+                        wrongOT += 1
+                else:
+                    #mapped as a tunnel when it is not a tunnel
+                    if robotMap.grid[col][row].type == 'T':
+                        wrongOT += 1
+                        allOT_Correct = False
+                    elif robotMap.grid[col][row].type == 'D':
+                        wrongDE += 1
+                        allDE_Correct = False
+        #for each correct OT, add 10 points
+        total += 10*correctOT
+        #for each wrong OT, subtract 10 points
+        total -= 10*wrongOT
+
+        #add 20 points if robot returned to A7 at the end
+        backToA7 = False
+        if self.robot.leftA7 and self.gameboard.get_block('A7').object.contains(self.robot.object):
+            backToA7 = True
+            total += 20
+
+        print '--------'
+        print 'Correct OT: %s' % str(correctOT)
+        print 'Incorrect OT: %s' % str(wrongOT)
+        print 'Missed OT: %s' % str(missedOT)
+        print '--------'
+        print 'Correct DE: %s' % str(correctDE)
+        print 'Incorrect DE: %s' % str(wrongDE)
+        print 'Missed DE: %s' % str(missedDE)
+        print '--------'
+        print 'Hit Obstacles: %s' % str(obsTouched)
+        print '--------'
+        print 'Extra 40 for all correct OT: %s' % allOT_Correct
+        print '  Another extra 40 for all correct DE (if applicable): %s' % (allDE_Correct and allOT_Correct and (correctDE != 0))
+        print '--------'
+        print 'Robot returned to A7: %s' % backToA7
+
+        #if all OT are mapped right, add 40 points and add 40 more if all DE are mapped right
+        if allOT_Correct:
+            total += 40
+            if allDE_Correct and correctDE:
+                total += 40
+
+        self.options.ScoreButton.text_content = str(total)
+        print 'ROUND SCORE: %s' % str(total)
+        print '--------'
+
+
+
+
+
 
 
 # GameBoard: actual representation
@@ -621,6 +714,7 @@ class Options():
         self.object = pygame.Rect(self.OFFSETS, (self.TOTAL_WIDTH, self.TOTAL_HEIGHT))
         self.GoButton = None
         self.StopButton = None
+        self.ScoreButton = None
         self.createButtons()
 
     def draw(self):
@@ -642,6 +736,12 @@ class Options():
         stopButton.text_content = 'STOP'
         self.OBJECTS.append(stopButton)
         self.StopButton = stopButton
+        # SCORE SHOWN
+        scoreButton = Button(self, ((self.TOTAL_WIDTH/2)-25, 70), (50, 50))
+        scoreButton.color = (255, 0, 255)
+        scoreButton.text_content = 'SCORE (TBD)'
+        self.OBJECTS.append(scoreButton)
+        self.ScoreButton = scoreButton
 
     def handleMouseEvent(self, event):
         self.coords = pygame.mouse.get_pos()

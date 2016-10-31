@@ -50,6 +50,7 @@ class Robot():
         self.rel_coords = (self.coords[0] - self.GAMEBOARD.OFFSETS[0], self.coords[1] - self.GAMEBOARD.OFFSETS[1])
         self.last_reference = [0, 0]
         self.sensors = []
+        self.leftA7 = False
         # used for timing robot movement
         self.counter = 1
         self.counter_max = 144
@@ -256,6 +257,10 @@ class Robot():
             print 'OBSTRUCTION TOUCHED'
 
         print self.last_reference
+
+        #check if robot left A7 if has not done so yet
+        if not self.leftA7 and not self.GAMEBOARD.get_block('A7').object.contains(self.object):
+            self.leftA7 = True
 
 
 # OT Map: Robot's internal map of the world
@@ -477,6 +482,7 @@ class MapBlock():
         self.loc = grid_key
         self.object = pygame.Rect(self.coords, (self.GRID_WIDTH, self.GRID_WIDTH))
         self.color = self.color_EMPTY
+        self.type = 'E'
         self.visited = False
         self.obstructed = False
         self.observed = False
@@ -489,15 +495,19 @@ class MapBlock():
 
     def setStart(self):
         self.color = self.color_START
+        self.type = 'E'
 
     def setOT(self):
         self.color = self.color_OT
+        self.type = 'T'
 
     def setDeadend(self):
         self.color = self.color_DEADEND
+        self.type = 'D'
 
     def setEmpty(self):
         self.color = self.color_EMPTY
+        self.type = 'E'
 
 
 from Sensors import Distance_Sensor, Electromagnetic_Sensor, Capacitive_Sensor

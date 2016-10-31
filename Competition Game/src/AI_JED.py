@@ -233,7 +233,11 @@ class RobotAlg():
                             dest_block = calib_path[0]
                         old_color = dest_block.color
                         dest_block.color = calib_color
-                        self.perform_path(calib_path)
+                        state = self.perform_path(calib_path)
+                        #if StopButton was pressed, stop doing stuff
+                        if state == None:
+                            done = True
+                            continue
                         self.calibrate_x()
                         dest_block.color = old_color
                 elif self.moves_since_cal[1] >= self.max_moves[1]:
@@ -248,7 +252,11 @@ class RobotAlg():
                             dest_block = calib_path[0]
                         old_color = dest_block.color
                         dest_block.color = calib_color
-                        self.perform_path(calib_path)
+                        state = self.perform_path(calib_path)
+                        #if StopButton was pressed, stop doing stuff
+                        if state == None:
+                            done = True
+                            continue
                         self.calibrate_y()
                         dest_block.color = old_color
 
@@ -258,7 +266,11 @@ class RobotAlg():
                 if self.DEBUG_MODE: print 'finding path to %s' % str(goal)
                 path = self.get_path_to_block_multi([self.MAP.get_block(goal)])
                 finished_following = self.perform_path(path)
-                if finished_following:
+                #if returns NONE, that means go button has been pressed
+                if finished_following == None:
+                    done = True
+                    break
+                elif finished_following:
                     do_pathfinding = False
                 else:
                     if self.DEBUG_MODE: print 'could not follow'
@@ -268,6 +280,8 @@ class RobotAlg():
         print 'done! %s' % str(self.moves_since_cal)
 
     def perform_path(self, path):
+        if self.sim_buttons.StopButton.clicked:
+            return None
         if path == None:
             return False
         while len(path) > 0:
