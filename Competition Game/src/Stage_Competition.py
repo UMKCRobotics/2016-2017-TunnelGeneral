@@ -8,7 +8,7 @@ from Stage import Stage
 from MouseEvents import MouseEvents
 from Robot import Robot
 
-MAX_OBSTACLES = 7
+MAX_OBSTACLES = 6
 
 
 class Stage_Competition(Stage):
@@ -75,7 +75,8 @@ class Stage_Competition(Stage):
         #self.gameboard.load_board(self.Round3Example)
         #self.gameboard.load_board(self.gameboard.generate_board_round(3))
         #self.board_template = self.One_with_a_bug
-        self.board_template = self.gameboard.generate_board_round(2)
+        #self.board_template = self.Round3Example
+        self.board_template = self.gameboard.generate_board_round(3)
         self.gameboard.load_board(self.board_template)
 
         # choose visibility options to start

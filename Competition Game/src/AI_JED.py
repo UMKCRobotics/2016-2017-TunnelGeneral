@@ -276,8 +276,68 @@ class RobotAlg():
                     if self.DEBUG_MODE: print 'could not follow'
                 # go to A7 if done visiting all blocks
                 # if len(self.goList) == 0:
-                #	self.goList.append('A7')
+                #    self.goList.append('A7')
         print 'done! %s' % str(self.moves_since_cal)
+        print 'filling in any obstructed OT or DE...'
+        self.fillMapGaps()
+        print 'done filling in gaps! ready to stop now'
+
+
+    def fillMapGaps(self):
+        OT_segments = []
+        DE_segments = []
+        blocks_checked = []
+        obstructed_blocks = []
+        for col in range(0,7):
+            for row in range(0,7):
+                #if type T and has not been checked, start looking for adjacent blocks
+                curr_block = self.MAP.grid[col][row]
+                if curr_block.type == 'T' and curr_block not in blocks_checked:
+                    segment = self.createSegment(curr_block,blocks_checked,'T')
+                    OT_segments.append(segment)
+                elif curr_block.type == 'D' and curr_block not in blocks_checked:
+                    segment = self.createSegment(curr_block,blocks_checked,'D')
+                    DE_segments.append(segment)
+                #also check if obstructed
+                if curr_block.obstructed:
+                    obstructed_blocks.append(curr_block)
+        #first, fill in OT
+        print 'OT segments: %s' % len(OT_segments)
+        print 'DE segments: %s' % len(DE_segments)
+        if len(OT_segments) > 1 and len(obstructed_blocks) > 0:
+            for obs in obstructed_blocks:
+                common_segments = 0
+                for segment in OT_segments:
+                    for block in segment:
+                        adj_blocks = self.MAP.get_adjacent_blocks(block)
+                        found = False
+                        for newblock in adj_blocks:
+                            if newblock == obs:
+                                found = True
+                                break
+                        if found:
+                            common_segments += 1
+                            break
+                if common_segments > 1:
+                    obs.setOT()
+
+
+    def createSegment(self,curr_block,blocks_checked,type_req):
+        #returns (segment,blocks_checked)
+        segment = []
+        #start segment off with current block
+        segment.append(curr_block)
+        blocks_checked.append(curr_block)
+        #evaluate adjacent blocks
+        adj_blocks = self.MAP.get_adjacent_blocks(curr_block)
+        for block in adj_blocks:
+            if block.type == type_req and block not in blocks_checked:
+                segment.append(block)
+                blocks_checked.append(block)
+                #perform this function recursively for block just added
+                segment.extend(self.createSegment(block,blocks_checked,type_req))
+        return segment
+
 
     def perform_path(self, path):
         if self.sim_buttons.StopButton.clicked:
@@ -353,8 +413,8 @@ class RobotAlg():
                     got_adjacent = True
                 # otherwise, try to use unvisited blocks
                 # elif len(unvisited_list) > 0:
-                #	got_adjacent = True
-                #	new_list.extend(unvisited_list)
+                #    got_adjacent = True
+                #    new_list.extend(unvisited_list)
                 # update block_list
                 new_block_list.extend(new_list)
             # update val for next iteration
