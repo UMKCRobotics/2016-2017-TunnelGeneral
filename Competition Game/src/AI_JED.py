@@ -41,19 +41,25 @@ class RobotAlg():
         self.goList = None
         self.DEBUG_MODE = False
 
+    def wait_till_done(self,resp):
+        intermediateDelay = 0.01
+        while not resp.isDone:
+            sleep(intermediateDelay)
+        return resp.getResponse()
+
     def turn(self, desired_dir):  # turn robot to desired direction
         if desired_dir == self.MAP.direction:
             pass
         elif self.MAP.direction - desired_dir == 3 or self.MAP.direction - desired_dir == -1:
-            self.sim_robot.rotateCounterClockwise()
+            self.wait_till_done(self.sim_robot.rotateCounterClockwise())
             sleep(self.SLEEP_TIME)
         elif self.MAP.direction - desired_dir == -3 or self.MAP.direction - desired_dir == 1:
-            self.sim_robot.rotateClockwise()
+            self.wait_till_done(self.sim_robot.rotateClockwise())
             sleep(self.SLEEP_TIME)
         else:  # turn twice to turn around
-            self.sim_robot.rotateCounterClockwise()
+            self.wait_till_done(self.sim_robot.rotateCounterClockwise())
             sleep(self.SLEEP_TIME)
-            self.sim_robot.rotateCounterClockwise()
+            self.wait_till_done(self.sim_robot.rotateCounterClockwise())
             sleep(self.SLEEP_TIME)
 
     def get_turn_amount(self, desired_dir):
@@ -67,7 +73,7 @@ class RobotAlg():
             return 2
 
     def forward(self):  # go forward
-        self.sim_robot.goForward()
+        self.wait_till_done(self.sim_robot.goForward())
         if self.MAP.direction in [0, 2]:
             self.moves_since_cal[0] += 1
         elif self.MAP.direction in [1, 3]:
@@ -80,7 +86,7 @@ class RobotAlg():
             self.turn(2)
         elif self.MAP.robotLoc[0] == 6:
             self.turn(0)
-        self.sim_robot.goForward()
+        self.wait_till_done(self.sim_robot.goForward())
         sleep(self.SLEEP_TIME)
 
     def calibrate_y(self):
@@ -89,7 +95,7 @@ class RobotAlg():
             self.turn(1)
         elif self.MAP.robotLoc[1] == 6:
             self.turn(3)
-        self.sim_robot.goForward()
+        self.wait_till_done(self.sim_robot.goForward())
         sleep(self.SLEEP_TIME)
 
     def generate_blank_grid(self):  # generate 7x7 grid for path algorithm
@@ -136,14 +142,14 @@ class RobotAlg():
             if self.MAP.grid[robotLoc[0]][robotLoc[1] - 1].obstructed:
                 self.MAP.grid[robotLoc[0]][robotLoc[1] - 1].color = (255, 165, 0)
         # take readings of cap + EMF
-        if (self.sim_robot.readSensor(2)[0] == 1):
+        if (self.wait_till_done(self.sim_robot.readSensor(2))[0] == 1):
             self.MAP.markOT()
-        elif (self.sim_robot.readSensor(3)[0] == 1):
+        elif (self.wait_till_done(self.sim_robot.readSensor(3))[0] == 1):
             self.MAP.markDeadend()
 
     def see_obstacle(self, direction):
         which_sensor = (((direction - self.MAP.direction) % 4) + 1) % 4  # do we need the middle mod 4?
-        return self.sim_robot.readSensor(1)[which_sensor]
+        return self.wait_till_done(self.sim_robot.readSensor(1))[which_sensor]
 
     def get_vertical_path(self):
         return ['A6', 'A5', 'A4', 'A3', 'A2', 'A1',

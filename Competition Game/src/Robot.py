@@ -38,6 +38,9 @@ class Robot():
         # self.errorMax = self.GRID_WIDTH/3
         self.errorMax = 0
 
+        #command list to simulate actual Tunnel Robot code
+        self.commandList = []
+
         # move counters
         self.turnCounter = 0
         self.forwardCounter = 0
@@ -142,12 +145,18 @@ class Robot():
             self.attemptReference()
 
     def readSensor(self, value):
+        commObject = CommRequest('S%s' % value)
+        returnvalue = None
         if value == 1:
-            return self.read_distance()
+            returnvalue = self.read_distance()
         elif value == 2:
-            return self.read_electromagnetic()
+            returnvalue = self.read_electromagnetic()
         elif value == 3:
-            return self.read_capacitive()
+            returnvalue = self.read_capacitive()
+        commObject.response = returnvalue
+        commObject.markDone()
+        return commObject
+
 
     def read_distance(self):
         readings = []
@@ -183,34 +192,42 @@ class Robot():
         return readings
 
     def performMove(self):
-        # pass
         # insert code here
-        self.counter += 1
-        if self.counter % self.counter_max == 0:
-            self.counter = 0
+        pass
 
     def goForward(self):
+        commObject = CommRequest('f')
         self.drive(1)
         self.forwardCounter += 1
         self.play_sound(self.sound1)
-
         print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
+        commObject.markDone()
+        return commObject
 
     def goBackward(self):
+        commObject = CommRequest('b')
         self.drive(-1)
         self.forwardCounter += 1
+        commObject.markDone()
+        return commObject
 
     def rotateCounterClockwise(self):
+        commObject = CommRequest('l')
         self.changeDirection(1)
         self.turnCounter += 1
         self.play_sound(self.sound5)
         print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
+        commObject.markDone()
+        return commObject
 
     def rotateClockwise(self):
+        commObject = CommRequest('r')
         self.changeDirection(-1)
         self.turnCounter += 1
         self.play_sound(self.sound5)
         print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
+        commObject.markDone()
+        return commObject
 
     def changeDirection(self, val):
         self.direction = (self.direction + val) % 4
@@ -261,6 +278,28 @@ class Robot():
         #check if robot left A7 if has not done so yet
         if not self.leftA7 and not self.GAMEBOARD.get_block('A7').object.contains(self.object):
             self.leftA7 = True
+
+
+class CommRequest(object):
+    # this class is the object passed into
+    # a Device Comm as a request to an
+    # outside device
+    def __init__(self,request):
+        self.request = request #string
+        self.isDone = False #represents if command is done performing
+        self.response = None #optional string value from arduino
+
+    def checkDone(self):
+        return self.isDone
+
+    def markDone(self):
+        self.isDone = True
+
+    def setResponse(self,response):
+        self.response = response
+
+    def getResponse(self):
+        return self.response
 
 
 # OT Map: Robot's internal map of the world

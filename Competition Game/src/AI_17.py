@@ -292,12 +292,18 @@ class Robot:
 
         self.facing = Direction.east  # TODO: can we get this from the SimRobot?
 
+    def wait_till_done(self,resp):
+        intermediateDelay = 0.01
+        while not resp.isDone:
+            time.sleep(intermediateDelay)
+        return resp.getResponse()
+
     def forward(self):
         self.move(1)
         if self.using_outside_grid:
             self.display_grid_wait_enter()
         else:  # using simulation
-            self.sim_robot.goForward()
+            self.wait_till_done(self.sim_robot.goForward())
             self.sleep_wait()
             self.display_grid_in_console()
 
@@ -305,7 +311,7 @@ class Robot:
         if self.using_outside_grid:
             pass  # TODO: calibrate
         else:
-            self.sim_robot.goForward()
+            self.wait_till_done(self.sim_robot.goForward())
             Robot.sleep_wait()
 
     def reverse(self):
@@ -345,7 +351,7 @@ class Robot:
     def right(self):
         """ use turn """
         if not self.using_outside_grid:
-            self.sim_robot.rotateClockwise()
+            self.wait_till_done(self.sim_robot.rotateClockwise())
             Robot.sleep_wait()
         if self.facing == Direction.east:
             self.facing = Direction.south
@@ -355,7 +361,7 @@ class Robot:
     def left(self):
         """ use turn """
         if not self.using_outside_grid:
-            self.sim_robot.rotateCounterClockwise()
+            self.wait_till_done(self.sim_robot.rotateCounterClockwise())
             Robot.sleep_wait()
         if self.facing == Direction.south:
             self.facing = Direction.east
@@ -402,7 +408,7 @@ class Robot:
             # which sensor
             # 0 right, 1 front, 2 left, 3 back
             which_sensor = (((direction - self.facing) % 4) + 1) % 4  # do we need the middle mod 4?
-            return self.sim_robot.readSensor(1)[which_sensor]
+            return self.wait_till_done(self.sim_robot.readSensor(1))[which_sensor]
 
     def visit(self):
         self.gridData.get(self.position).visited = True
@@ -426,9 +432,9 @@ class Robot:
             # change color to mark visited
             self.sim_robot.MAP.grid[self.sim_robot.MAP.robotLoc[0]][self.sim_robot.MAP.robotLoc[1]].color = (75, 75, 75)
             # TODO: That ^ is not very modular
-            if self.sim_robot.readSensor(2)[0] == 1:
+            if self.wait_till_done(self.sim_robot.readSensor(2))[0] == 1:
                 self.sim_robot.MAP.markOT()
-            elif self.sim_robot.readSensor(3)[0] == 1:
+            elif self.wait_till_done(self.sim_robot.readSensor(3))[0] == 1:
                 self.sim_robot.MAP.markDeadend()
 
     def explore(self):
