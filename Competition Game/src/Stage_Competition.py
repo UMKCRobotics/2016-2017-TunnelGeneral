@@ -57,6 +57,22 @@ class Stage_Competition(Stage):
                       ['E', 'EO', 'T', 'T', 'TO', 'E', 'E'],
                       ['T', 'T', 'T', 'E', 'E', 'EO', 'E'],
                       ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
+    Obstacle_between = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
+                        ['T', 'T', 'T', 'EO', 'T', 'E', 'E'],
+                        ['E', 'E', 'T', 'E', 'TO', 'E', 'E'],
+                        ['E', 'E', 'T', 'T', 'T', 'EO', 'E'],
+                        ['E', 'E', 'D', 'E', 'E', 'E', 'E'],
+                        ['E', 'EO', 'E', 'EO', 'E', 'EO', 'E'],
+                        ['E', 'E', 'E', 'E', 'E', 'E', 'E']
+                        ]
+    Many_Obstacles_between = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                            ['T', 'T', 'EO', 'TO', 'T', 'T', 'T'],
+                            ['E', 'T', 'EO', 'T', 'E', 'E', 'E'],
+                            ['E', 'T', 'EO', 'T', 'E', 'E', 'E'],
+                            ['E', 'TO', 'T', 'TO', 'E', 'E', 'E'],
+                            ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                            ['E', 'E', 'E', 'E', 'E', 'E', 'E']
+                            ]
 
     # BOARD OFFSET VARIABLES
     global_grid_width = 100
@@ -76,6 +92,7 @@ class Stage_Competition(Stage):
         #self.gameboard.load_board(self.gameboard.generate_board_round(3))
         #self.board_template = self.One_with_a_bug
         #self.board_template = self.Round3Example
+        #self.board_template = self.Many_Obstacles_between
         self.board_template = self.gameboard.generate_board_round(3)
         self.gameboard.load_board(self.board_template)
 

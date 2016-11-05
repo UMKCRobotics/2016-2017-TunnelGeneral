@@ -307,24 +307,47 @@ class RobotAlg():
                 #also check if obstructed
                 if curr_block.obstructed:
                     obstructed_blocks.append(curr_block)
+        #now, convert each segment to ([segment],[indexes_of,endpoints])
+        New_OT_segments = []
+        for segment in OT_segments:
+            endpoint_list = []
+            relevant_type = 'T'
+            for index in range(0,len(segment)):
+                block = segment[index] #get block
+                relevant_count = 0 #initiate adj T count
+                adj_blocks = self.MAP.get_adjacent_blocks(block) #get adj blocks
+                for adj_block in adj_blocks:
+                    if adj_block.type == 'T':
+                        relevant_count += 1
+                if relevant_count < 2: #add index to endpoint list if is an endpoint (less than two blocks around)
+                    endpoint_list.append(index) 
+            New_OT_segments.append((segment,endpoint_list)) #replace segment with tuple (segment,endpoint_list)
+
+        #replace old lists with new lists
+        OT_segments = New_OT_segments
+
         #first, fill in OT
         print 'OT segments: %s' % len(OT_segments)
         print 'DE segments: %s' % len(DE_segments)
         if len(OT_segments) > 1 and len(obstructed_blocks) > 0:
             for obs in obstructed_blocks:
                 common_segments = 0
-                for segment in OT_segments:
-                    for block in segment:
+                common_endpoints = 0
+                for segment,endpoints in OT_segments:
+                    for index in range(0,len(segment)): #look through each block by index
+                        block = segment[index]
                         adj_blocks = self.MAP.get_adjacent_blocks(block)
                         found = False
                         for newblock in adj_blocks:
                             if newblock == obs:
                                 found = True
-                                break
+                                break 
                         if found:
-                            common_segments += 1
-                            break
-                if common_segments > 1:
+                            if index in endpoints:
+                                common_endpoints += 1
+                            else:
+                                common_segments += 1
+                if common_endpoints == 2 and ((common_endpoints+common_segments) < 3):
                     obs.setOT()
 
 
@@ -338,8 +361,6 @@ class RobotAlg():
         adj_blocks = self.MAP.get_adjacent_blocks(curr_block)
         for block in adj_blocks:
             if block.type == type_req and block not in blocks_checked:
-                segment.append(block)
-                blocks_checked.append(block)
                 #perform this function recursively for block just added
                 segment.extend(self.createSegment(block,blocks_checked,type_req))
         return segment

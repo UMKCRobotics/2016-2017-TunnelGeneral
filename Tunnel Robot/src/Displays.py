@@ -35,3 +35,9 @@ class Displays():
     	commandObj = CommRequest('B' + '|S')
         self.ard.requestCommand(commandObj)
         return commandObj
+
+    def isConnected(self):
+        return self.ard.connected
+
+    def stopThread(self):
+        self.ard.keepRunning = False

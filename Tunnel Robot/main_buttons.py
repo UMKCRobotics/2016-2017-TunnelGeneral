@@ -15,7 +15,7 @@ disp_serial = serial.Serial('/dev/ttyUSB0',115200)
 #emf = EMF_Sensors(emf_serial)
 display  = Displays(disp_serial)
 
-while not display.ard.connected:
+while not display.isConnected():
 	time.sleep(0.1)
 
 globalThreads = []
