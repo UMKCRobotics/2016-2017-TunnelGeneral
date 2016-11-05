@@ -23,7 +23,7 @@ def simulation_impl(_sim_parameters):
     """
     _sim_robot = _sim_parameters[0]
     _sim_buttons = _sim_parameters[1]
-    robot = Robot(_sim_robot,_sim_buttons)
+    robot = Robot(_sim_robot, _sim_buttons)
     robot.explore3()
 
 
@@ -104,10 +104,20 @@ def cost_of_this_move(grid_space_data, coordinate):
 class HeapqItem:
     """ object that goes in the priority queue for Dijkstra's algorithm
         a coordinate, the directions of how to get there, and the cost of taking those directions """
-    def __init__(self, _coordinate, _directions, _cost):
+    def __init__(self, _coordinate, _directions, _base_cost, current_facing_direction):
         self.coordinate = _coordinate
         self.directions = _directions
-        self.cost = _cost
+        self.base_cost = _base_cost  # base cost before taking turns into account
+        self.cost = None
+        self.calculate_cost(current_facing_direction)
+
+    def calculate_cost(self, current_facing_direction):
+        """ taking turns into account """
+        self.cost = self.base_cost
+        previous_direction = current_facing_direction
+        for direction in self.directions:
+            if direction != previous_direction:
+                self.cost += 1
 
     def __lt__(self, other):
         return self.cost < other.cost
@@ -171,9 +181,10 @@ class GridData:
                     # not on the edge
                     self.get(x, y).cacheHere = Knowledge.no
 
-    def find_shortest_known_path(self, from_coordinate, to_coordinate):
+    def find_shortest_known_path(self, from_coordinate, to_coordinate, current_facing_direction):
         """
 
+        :param current_facing_direction:
         :param from_coordinate:
         :param to_coordinate:
         :return list: list of directions
@@ -181,7 +192,8 @@ class GridData:
         # BFS / Dijkstra's
         visited_in_this_bfs = set()
         bfs_queue = []
-        current_path = HeapqItem(from_coordinate, [], 0)  # Coord, directions we took to get there, cost
+        current_path = HeapqItem(from_coordinate, [], 0, current_facing_direction)
+        # Coord, directions we took to get there, cost, current facing
 
         while current_path.coordinate != to_coordinate:
             visited_in_this_bfs.add(current_path.coordinate)
@@ -192,8 +204,9 @@ class GridData:
                     heapq.heappush(bfs_queue,
                                    HeapqItem(coord_checking,
                                              current_path.directions + [direction],
-                                             current_path.cost + cost_of_this_move(self.get(coord_checking),
-                                                                                   coord_checking)))
+                                             current_path.base_cost + cost_of_this_move(self.get(coord_checking),
+                                                                                        coord_checking),
+                                             current_facing_direction))
 
             # get the new shortest path from priority queue
             print(bfs_queue)
@@ -201,11 +214,12 @@ class GridData:
 
         return current_path.directions
 
-    def find_path_to_side(self, from_coordinate):
+    def find_path_to_side(self, from_coordinate, current_facing_direction):
         # BFS  TODO: undo copied code
         visited_in_this_bfs = set()
         bfs_queue = []
-        current_path = HeapqItem(from_coordinate, [], 0)  # Coord, directions we took to get there, cost
+        current_path = HeapqItem(from_coordinate, [], 0, current_facing_direction)
+        # Coord, directions we took to get there, cost, current facing
 
         while 0 < current_path.coordinate.x < GRID_WIDTH - 1:
             visited_in_this_bfs.add(current_path.coordinate)
@@ -216,8 +230,9 @@ class GridData:
                     heapq.heappush(bfs_queue,
                                    HeapqItem(coord_checking,
                                              current_path.directions + [direction],
-                                             current_path.cost + cost_of_this_move(self.get(coord_checking),
-                                                                                   coord_checking)))
+                                             current_path.base_cost + cost_of_this_move(self.get(coord_checking),
+                                                                                        coord_checking),
+                                             current_facing_direction))
 
             # get the new shortest path from priority queue
             current_path = heapq.heappop(bfs_queue)
@@ -399,7 +414,7 @@ class Robot:
             coord_at_top = dfs_stack[-1]
             if coord_at_top in self.gridData.needToVisit:
                 # find directions
-                directions = self.gridData.find_shortest_known_path(self.position, coord_at_top)
+                directions = self.gridData.find_shortest_known_path(self.position, coord_at_top, self.facing)
                 # go there
                 for direction in directions:
                     self.turn(direction)
@@ -443,7 +458,7 @@ class Robot:
             coord_at_top = dfs_stack[-1]
             if coord_at_top in self.gridData.needToVisit:
                 # find directions
-                directions = self.gridData.find_shortest_known_path(self.position, coord_at_top)
+                directions = self.gridData.find_shortest_known_path(self.position, coord_at_top, self.facing)
                 # go there
                 for direction in directions:
                     # stop algorithm if stop button is pressed
@@ -474,7 +489,7 @@ class Robot:
                     self.visit()
 
             if away_from_sides_count > MOVE_COUNT_ALLOWED_AWAY_FROM_SIDES:
-                directions = self.gridData.find_path_to_side(self.position)
+                directions = self.gridData.find_path_to_side(self.position, self.facing)
                 # go there
                 for direction in directions:
                     # stop algorithm if stop button is pressed
@@ -520,7 +535,7 @@ class Robot:
 
         # TODO: look for dice in caches
         # go back to start
-        directions = self.gridData.find_shortest_known_path(self.position, Coordinate(0, 0))
+        directions = self.gridData.find_shortest_known_path(self.position, Coordinate(0, 0), self.facing)
         # go there
         for direction in directions:
             if self.sim_buttons.StopButton.clicked:
