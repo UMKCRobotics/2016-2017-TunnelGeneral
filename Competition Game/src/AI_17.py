@@ -7,6 +7,8 @@ import sys
 from Grid_Util import *
 from Static_Decorator import static_vars
 
+PRIORITY_FOR_AVOIDING_TURNS = 1
+
 MOVE_COUNT_ALLOWED_AWAY_FROM_SIDES = 13
 
 GRID_WIDTH = 7
@@ -110,6 +112,9 @@ class HeapqItem:
         self.base_cost = _base_cost  # base cost before taking turns into account
         self.cost = None
         self.calculate_cost(current_facing_direction)
+        # sys.stdout.write("put path into priority q: to " + str(self.coordinate) +
+        #                  " cost: " + str(self.cost) + " _base_cost: " + str(_base_cost) + '\n' +
+        #                  "direction list: " + str(self.directions) + '\n')
 
     def calculate_cost(self, current_facing_direction):
         """ taking turns into account """
@@ -117,7 +122,8 @@ class HeapqItem:
         previous_direction = current_facing_direction
         for direction in self.directions:
             if direction != previous_direction:
-                self.cost += 1
+                self.cost += PRIORITY_FOR_AVOIDING_TURNS
+            previous_direction = direction
 
     def __lt__(self, other):
         return self.cost < other.cost
