@@ -27,62 +27,8 @@ def simulation_impl(_sim_parameters):
     robot.explore3()
 
 
-# this is not used
-SNAKE_AROUND_EDGE_SEQUENCE = [
-    Coordinate(0, 0),
-    Coordinate(0, 1),
-    Coordinate(0, 2),
-    Coordinate(1, 2),
-    Coordinate(1, 3),
-    Coordinate(0, 3),
-    Coordinate(0, 4),
-    Coordinate(1, 4),
-    Coordinate(1, 5),
-    Coordinate(0, 5),
-    Coordinate(0, 6),
-    Coordinate(1, 6),
-    Coordinate(2, 6),
-    Coordinate(2, 5),
-    Coordinate(2, 4),
-    Coordinate(3, 4),
-    Coordinate(3, 5),
-    Coordinate(3, 6),
-    Coordinate(4, 6),
-    Coordinate(4, 5),
-    Coordinate(4, 4),
-    Coordinate(5, 4),
-    Coordinate(5, 5),
-    Coordinate(5, 6),
-    Coordinate(6, 6),
-    Coordinate(6, 5),
-    Coordinate(6, 4),
-    Coordinate(6, 3),
-    Coordinate(5, 3),
-    Coordinate(4, 3),
-    Coordinate(4, 2),
-    Coordinate(5, 2),
-    Coordinate(6, 2),
-    Coordinate(6, 1),
-    Coordinate(6, 0),
-    Coordinate(5, 0),
-    Coordinate(5, 1),
-    Coordinate(4, 1),
-    Coordinate(4, 0),
-    Coordinate(3, 0),
-    Coordinate(3, 1),
-    Coordinate(3, 2),
-    Coordinate(3, 3),
-    Coordinate(2, 3),
-    Coordinate(2, 2),
-    Coordinate(2, 1),
-    Coordinate(2, 0),
-    Coordinate(1, 0),
-    Coordinate(1, 1)
-]
-
-
 # this is an enumeration, but we can't use enumerations because someone doesn't update their python
-class Knowledge:  # class Knowledge(IntEnum:
+class Knowledge:  # class Knowledge(IntEnum):
     def __init__(self):
         pass
 
@@ -226,7 +172,12 @@ class GridData:
                     self.get(x, y).cacheHere = Knowledge.no
 
     def find_shortest_known_path(self, from_coordinate, to_coordinate):
+        """
 
+        :param from_coordinate:
+        :param to_coordinate:
+        :return list: list of directions
+        """
         # BFS / Dijkstra's
         visited_in_this_bfs = set()
         bfs_queue = []
@@ -292,14 +243,15 @@ class Robot:
 
         self.facing = Direction.east  # TODO: can we get this from the SimRobot?
 
-    def wait_till_done(self,resp):
-        intermediateDelay = 0.01
+    @staticmethod
+    def wait_till_done(resp):
+        intermediate_delay = 0.01
         while not resp.isDone:
-            time.sleep(intermediateDelay)
+            time.sleep(intermediate_delay)
         return resp.getResponse()
 
     def forward(self):
-        self.move(1)
+        self.move_where_i_think_i_am(1)
         if self.using_outside_grid:
             self.display_grid_wait_enter()
         else:  # using simulation
@@ -316,9 +268,9 @@ class Robot:
 
     def reverse(self):
         # TODO: this hasn't been updated for simulation (because it's not used)
-        self.move(-1)
+        self.move_where_i_think_i_am(-1)
 
-    def move(self, move_amount):
+    def move_where_i_think_i_am(self, move_amount):
         """ don't call this, call forward or reverse instead """
         if self.facing == Direction.east:
             self.position.x += move_amount
@@ -474,35 +426,11 @@ class Robot:
             # if we arrive here, none of the adjacent blocks need to be visited
             dfs_stack.pop()
 
-    def explore_snake(self):
-        """ this doesn't work """
-
-        index = 0
-        while len(self.gridData.needToVisit):
-            if self.position in self.gridData.needToVisit:
-                self.visit()
-            coord_at_top = SNAKE_AROUND_EDGE_SEQUENCE[index]
-            if coord_at_top in self.gridData.needToVisit:
-                # find directions
-                directions = self.gridData.find_shortest_known_path(self.position, coord_at_top)
-                # go there
-                for direction in directions:
-                    self.turn(direction)
-                    self.forward()
-                    # visit everywhere along the way
-                    if self.position in self.gridData.needToVisit:
-                        self.visit()
-                # in case there are no directions
-                if self.position in self.gridData.needToVisit:
-                    self.visit()
-
-            index += 1
-
     def explore3(self):
         """ visit all possible grid spaces
             go back to sides, when away for a long time """
 
-        #wait for Go Button to be pressed
+        # wait for Go Button to be pressed
         if not self.using_outside_grid:
             while not self.sim_buttons.GoButton.clicked:
                 time.sleep(0.1)
@@ -518,7 +446,7 @@ class Robot:
                 directions = self.gridData.find_shortest_known_path(self.position, coord_at_top)
                 # go there
                 for direction in directions:
-                    #stop algorithm is stop button is pressed
+                    # stop algorithm if stop button is pressed
                     if self.sim_buttons.StopButton.clicked:
                         keep_going = False
                         break
@@ -549,7 +477,7 @@ class Robot:
                 directions = self.gridData.find_path_to_side(self.position)
                 # go there
                 for direction in directions:
-                    #stop algorithm is stop button is pressed
+                    # stop algorithm if stop button is pressed
                     if self.sim_buttons.StopButton.clicked:
                         keep_going = False
                         break
@@ -573,7 +501,6 @@ class Robot:
                 self.calibrate()  # TODO: put this at every edge
             # put adjacent unvisited nodes in stack and visit them
             coord_at_top = dfs_stack[-1]
-            # TODO: change this to use COORDINATE_CHANGE? (keep order)
             # order: south north west east, to touch walls often and fill holes early
             found_adjacent_block_to_visit = False
             for direction in (Direction.south, Direction.north, Direction.west, Direction.east):
@@ -603,7 +530,6 @@ class Robot:
 
     @staticmethod
     def sleep_wait():
-        # raw_input()
         time.sleep(Robot.SLEEP_TIME)
 
 
