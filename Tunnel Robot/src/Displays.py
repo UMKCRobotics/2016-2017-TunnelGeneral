@@ -36,6 +36,11 @@ class Displays():
         self.ard.requestCommand(commandObj)
         return commandObj
 
+    def performTap(self):
+        commandObj = CommRequest('A' + '|1')
+        self.ard.requestCommand(commandObj)
+        return commandObj
+
     def isConnected(self):
         return self.ard.connected
 

@@ -1,7 +1,7 @@
 #get serial library for python-2.7.x
 import os,sys,time
 import serial
-
+#stuff
 #get robot + robotmap for general movement + navigation
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))) #directory from which this script is ran
 sys.path.insert(0, os.path.join(__location__,'src/'))

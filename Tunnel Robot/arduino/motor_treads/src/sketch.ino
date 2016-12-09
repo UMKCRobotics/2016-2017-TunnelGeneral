@@ -1,7 +1,10 @@
 #include <SoftwareSerial.h>
 
 //import things here
-
+#define PINA1 2
+#define PINB1 4
+#define PINA2 3
+#define PINB2 5
 
 SoftwareSerial motorControl1(8,9); //RX,TX
 SoftwareSerial motorControl2(10,11);
@@ -9,6 +12,9 @@ SoftwareSerial motorControl2(10,11);
 String command = "";
 String value = "";
 String response = "";
+
+
+int QEM[16] = {0,-1,1,2,1,0,2,-1,-1,2,0,1,2,1,-1,0};
 
 void setup() {
  //start serial
@@ -67,15 +73,34 @@ String interpretCommand(String command, String value) {
 	return responseString;
 }
 
+void ISR0(long value) {
+  volatile unsigned char Old0, New0;
+  volatile long Position0 = 0;
+  while (abs(Position0) < value) {
+    Old0 = New0;
+    New0 = digitalRead(PINA2)*2 + digitalRead(PINB2); //convert binary to decimal
+    Position0 += QEM[Old0*4 + New0];
+    Serial.println(Position0);
+  }
+}
+
 void goForward() {
- motorControl1.write("1f9\r");
- motorControl1.write("2f9\r");
- motorControl2.write("1f9\r");
- motorControl2.write("2f9\r");
- delay(500);
+ motorControl1.write("1r9\r");
+ delayMicroseconds(250);
+ motorControl1.write("2r9\r");
+ delayMicroseconds(250);
+ motorControl2.write("1r9\r");
+ delayMicroseconds(250);
+ motorControl2.write("2r9\r");
+ //check encoders here
+ ISR0(500);
+ //delay(500);
  motorControl1.write("1f0\r");
+ delayMicroseconds(250);
  motorControl1.write("2f0\r");
+ delayMicroseconds(250);
  motorControl2.write("1f0\r");
+ delayMicroseconds(250);
  motorControl2.write("2f0\r");
 }
 
