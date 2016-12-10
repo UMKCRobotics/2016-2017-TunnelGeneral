@@ -41,7 +41,7 @@ class Knowledge:  # class Knowledge(IntEnum):
 
 def translate_coordinate_to_index(coordinate):
     """
-    change a coordinate to the index on the display
+    change a coordinate to the index on the robot's map display
     index is 0 in top left, counting up to the right
     :param coordinate: Coordinate
     :return: int
@@ -192,7 +192,7 @@ class GridData:
 
         :param current_facing_direction:
         :param from_coordinate:
-        :param to_coordinate:
+        :param to_coordinate: destination or "s" for finding a path to side
         :return list: list of directions
         """
         # BFS / Dijkstra's
@@ -201,7 +201,8 @@ class GridData:
         current_path = HeapqItem(from_coordinate, [], 0, current_facing_direction)
         # Coord, directions we took to get there, cost, current facing
 
-        while current_path.coordinate != to_coordinate:
+        while (to_coordinate == "s" and 0 < current_path.coordinate.x < GRID_WIDTH - 1) or \
+              (to_coordinate != "s" and current_path.coordinate != to_coordinate):
             visited_in_this_bfs.add(current_path.coordinate)
 
             for direction in COORDINATE_CHANGE:
@@ -216,31 +217,6 @@ class GridData:
 
             # get the new shortest path from priority queue
             print(bfs_queue)
-            current_path = heapq.heappop(bfs_queue)
-
-        return current_path.directions
-
-    def find_path_to_side(self, from_coordinate, current_facing_direction):
-        # BFS  TODO: undo copied code
-        visited_in_this_bfs = set()
-        bfs_queue = []
-        current_path = HeapqItem(from_coordinate, [], 0, current_facing_direction)
-        # Coord, directions we took to get there, cost, current facing
-
-        while 0 < current_path.coordinate.x < GRID_WIDTH - 1:
-            visited_in_this_bfs.add(current_path.coordinate)
-
-            for direction in COORDINATE_CHANGE:
-                coord_checking = current_path.coordinate + COORDINATE_CHANGE[direction]
-                if coord_checking in self.canMoveHere and coord_checking not in visited_in_this_bfs:
-                    heapq.heappush(bfs_queue,
-                                   HeapqItem(coord_checking,
-                                             current_path.directions + [direction],
-                                             current_path.base_cost + cost_of_this_move(self.get(coord_checking),
-                                                                                        coord_checking),
-                                             current_facing_direction))
-
-            # get the new shortest path from priority queue
             current_path = heapq.heappop(bfs_queue)
 
         return current_path.directions
@@ -468,7 +444,7 @@ class Robot:
                 # go there
                 for direction in directions:
                     # stop algorithm if stop button is pressed
-                    if int(self.wait_till_done(self.sim_buttons.getStopButton())):
+                    if (not self.using_outside_grid) and int(self.wait_till_done(self.sim_buttons.getStopButton())):
                         keep_going = False
                         break
 
@@ -495,11 +471,11 @@ class Robot:
                     self.visit()
 
             if away_from_sides_count > MOVE_COUNT_ALLOWED_AWAY_FROM_SIDES:
-                directions = self.gridData.find_path_to_side(self.position, self.facing)
+                directions = self.gridData.find_shortest_known_path(self.position, "s", self.facing)
                 # go there
                 for direction in directions:
                     # stop algorithm if stop button is pressed
-                    if int(self.wait_till_done(self.sim_buttons.getStopButton())):
+                    if (not self.using_outside_grid) and int(self.wait_till_done(self.sim_buttons.getStopButton())):
                         keep_going = False
                         break
 
@@ -544,7 +520,7 @@ class Robot:
         directions = self.gridData.find_shortest_known_path(self.position, Coordinate(0, 0), self.facing)
         # go there
         for direction in directions:
-            if int(self.wait_till_done(self.sim_buttons.getStopButton())):
+            if (not self.using_outside_grid) and int(self.wait_till_done(self.sim_buttons.getStopButton())):
                 break
             self.turn(direction)
             self.forward()

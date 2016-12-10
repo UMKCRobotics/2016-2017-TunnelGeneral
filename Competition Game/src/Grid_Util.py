@@ -8,7 +8,7 @@ class Coordinate:
         self.y = _y
 
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
+        return isinstance(other, Coordinate) and self.x == other.x and self.y == other.y
 
     def __ne__(self, other):
         return not self.__eq__(other)
