@@ -1,2 +1,6 @@
 *.pyc
 .idea
+.build
+build
+Competition Game/src/genmap.txt
+Competition Game/src/gridstates.txt

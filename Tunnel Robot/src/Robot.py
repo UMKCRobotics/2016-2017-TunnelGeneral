@@ -8,9 +8,10 @@ import SensorArduino
 class Robot():
 
 
-	def __init__(self,motors,sensors):
+	def __init__(self,motors,sensors,map_in):
 		self.motors = motors
 		self.sensors = sensors
+		self.MAP = map_in
 
 	def goForward(self):
 		#forward 1 foot, returns command object
