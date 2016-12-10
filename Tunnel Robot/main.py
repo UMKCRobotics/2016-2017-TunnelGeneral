@@ -6,6 +6,10 @@ import serial
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))) #directory from which this script is ran
 sys.path.insert(0, os.path.join(__location__,'src/'))
 
+#insert location from Competition Game
+main_dir = os.path.realpath(os.path.join(__location__,'..'))
+sys.path.insert(0, os.path.realpath(os.path.join(main_dir,'Competition Game/src')))
+
 #from SensorArduino import EMF_Sensors
 from Displays import Displays
 

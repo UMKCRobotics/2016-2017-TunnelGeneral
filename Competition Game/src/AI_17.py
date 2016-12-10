@@ -453,7 +453,7 @@ class Robot:
 
         # wait for Go Button to be pressed
         if not self.using_outside_grid:
-            while not self.sim_buttons.GoButton.clicked:
+            while not int(self.wait_till_done(self.sim_buttons.getGoButton())):
                 time.sleep(0.1)
 
         keep_going = True
@@ -468,7 +468,7 @@ class Robot:
                 # go there
                 for direction in directions:
                     # stop algorithm if stop button is pressed
-                    if self.sim_buttons.StopButton.clicked:
+                    if int(self.wait_till_done(self.sim_buttons.getStopButton())):
                         keep_going = False
                         break
 
@@ -499,7 +499,7 @@ class Robot:
                 # go there
                 for direction in directions:
                     # stop algorithm if stop button is pressed
-                    if self.sim_buttons.StopButton.clicked:
+                    if int(self.wait_till_done(self.sim_buttons.getStopButton())):
                         keep_going = False
                         break
 
@@ -544,7 +544,7 @@ class Robot:
         directions = self.gridData.find_shortest_known_path(self.position, Coordinate(0, 0), self.facing)
         # go there
         for direction in directions:
-            if self.sim_buttons.StopButton.clicked:
+            if int(self.wait_till_done(self.sim_buttons.getStopButton())):
                 break
             self.turn(direction)
             self.forward()

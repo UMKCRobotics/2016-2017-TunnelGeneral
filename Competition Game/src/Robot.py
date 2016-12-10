@@ -4,6 +4,10 @@ __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))  # directory from which this script is ran
 print "location:: %s" % __location__
 
+main_dir = os.path.realpath(os.path.join(__location__,'../..'))
+sys.path.insert(0, os.path.realpath(os.path.join(main_dir,'Tunnel Robot/src')))
+
+from DeviceComm import CommRequest
 
 # sys.path.insert(0, os.path.join(__location__))
 # SOUND_FOLDER = os.path.join(__location__,'soundfx')
@@ -214,6 +218,7 @@ class Robot():
     def rotateCounterClockwise(self):
         commObject = CommRequest('l')
         self.changeDirection(1)
+        self.MAP.rotateCounterClockwise()
         self.turnCounter += 1
         self.play_sound(self.sound5)
         print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
@@ -223,6 +228,7 @@ class Robot():
     def rotateClockwise(self):
         commObject = CommRequest('r')
         self.changeDirection(-1)
+        self.MAP.rotateClockwise()
         self.turnCounter += 1
         self.play_sound(self.sound5)
         print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
@@ -231,7 +237,7 @@ class Robot():
 
     def changeDirection(self, val):
         self.direction = (self.direction + val) % 4
-        self.MAP.direction = self.direction
+        #self.MAP.direction = self.direction
 
     def drive(self, val):
         self.MAP.drive(val)
@@ -280,26 +286,6 @@ class Robot():
             self.leftA7 = True
 
 
-class CommRequest(object):
-    # this class is the object passed into
-    # a Device Comm as a request to an
-    # outside device
-    def __init__(self,request):
-        self.request = request #string
-        self.isDone = False #represents if command is done performing
-        self.response = None #optional string value from arduino
-
-    def checkDone(self):
-        return self.isDone
-
-    def markDone(self):
-        self.isDone = True
-
-    def setResponse(self,response):
-        self.response = response
-
-    def getResponse(self):
-        return self.response
 
 
 # OT Map: Robot's internal map of the world
@@ -307,7 +293,7 @@ class RobotMap():
     rows = '1234567'
     cols = 'ABCDEFG'
 
-    def __init__(self, screen, grid_width, offsets, direction):
+    def __init__(self, screen, grid_width, offsets, direction,shouldPlaySound=True):
         self.screen = screen
         self.GRID_WIDTH = grid_width
         self.TOTAL_WIDTH = grid_width * 7
@@ -326,14 +312,17 @@ class RobotMap():
         self.dirIndicator = pygame.Rect((self.robotMini.topleft), (5, 5))
         self.dirIndicatorColor = (100, 100, 100)
         # load sounds
-        self.SOUND_FOLDER = os.path.join(__location__, 'soundfx')
-        self.soundOT = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER, 'smb_coin.wav'))
-        self.soundDeadend = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER, 'smb_fireball.wav'))
+        self.shouldPlaySound = shouldPlaySound
+        if self.shouldPlaySound:
+            self.SOUND_FOLDER = os.path.join(__location__, 'soundfx')
+            self.soundOT = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER, 'smb_coin.wav'))
+            self.soundDeadend = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER, 'smb_fireball.wav'))
 
     def play_sound(self, sound):
-        soundT = threading.Thread(target=self.__play_sound__, args=(sound,))
-        soundT.daemon = True
-        soundT.start()
+        if self.shouldPlaySound:
+            soundT = threading.Thread(target=self.__play_sound__, args=(sound,))
+            soundT.daemon = True
+            soundT.start()
 
     @staticmethod
     def __play_sound__(sound):
@@ -502,6 +491,12 @@ class RobotMap():
             if newval >= 0 and newval <= 6:
                 self.robotLoc[1] = newval
             # self.putRobotInBlock(self.make_location(self.robotLoc))
+
+    def rotateCounterClockwise(self):
+        self.direction = (self.direction + 1) % 4
+
+    def rotateClockwise(self):
+        self.direction = (self.direction - 1) % 4
 
     def handleMouseEvent(self, event):
         pass

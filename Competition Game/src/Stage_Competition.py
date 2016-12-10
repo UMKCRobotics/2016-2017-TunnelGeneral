@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.join(__location__))
 
 from Stage import Stage
 from MouseEvents import MouseEvents
-from Robot import Robot
+from Robot import Robot,CommRequest
 
 MAX_OBSTACLES = 6
 
@@ -760,6 +760,18 @@ class Options():
         scoreButton.text_content = 'SCORE (TBD)'
         self.OBJECTS.append(scoreButton)
         self.ScoreButton = scoreButton
+
+    def getGoButton(self):
+        commandObj = CommRequest('B' + '|G')
+        commandObj.setResponse(str(int(self.GoButton.clicked)))
+        commandObj.markDone()
+        return commandObj
+
+    def getStopButton(self):
+        commandObj = CommRequest('B' + '|S')
+        commandObj.setResponse(str(int(self.StopButton.clicked)))
+        commandObj.markDone()
+        return commandObj
 
     def handleMouseEvent(self, event):
         self.coords = pygame.mouse.get_pos()
