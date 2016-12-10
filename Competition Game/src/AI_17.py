@@ -153,6 +153,9 @@ class HeapqItem:
 
 
 def can_calibrate_x(coord):
+    print("checking a coordinate to be able to calibrate on x")
+    print(coord)
+    print((coord.x == 0 or coord.x == GRID_WIDTH - 1) and coord not in BAD_CALIBRATION_COORDINATES)
     return (coord.x == 0 or coord.x == GRID_WIDTH - 1) and coord not in BAD_CALIBRATION_COORDINATES
 
 
@@ -213,7 +216,7 @@ class GridData:
         current_path = HeapqItem(from_coordinate, [], 0, current_facing_direction)
         # Coord, directions we took to get there, cost, current facing
 
-        while (to_coordinate == "s" and can_calibrate_x(current_path.coordinate)) or \
+        while (to_coordinate == "s" and not can_calibrate_x(current_path.coordinate)) or \
               (to_coordinate != "s" and current_path.coordinate != to_coordinate):
             visited_in_this_bfs.add(current_path.coordinate)
 
@@ -271,11 +274,13 @@ class Robot:
         print("just moved to " + str(self.position))
 
     def calibrate(self):  # alias for going forward (for sim)
+        print("about to calibrate")
         if self.using_outside_grid:
             pass  # TODO: calibrate
         else:
             self.wait_till_done(self.sim_robot.goForward())
             Robot.sleep_wait()
+        print("calibration done")
 
     def reverse(self):
         # TODO: this hasn't been updated for simulation (because it's not used)
@@ -488,7 +493,10 @@ class Robot:
                     self.visit()
 
             if away_from_sides_count > MOVE_COUNT_ALLOWED_AWAY_FROM_SIDES:
+                print("I've been away too long...")
                 directions = self.gridData.find_shortest_known_path(self.position, "s", self.facing)
+                print("Here are the direction to a side I can calibrate on:")
+                print(directions)
                 # go there
                 for direction in directions:
                     # stop algorithm if stop button is pressed
@@ -512,7 +520,9 @@ class Robot:
                         if self.position != coord_at_top:
                             print("appending: " + str(self.position))
                             dfs_stack.append(Coordinate(self.position.x, self.position.y))
+                print("ai_17 about to call calibrate")
                 self.calibrate()  # TODO: put this at every edge
+                print("ai_17 just called calibrate")
             # put adjacent unvisited nodes in stack and visit them
             coord_at_top = dfs_stack[-1]
             # order: south north west east, to touch walls often and fill holes early
