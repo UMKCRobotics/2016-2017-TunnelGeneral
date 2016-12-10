@@ -71,7 +71,7 @@ class Robot():
         # self.song = pygame.mixer.Sound(os.path.join(self.SOUND_FOLDER,'01-super-mario-bros.wav'))
         pygame.mixer.music.load(os.path.join(self.SOUND_FOLDER, '01-super-mario-bros.wav'))
         pygame.mixer.music.play(-1)
-
+        self.move_to_do = None
     # self.play_sound(self.song)
 
     def play_sound(self, sound):
@@ -118,6 +118,8 @@ class Robot():
     def handleKeyEvent(self, event):
         if event.key in [pygame.K_w, pygame.K_UP]:
             self.goForward()
+        elif event.key in [pygame.K_b]:
+            self.performMove()
         elif event.key in [pygame.K_a, pygame.K_LEFT]:
             self.rotateCounterClockwise()
         elif event.key in [pygame.K_s, pygame.K_DOWN]:
@@ -197,7 +199,9 @@ class Robot():
 
     def performMove(self):
         # insert code here
-        pass
+        if self.move_to_do != None:
+            self.move_to_do.markDone()
+            self.move_to_do = None
 
     def goForward(self):
         commObject = CommRequest('f')
@@ -205,7 +209,8 @@ class Robot():
         self.forwardCounter += 1
         self.play_sound(self.sound1)
         print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
-        commObject.markDone()
+        #commObject.markDone()
+        self.move_to_do = commObject
         return commObject
 
     def goBackward(self):
@@ -222,7 +227,8 @@ class Robot():
         self.turnCounter += 1
         self.play_sound(self.sound5)
         print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
-        commObject.markDone()
+        #commObject.markDone()
+        self.move_to_do = commObject
         return commObject
 
     def rotateClockwise(self):
@@ -232,7 +238,8 @@ class Robot():
         self.turnCounter += 1
         self.play_sound(self.sound5)
         print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
-        commObject.markDone()
+        #commObject.markDone()
+        self.move_to_do = commObject
         return commObject
 
     def changeDirection(self, val):

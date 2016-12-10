@@ -73,6 +73,13 @@ class Stage_Competition(Stage):
                             ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
                             ['E', 'E', 'E', 'E', 'E', 'E', 'E']
                             ]
+    One_to_test_with_ai17 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                             ['E', 'E', 'E', 'EO', 'E', 'EO', 'E'],
+                             ['E', 'E', 'T', 'T', 'T', 'T', 'T'],
+                             ['E', 'TO', 'T', 'E', 'E', 'E', 'E'],
+                             ['E', 'T', 'E', 'E', 'E', 'E', 'E'],
+                             ['E', 'T', 'D', 'E', 'E', 'E', 'E'],
+                             ['E', 'T', 'E', 'E', 'E', 'E', 'E']]
 
     # BOARD OFFSET VARIABLES
     global_grid_width = 100
@@ -93,7 +100,8 @@ class Stage_Competition(Stage):
         #self.board_template = self.One_with_a_bug
         #self.board_template = self.Round3Example
         #self.board_template = self.Many_Obstacles_between
-        self.board_template = self.gameboard.generate_board_round(3)
+        self.board_template = self.One_to_test_with_ai17
+        #self.board_template = self.gameboard.generate_board_round(3)
         self.gameboard.load_board(self.board_template)
 
         # choose visibility options to start
@@ -140,7 +148,7 @@ class Stage_Competition(Stage):
             obj.draw()
         # self.counter += 1
         # if self.counter % self.delayCount == 0:
-        self.robot.performMove()
+        #self.robot.performMove()
         #perform scoring if necessary
         if not self.scored and self.options.StopButton.clicked:
             self.performScoring()

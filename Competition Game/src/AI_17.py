@@ -213,7 +213,7 @@ class GridData:
         current_path = HeapqItem(from_coordinate, [], 0, current_facing_direction)
         # Coord, directions we took to get there, cost, current facing
 
-        while (to_coordinate == "s" and can_calibrate_x(current_path.coordinate.x)) or \
+        while (to_coordinate == "s" and can_calibrate_x(current_path.coordinate)) or \
               (to_coordinate != "s" and current_path.coordinate != to_coordinate):
             visited_in_this_bfs.add(current_path.coordinate)
 
@@ -260,6 +260,7 @@ class Robot:
         return resp.getResponse()
 
     def forward(self):
+        print("about to move forward from " + str(self.position))
         self.move_where_i_think_i_am(1)
         if self.using_outside_grid:
             self.display_grid_wait_enter()
@@ -267,6 +268,7 @@ class Robot:
             self.wait_till_done(self.sim_robot.goForward())
             self.sleep_wait()
             self.display_grid_in_console()
+        print("just moved to " + str(self.position))
 
     def calibrate(self):  # alias for going forward (for sim)
         if self.using_outside_grid:
@@ -291,6 +293,7 @@ class Robot:
             self.position.y -= move_amount
 
     def turn(self, desired_direction):
+        print("about to turn: " + str(desired_direction))
         if self.facing == desired_direction:
             pass  # don't evaluate elif expressions
         # not already facing the correct direction
@@ -302,6 +305,7 @@ class Robot:
             # TODO: alternate 2 lefts and 2 rights in case of inaccuracies
             self.left()
             self.left()
+        print("just turned: " + str(self.facing))
         # recalibrate if possible
         if self.using_outside_grid:
             self.display_grid_wait_enter()
@@ -372,6 +376,7 @@ class Robot:
             return self.wait_till_done(self.sim_robot.readSensor(1))[which_sensor]
 
     def visit(self):
+        print("visiting: " + str(self.position))
         self.gridData.get(self.position).visited = True
         self.gridData.needToVisit.remove(self.position)
 
