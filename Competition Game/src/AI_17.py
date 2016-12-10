@@ -16,6 +16,14 @@ GRID_HEIGHT = 7
 DISPLAY_WIDTH = 8
 DISPLAY_HEIGHT = 8
 
+BAD_CALIBRATION_COORDINATES = set()
+# If the 2x4s don't align well with each other on each side, uncomment the following lines
+# BAD_CALIBRATION_COORDINATES.add(Coordinate(GRID_WIDTH / 2, 0))
+# BAD_CALIBRATION_COORDINATES.add(Coordinate(0, GRID_HEIGHT / 2))
+# BAD_CALIBRATION_COORDINATES.add(Coordinate(GRID_WIDTH / 2, GRID_HEIGHT - 1))
+# BAD_CALIBRATION_COORDINATES.add(Coordinate(GRID_WIDTH - 1, GRID_HEIGHT / 2))
+# print(BAD_CALIBRATION_COORDINATES)
+
 
 def simulation_impl(_sim_parameters):
     """
@@ -144,6 +152,10 @@ class HeapqItem:
         return str(self.coordinate)
 
 
+def can_calibrate_x(coord):
+    return (coord.x == 0 or coord.x == GRID_WIDTH - 1) and coord not in BAD_CALIBRATION_COORDINATES
+
+
 class GridData:
     """ collection of all the GridSpaceData for the whole grid """
     def __init__(self):
@@ -201,7 +213,7 @@ class GridData:
         current_path = HeapqItem(from_coordinate, [], 0, current_facing_direction)
         # Coord, directions we took to get there, cost, current facing
 
-        while (to_coordinate == "s" and 0 < current_path.coordinate.x < GRID_WIDTH - 1) or \
+        while (to_coordinate == "s" and can_calibrate_x(current_path.coordinate.x)) or \
               (to_coordinate != "s" and current_path.coordinate != to_coordinate):
             visited_in_this_bfs.add(current_path.coordinate)
 
