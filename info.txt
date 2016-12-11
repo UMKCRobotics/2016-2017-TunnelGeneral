@@ -1,0 +1,16 @@
+UDEV rule commands (to find serial #):
+	1. After plugging in the device, perform:
+	>	dmesg
+	2. When the right name is found, perform:
+	>	udevadm info --name=/dev/ttyACM0 --attribute-walk
+	where the /ttyACM0 is the right name
+	3. Look for some serial parameter under USB, or TTY. It may look like this: A501VRMT
+	4. Put that into the serial in the .rules file
+	5. Run make_udev_rules
+
+Fixing git repo after .gitignore is updated:
+	1. Make sure the current working dir is the root of the proj
+	2. Run the following commands:
+	>	git rm --cached -r .
+	>	git add .
+	3. Commit with a pretty message and push

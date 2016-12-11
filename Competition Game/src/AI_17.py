@@ -452,7 +452,7 @@ class Robot:
         # wait for Go Button to be pressed
         if not self.using_outside_grid:
             while not int(self.wait_till_done(self.sim_buttons.getGoButton())):
-                time.sleep(0.1)
+                time.sleep(0.25)
 
         keep_going = True
         away_from_sides_count = 0

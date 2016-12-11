@@ -12,20 +12,19 @@ sys.path.insert(0, os.path.realpath(os.path.join(main_dir,'Competition Game/src'
 
 #from SensorArduino import EMF_Sensors
 #from Displays import Displays
-from Motors import MotorsArduino
-from Displays import Displays
+from ArduinoFuncs import ArduinoFuncs
 from Robot_Impl import Robot_Impl
 from Robot import RobotMap
 from AI_JED import RobotAlg as AlgJed
 from AI_17 import Robot as Alg17
 
-motor_serial = serial.Serial('/dev/ttyUSB0',115200)
+ard_serial = serial.Serial('/dev/ttyUSB0',115200)
 
 #motors = MotorsNXT()
 #emf = EMF_Sensors(emf_serial)
 #display  = Displays(disp_serial)
-motors = MotorsArduino(motor_serial)
-while not motors.ard.connected:
+ard_funcs = ArduinoFuncs(ard_serial)
+while not ard_funcs.ard.connected:
 	time.sleep(0.1)
 
 display = None
@@ -35,7 +34,7 @@ globalThreads = []
 #initialize Robot_Impl
 direction = 0
 robot_map = RobotMap(None,0,None,None,direction,shouldPlaySound=False)
-robot_impl = Robot_Impl(motors,display,robot_map)
+robot_impl = Robot_Impl(ard_funcs,ard_funcs,robot_map)
 #alg17:
 robotAlgorithm = Alg17(robot_impl,display)
 #robotAlgorithm.explore3()

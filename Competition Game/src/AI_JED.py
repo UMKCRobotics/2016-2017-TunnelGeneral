@@ -191,8 +191,8 @@ class RobotAlg():
     def doStuff(self):
 
         #wait for Go Button to be pressed
-        while not int(self.wait_till_done(self.sim_buttons.getStopButton())):
-            sleep(0.1)
+        while not int(self.wait_till_done(self.sim_buttons.getGoButton())):
+            sleep(0.25)
 
         self.goList = self.get_vertical_path()
         # self.goList = self.get_spiral_path()

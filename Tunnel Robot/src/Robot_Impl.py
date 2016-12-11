@@ -9,29 +9,28 @@ from DeviceComm import CommRequest
 class Robot_Impl():
 
 
-	def __init__(self,motors,display,map_in):
-		self.motors = motors
-		self.display = display
+	def __init__(self,arduinofuncs,map_in):
+		self.arduinofuncs = arduinofuncs
 		self.MAP = map_in
 
 	def goForward(self):
 		#forward 1 foot, returns command object
 		self.MAP.drive(1)
-		return motors.moveForward()
+		return arduinofuncs.moveForward()
 
 	def rotateCounterClockwise(self):
 		#left 90 degrees, returns command object
 		self.MAP.rotateCounterClockwise()
-		return motors.moveLeft()
+		return arduinofuncs.moveLeft()
 
 	def rotateClockwise(self):
 		#right 90 degrees, returns command object
 		self.MAP.rotateClockwise()
-		return motors.moveRight()
+		return arduinofuncs.moveRight()
 
 	def goCalibrate(self):
 		#use perimeter to fix possible rotation/translation errors
-		return motors.goCalibrate()
+		return arduinofuncs.goCalibrate()
 
 	def readSensor(self, value):
 		commObj = None
