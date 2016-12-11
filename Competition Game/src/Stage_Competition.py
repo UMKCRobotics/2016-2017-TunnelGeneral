@@ -116,6 +116,7 @@ class Stage_Competition(Stage):
         self.global_objects.append(self.options)
         self.mouse = MouseEvents(self.global_objects)
         self.scored = False
+        self.shouldPerformRobotMove = True
 
     # self.counter = 1
     # self.delayCount = 144
@@ -148,7 +149,8 @@ class Stage_Competition(Stage):
             obj.draw()
         # self.counter += 1
         # if self.counter % self.delayCount == 0:
-        #self.robot.performMove()
+        if self.shouldPerformRobotMove:
+            self.robot.performMove()
         #perform scoring if necessary
         if not self.scored and self.options.StopButton.clicked:
             self.performScoring()
