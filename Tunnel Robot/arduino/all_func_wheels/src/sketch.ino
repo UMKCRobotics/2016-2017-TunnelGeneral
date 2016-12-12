@@ -4,6 +4,10 @@
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
 #endif
+//test LED pins
+#define LED1 22
+#define LED2 23
+
 
 //8x8 pin
 #define PINM 6
@@ -54,6 +58,9 @@ void ButtonStates(){
 }
 
 void setup() {
+  //initialize led pins
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
   //initialize buttons
   pinMode(GoPin, INPUT); //setting pins for green button
   pinMode(StopPin, INPUT); //setting pins for red button
@@ -75,7 +82,7 @@ void setup() {
   //initialize encoders/motors
   EncoderInit();
   Serial1.write("1f0\r");
-  delayMicroseconds(250);
+  delayMicroseconds(500);
   Serial1.write("2f0\r");
   //send READY byte
   Serial.write('1');
@@ -221,7 +228,7 @@ void wheelSpeed2() {
   else duration2--;
 }
 
-int runMotorsTill(int value1, int value2, const char* comm1, const char* comm2) {
+int runMotorsTill(int value1, int value2, const char* comm1, const char* comm2, const char* brakeComm1, const char* brakeComm2) {
   unsigned long lastGoCommand = millis();
   duration1 = 0;
   duration2 = 0;
@@ -229,38 +236,47 @@ int runMotorsTill(int value1, int value2, const char* comm1, const char* comm2) 
   bool on2 = true;
   //run motors
   Serial1.write(comm1);
+  digitalWrite(LED1,HIGH);
+  delayMicroseconds(500);
   Serial1.write(comm2);
+  digitalWrite(LED2,HIGH);
+  delayMicroseconds(500);
   //do stuff while not done
-  while (abs(duration1) < value1 || abs(duration2) < value2) {
+  while (on1 || on2) {
     if (on1 && abs(duration1) >= value1) {
-      Serial1.write("1r0\r");
+      Serial1.write("1f0\r");
+      digitalWrite(LED1,LOW);
       on1 = false;
+      delayMicroseconds(500);
     }
     if (on2 && abs(duration2) >= value2) {
-      Serial1.write("2r0\r");
+      Serial1.write("2f0\r");
+      digitalWrite(LED2,LOW);
       on2 = false;
+      delayMicroseconds(500);
     }
   }
   //stop both motors now, promptly
   Serial1.write("1r0\r");
+  delayMicroseconds(500);
   Serial1.write("2r0\r");
 
   return 1;
 }
 
 String goForward() {
-  int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
+  int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r","1r9\r","2r9\r");
   return "1";
 }
 
 String turnLeft() {
-  int actualDur = runMotorsTill(1500,1500,"1f9\r","2r9\r");
+  int actualDur = runMotorsTill(1050,1050,"1f9\r","2r9\r","1r9\r","2f9\r");
   return "1";
 }
 
 
 String turnRight() {
-  int actualDur = runMotorsTill(1500,1500,"1r9\r","2f9\r");
+  int actualDur = runMotorsTill(1100,1100,"1r9\r","2f9\r","1f9\r","2r9\r");
   return "1";
 }
 //END OF MOTOR STUFF
