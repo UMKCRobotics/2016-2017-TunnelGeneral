@@ -281,14 +281,7 @@ int runMotorsTill(int value1, int value2, const char* comm1, const char* comm2) 
   return 1;
 }
 
-int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
-  unsigned long lastGoCommand = millis();
-  duration1 = 0;
-  duration2 = 0;
-  bool on1 = true;
-  bool on2 = true;
-  //run motors
-  //set direction for motor 1
+void changeDirection(int pwm1, int pwm2) {
   if (pwm1 >= 0) {
     digitalWrite(MOT1_PIN1,HIGH);
     digitalWrite(MOT1_PIN2,LOW);
@@ -306,6 +299,17 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
     digitalWrite(MOT2_PIN1,LOW);
     digitalWrite(MOT2_PIN2,HIGH);
   }
+}
+
+int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
+  unsigned long lastGoCommand = millis();
+  duration1 = 0;
+  duration2 = 0;
+  bool on1 = true;
+  bool on2 = true;
+  //run motors
+  //set direction for motor 1
+  changeDirection(pwm1,pwm2);
   //set PWM for both with as little latency in between
   analogWrite(MOT1_PWM,abs(pwm1));
   digitalWrite(LED1,HIGH);
@@ -333,7 +337,8 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
 
 String goForward() {
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
-  int actualDur = runMotorsTill(1500,1500,255,255);
+  int forwCount = 2300;
+  int actualDur = runMotorsTill(forwCount-50,forwCount,255,255);
   return "1";
 }
 
