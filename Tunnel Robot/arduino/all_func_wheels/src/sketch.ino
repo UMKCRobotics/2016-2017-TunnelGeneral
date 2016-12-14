@@ -27,6 +27,13 @@ volatile int duration1;
 volatile int duration2;
 volatile boolean Direction1;
 volatile boolean Direction2;
+//motor control
+#define MOT1_PIN1 40
+#define MOT1_PIN2 42
+#define MOT1_PWM 44
+#define MOT2_PIN1 41
+#define MOT2_PIN2 43
+#define MOT2_PWM 45
 //motor modulus
 int motorMod = 0;
 //button pins
@@ -81,9 +88,10 @@ void setup() {
   Serial1.begin(115200);
   //initialize encoders/motors
   EncoderInit();
-  Serial1.write("1f0\r");
-  delayMicroseconds(500);
-  Serial1.write("2f0\r");
+  MotorInit();
+  //Serial1.write("1f0\r");
+  //delayMicroseconds(500);
+  //Serial1.write("2f0\r");
   //send READY byte
   Serial.write('1');
 }
@@ -190,6 +198,15 @@ void EncoderInit() {
   attachInterrupt(digitalPinToInterrupt(PINA2),wheelSpeed2,CHANGE);
 }
 
+void MotorInit() {
+  pinMode(MOT1_PIN1,OUTPUT);
+  pinMode(MOT1_PIN2,OUTPUT);
+  pinMode(MOT1_PWM,OUTPUT);
+  pinMode(MOT2_PIN1,OUTPUT);
+  pinMode(MOT2_PIN2,OUTPUT);
+  pinMode(MOT2_PWM,OUTPUT);
+}
+
 void wheelSpeed1() {
   int Lstate = digitalRead(PINA1);
   if((PinA1Last == LOW) && Lstate == HIGH)
@@ -228,7 +245,7 @@ void wheelSpeed2() {
   else duration2--;
 }
 
-int runMotorsTill(int value1, int value2, const char* comm1, const char* comm2, const char* brakeComm1, const char* brakeComm2) {
+int runMotorsTill(int value1, int value2, const char* comm1, const char* comm2) {
   unsigned long lastGoCommand = millis();
   duration1 = 0;
   duration2 = 0;
@@ -264,19 +281,77 @@ int runMotorsTill(int value1, int value2, const char* comm1, const char* comm2, 
   return 1;
 }
 
+int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
+  unsigned long lastGoCommand = millis();
+  duration1 = 0;
+  duration2 = 0;
+  bool on1 = true;
+  bool on2 = true;
+  //run motors
+  //set direction for motor 1
+  if (pwm1 >= 0) {
+    digitalWrite(MOT1_PIN1,HIGH);
+    digitalWrite(MOT1_PIN2,LOW);
+  }
+  else {
+    digitalWrite(MOT1_PIN1,LOW);
+    digitalWrite(MOT1_PIN2,HIGH);
+  }
+  //set direction for motor 2
+  if (pwm2 >= 0) {
+    digitalWrite(MOT2_PIN1,HIGH);
+    digitalWrite(MOT2_PIN2,LOW);
+  }
+  else {
+    digitalWrite(MOT2_PIN1,LOW);
+    digitalWrite(MOT2_PIN2,HIGH);
+  }
+  //set PWM for both with as little latency in between
+  analogWrite(MOT1_PWM,abs(pwm1));
+  digitalWrite(LED1,HIGH);
+  analogWrite(MOT2_PWM,abs(pwm2));
+  digitalWrite(LED2,HIGH);
+  //do stuff while not done
+  while (on1 || on2) {
+    if (on1 && abs(duration1) >= value1) {
+      analogWrite(MOT1_PWM,0);
+      digitalWrite(LED1,LOW);
+      on1 = false;
+    }
+    if (on2 && abs(duration2) >= value2) {
+      analogWrite(MOT2_PWM,0);
+      digitalWrite(LED2,LOW);
+      on2 = false;
+    }
+  }
+  //stop both motors now, promptly
+  analogWrite(MOT1_PWM,0);
+  analogWrite(MOT2_PWM,0);
+
+  return 1;
+}
+
 String goForward() {
-  int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r","1r9\r","2r9\r");
+  //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
+  int actualDur = runMotorsTill(1500,1500,255,255);
+  return "1";
+}
+
+String goBackward() {
+  //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
+  int actualDur = runMotorsTill(1500,1500,-255,-255);
   return "1";
 }
 
 String turnLeft() {
-  int actualDur = runMotorsTill(1050,1050,"1f9\r","2r9\r","1r9\r","2f9\r");
+  //int actualDur = runMotorsTill(1050,1050,"1f9\r","2r9\r");
+  int actualDur = runMotorsTill(1050,1050,255,-255);
   return "1";
 }
 
-
 String turnRight() {
-  int actualDur = runMotorsTill(1100,1100,"1r9\r","2f9\r","1f9\r","2r9\r");
+  //int actualDur = runMotorsTill(1100,1100,"1r9\r","2f9\r");
+  int actualDur = runMotorsTill(1100,1100,-255,255);
   return "1";
 }
 //END OF MOTOR STUFF
