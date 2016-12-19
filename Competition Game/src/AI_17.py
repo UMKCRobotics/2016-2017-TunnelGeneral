@@ -255,6 +255,8 @@ class Robot:
 
         self.facing = Direction.east  # TODO: can we get this from the SimRobot?
 
+        self.away_from_sides_count = 0
+
     @staticmethod
     def wait_till_done(resp):
         intermediate_delay = 0.01
@@ -455,7 +457,7 @@ class Robot:
                 time.sleep(0.25)
 
         keep_going = True
-        away_from_sides_count = 0
+        self.away_from_sides_count = 0
         dfs_stack = deque()
         dfs_stack.append(Coordinate(self.position.x, self.position.y))
         while len(self.gridData.needToVisit) and keep_going:
@@ -464,62 +466,15 @@ class Robot:
                 # find directions
                 directions = self.gridData.find_shortest_known_path(self.position, coord_at_top, self.facing)
                 # go there
-                for direction in directions:
-                    # stop algorithm if stop button is pressed
-                    if (not self.using_outside_grid) and int(self.wait_till_done(self.sim_buttons.getStopButton())):
-                        keep_going = False
-                        break
+                keep_going = self.travel_these(directions, coord_at_top, dfs_stack)
 
-                    self.turn(direction)
-                    self.forward()
-
-                    # count if away from sides
-                    if 0 < self.position.x < GRID_WIDTH - 1:
-                        away_from_sides_count += 1
-                    else:
-                        away_from_sides_count = 0
-                    print "away from side count: " + str(away_from_sides_count)
-
-                    # visit everywhere along the way
-                    if self.position in self.gridData.needToVisit:
-                        self.visit()
-                        if self.position != coord_at_top:
-                            print("visiting somewhere along the way")
-                            print("appending: " + str(self.position))
-                            dfs_stack.append(Coordinate(self.position.x, self.position.y))
-                            print(dfs_stack)
-                # in case there are no directions
-                if self.position in self.gridData.needToVisit:
-                    self.visit()
-
-            if away_from_sides_count > MOVE_COUNT_ALLOWED_AWAY_FROM_SIDES:
+            if self.away_from_sides_count > MOVE_COUNT_ALLOWED_AWAY_FROM_SIDES:
                 print("I've been away too long...")
                 directions = self.gridData.find_shortest_known_path(self.position, "s", self.facing)
-                print("Here are the direction to a side I can calibrate on:")
+                print("Here are the directions to a side I can calibrate on:")
                 print(directions)
                 # go there
-                for direction in directions:
-                    # stop algorithm if stop button is pressed
-                    if (not self.using_outside_grid) and int(self.wait_till_done(self.sim_buttons.getStopButton())):
-                        keep_going = False
-                        break
-
-                    self.turn(direction)
-                    self.forward()
-
-                    # count if away from sides
-                    if 0 < self.position.x < GRID_WIDTH - 1:
-                        away_from_sides_count += 1
-                    else:
-                        away_from_sides_count = 0
-                    print "away from side count: " + str(away_from_sides_count)
-
-                    # visit everywhere along the way
-                    if self.position in self.gridData.needToVisit:
-                        self.visit()
-                        if self.position != coord_at_top:
-                            print("appending: " + str(self.position))
-                            dfs_stack.append(Coordinate(self.position.x, self.position.y))
+                keep_going = self.travel_these(directions, coord_at_top, dfs_stack)
                 print("ai_17 about to call calibrate")
                 self.calibrate()  # TODO: put this at every edge
                 print("ai_17 just called calibrate")
@@ -543,18 +498,56 @@ class Robot:
             print(dfs_stack)
 
         # TODO: look for dice in caches
+
         # go back to start
         directions = self.gridData.find_shortest_known_path(self.position, Coordinate(0, 0), self.facing)
         # go there
-        for direction in directions:
-            if (not self.using_outside_grid) and int(self.wait_till_done(self.sim_buttons.getStopButton())):
-                break
-            self.turn(direction)
-            self.forward()
+        self.travel_these(directions, None, None, False)
 
     @staticmethod
     def sleep_wait():
         time.sleep(Robot.SLEEP_TIME)
+
+    def travel_these(self, directions, coord_at_top, dfs_stack, visit_and_explore_along_the_way=True):
+        """
+        travel the given set of directions
+        :param directions:
+        :param coord_at_top: of stack before anything changed this cycle
+        :param dfs_stack:
+        :param visit_and_explore_along_the_way:
+        :return: boolean - keep going, the stop button has not been pressed
+        """
+        for direction in directions:
+            # stop algorithm if stop button is pressed
+            if (not self.using_outside_grid) and int(self.wait_till_done(self.sim_buttons.getStopButton())):
+                return False
+
+            self.turn(direction)
+            self.forward()
+
+            if visit_and_explore_along_the_way:
+                # count if away from sides
+                if 0 < self.position.x < GRID_WIDTH - 1:
+                    self.away_from_sides_count += 1
+                else:
+                    self.away_from_sides_count = 0
+                print "away from side count: " + str(self.away_from_sides_count)
+
+                # visit everywhere along the way
+                if self.position in self.gridData.needToVisit:
+                    self.visit()
+                    if self.position != coord_at_top:
+                        print("visiting somewhere along the way")
+                        print("appending: " + str(self.position))
+                        dfs_stack.append(Coordinate(self.position.x, self.position.y))
+                        print(dfs_stack)
+
+        if visit_and_explore_along_the_way:
+            # in case there are no directions
+            if self.position in self.gridData.needToVisit:
+                self.visit()
+
+        return True
 
 
 class OutsideGrid:
