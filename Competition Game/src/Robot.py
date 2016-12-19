@@ -14,7 +14,7 @@ from DeviceComm import CommRequest
 # print "sound_folder:: %s" % SOUND_FOLDER
 
 
-class Robot():
+class Robot:
     coords = None
     width = None
 
@@ -36,13 +36,13 @@ class Robot():
                                         (gameboard.PLEXI.width - self.GRID_WIDTH / 4,
                                          gameboard.PLEXI.height - self.GRID_WIDTH / 4))
         self.direction = 0
-        self.dirIndicator = pygame.Rect((self.coords), (10, 10))
+        self.dirIndicator = pygame.Rect(self.coords, (10, 10))
         self.dirIndicatorColor = (100, 100, 100)
         # self.errorMax = self.GRID_WIDTH/12
         # self.errorMax = self.GRID_WIDTH/3
         self.errorMax = 0
 
-        #command list to simulate actual Tunnel Robot code
+        # command list to simulate actual Tunnel Robot code
         self.commandList = []
 
         # move counters
@@ -163,7 +163,6 @@ class Robot():
         commObject.markDone()
         return commObject
 
-
     def read_distance(self):
         readings = []
         for sensor in self.sensors:  # checks all sensors
@@ -183,7 +182,7 @@ class Robot():
                 for item in self.GAMEBOARD.powerlines:
                     collision_list.append(item.object)
                 readings.append(sensor.read_sensor(collision_list))
-        print str(readings)
+        print("read_electromagnetic is returning this: " + str(readings))
         return readings
 
     def read_capacitive(self):
@@ -209,7 +208,7 @@ class Robot():
         self.forwardCounter += 1
         self.play_sound(self.sound1)
         print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
-        #commObject.markDone()
+        # commObject.markDone()
         self.move_to_do = commObject
         return commObject
 
@@ -227,7 +226,7 @@ class Robot():
         self.turnCounter += 1
         self.play_sound(self.sound5)
         print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
-        #commObject.markDone()
+        # commObject.markDone()
         self.move_to_do = commObject
         return commObject
 
@@ -238,13 +237,13 @@ class Robot():
         self.turnCounter += 1
         self.play_sound(self.sound5)
         print "FORWARDS: %s \nTURNS: %s" % (self.forwardCounter,self.turnCounter)
-        #commObject.markDone()
+        # commObject.markDone()
         self.move_to_do = commObject
         return commObject
 
     def changeDirection(self, val):
         self.direction = (self.direction + val) % 4
-        #self.MAP.direction = self.direction
+        # self.MAP.direction = self.direction
 
     def drive(self, val):
         self.MAP.drive(val)
@@ -288,19 +287,17 @@ class Robot():
 
         print self.last_reference
 
-        #check if robot left A7 if has not done so yet
+        # check if robot left A7 if has not done so yet
         if not self.leftA7 and not self.GAMEBOARD.get_block('A7').object.contains(self.object):
             self.leftA7 = True
 
 
-
-
 # OT Map: Robot's internal map of the world
-class RobotMap():
+class RobotMap:
     rows = '1234567'
     cols = 'ABCDEFG'
 
-    def __init__(self, screen, grid_width, offsets, direction,shouldPlaySound=True):
+    def __init__(self, screen, grid_width, offsets, direction, shouldPlaySound=True):
         self.screen = screen
         self.GRID_WIDTH = grid_width
         self.TOTAL_WIDTH = grid_width * 7
@@ -423,7 +420,7 @@ class RobotMap():
 
     def markInFront(self, type):
         reqBlock = self.getBlockInFront()
-        if reqBlock != None:
+        if reqBlock is not None:
             if type == 'OT':
                 reqBlock.setOT()
             elif type == 'E':
@@ -509,7 +506,7 @@ class RobotMap():
         pass
 
 
-class MapBlock():
+class MapBlock:
     color_OT = (255, 0, 0)
     color_DEADEND = (0, 255, 255)
     color_START = (255, 255, 0)
