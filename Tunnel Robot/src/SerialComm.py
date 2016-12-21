@@ -25,6 +25,9 @@ class SerialComm(DeviceComm):
 
 	def initializeConnection(self):
 		#wait until serial is connected
+		if self.serial.isOpen():
+			self.serial.close()
+		self.serial.open()
 		while not self.connected:
 			time.sleep(0.1)
 			self.serial.timeout = 1 #make serial non blocking

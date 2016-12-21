@@ -2,6 +2,7 @@ import threading,os,sys,serial,time
 
 import Motors
 import SensorArduino
+import ArduinoFuncs
 from DeviceComm import CommRequest
 
 #class responsible for interfacing with physical robot
@@ -12,25 +13,31 @@ class Robot_Impl():
 	def __init__(self,arduinofuncs,map_in):
 		self.arduinofuncs = arduinofuncs
 		self.MAP = map_in
+		
+	def getGoButton(self):
+		return self.arduinofuncs.getGoButton()
+	
+	def getStopButton(self):
+		return self.arduinofuncs.getStopButton()
 
 	def goForward(self):
 		#forward 1 foot, returns command object
 		self.MAP.drive(1)
-		return arduinofuncs.moveForward()
+		return self.arduinofuncs.moveForward()
 
 	def rotateCounterClockwise(self):
 		#left 90 degrees, returns command object
 		self.MAP.rotateCounterClockwise()
-		return arduinofuncs.moveLeft()
+		return self.arduinofuncs.moveLeft()
 
 	def rotateClockwise(self):
 		#right 90 degrees, returns command object
 		self.MAP.rotateClockwise()
-		return arduinofuncs.moveRight()
+		return self.arduinofuncs.moveRight()
 
 	def goCalibrate(self):
 		#use perimeter to fix possible rotation/translation errors
-		return arduinofuncs.goCalibrate()
+		return self.arduinofuncs.goCalibrate()
 
 	def readSensor(self, value):
 		commObj = None

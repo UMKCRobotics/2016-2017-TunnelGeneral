@@ -12,27 +12,42 @@ sys.path.insert(0, os.path.realpath(os.path.join(main_dir,'Competition Game/src'
 
 #from SensorArduino import EMF_Sensors
 #from Displays import Displays
-from Motors import MotorsArduino
-from Displays import Displays
+from ArduinoFuncs import ArduinoFuncs
 from Robot_Impl import Robot_Impl
 from Robot import RobotMap
 from AI_JED import RobotAlg as AlgJed
 from AI_17 import Robot as Alg17
 
-motor_serial = serial.Serial('/dev/ttyACM0',115200)
+ard_serial = serial.Serial('/dev/arduino_allfunc',115200)
 
 #motors = MotorsNXT()
 #emf = EMF_Sensors(emf_serial)
 #display  = Displays(disp_serial)
-motors = MotorsArduino(motor_serial)
-while not motors.ard.connected:
+ard_funcs = ArduinoFuncs(ard_serial)
+while not ard_funcs.isConnected():
 	time.sleep(0.1)
+display = ard_funcs	
+#initialize Robot_Impl
+direction = 0
+robot_map = RobotMap(None,0,None,direction,shouldPlaySound=False)
+robot_impl = Robot_Impl(ard_funcs,robot_map)
 
-display = None
+command_list = [robot_impl.goForward,robot_impl.rotateCounterClockwise,robot_impl.goForward,robot_impl.rotateCounterClockwise,robot_impl.goForward,robot_impl.rotateCounterClockwise,robot_impl.goForward,robot_impl.rotateCounterClockwise]
 
+def wait_till_done(resp):
+	intermediateDelay = 0.01
+	while not resp.isDone:
+		time.sleep(intermediateDelay)
+	return resp.getResponse()
 
-motors.moveForward()
-time.sleep(2)
+while len(command_list) > 0:
+	resp1 = command_list.pop(0)()
+	strResp = wait_till_done(resp1)
+	print '%s done with response: %s' % (len(command_list),strResp) 
+	time.sleep(0.1)
+#time.sleep(2)
+print 'was GoPressed? %s' % wait_till_done(robot_impl.getGoButton())
+print 'was StopPressed? %s' % wait_till_done(robot_impl.getStopButton())
 
 globalThreads = []
 
