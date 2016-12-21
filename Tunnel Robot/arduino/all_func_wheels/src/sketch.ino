@@ -37,11 +37,11 @@ volatile boolean Direction2;
 //motor modulus
 int motorMod = 0;
 //button pins
-const int GoPin = 10; //Go button
-const int StopPin = 11; //Stop button
+#define GoPin 18 //Go button - INTERRUPT PIN
+#define StopPin 19 //Stop button - INTERRUPT PIN
 //button states
-char GoState = '0';
-char StopState = '0';
+volatile char GoState = '0';
+volatile char StopState = '0';
 //digit representations
 int digits[10] = {190,6,218,206,102,236,252,134,254,238};
 //matrix setup
@@ -62,6 +62,19 @@ void ButtonStates(){
   }
   if (button2 == HIGH)
     StopState = '1';
+}
+
+void GoButtonFunc() {
+  int buttonStateGo = digitalRead(GoPin);
+  if (buttonStateGo == HIGH) {
+    GoState = '1';
+  }
+}
+void StopButtonFunc() {
+  int buttonStateStop = digitalRead(StopPin);
+  if (buttonStateStop == HIGH) {
+    StopState = '1';
+  }
 }
 
 void setup() {
@@ -85,10 +98,11 @@ void setup() {
   //start serial
   Serial.begin(115200);
   //start serial1 to motor controller
-  Serial1.begin(115200);
+  //Serial1.begin(115200);
   //initialize encoders/motors
   EncoderInit();
   MotorInit();
+  ButtonInit();
   //Serial1.write("1f0\r");
   //delayMicroseconds(500);
   //Serial1.write("2f0\r");
@@ -100,7 +114,7 @@ void loop() {
   command = "";
   value = "";
   int addTo = 0; //0 for command, 1 for value
-  ButtonStates();
+  //ButtonStates();
   if(Serial.available()){
     while (Serial.available() > 0)
     {
@@ -363,6 +377,13 @@ String turnRight() {
 
 
 //START OF DISPLAY STUFF
+void ButtonInit() {
+  pinMode(GoPin,INPUT);
+  pinMode(StopPin,INPUT);
+  attachInterrupt(digitalPinToInterrupt(GoPin),GoButtonFunc, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(StopPin),StopButtonFunc, CHANGE);
+}
+
 void displayDigit(int dig) {
   for (int i = digits[dig]; i <= digits[dig]+1; i++) {
     digitalWrite(LATCH, HIGH);
