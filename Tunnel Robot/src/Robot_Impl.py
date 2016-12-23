@@ -42,19 +42,17 @@ class Robot_Impl():
 	def readSensor(self, value):
 		commObj = None
 		if value == 1:
-			commObj = getObstacle_Reading()
+			commObj = self.getObstacleReport()
 		elif value == 2:
-			commObj = getIfFoam()
+			commObj = self.getEMFreading()
 		elif value == 3:
-			commObj = getObstacle_Reading()
+			commObj = self.getIfFoam()
 		commObj.markDone()
 		return commObj
 
-	def getEMF_Reading(self):
-		#get readings from EMF sensor(s) via a list
-		commandObj = CommRequest('S' + '|E')
-		commandObj.setResponse('0')
-		return commandObj
+	def getEMFreading(self):
+		#get readings from EMF sensor
+		return self.arduinofuncs.getEMFreading()
 
 	def getIfFoam(self):
 		#get readings from Capacitive sensor(s) via a list
@@ -62,9 +60,7 @@ class Robot_Impl():
 		commandObj.setResponse('0')
 		return commandObj
 
-	def getObstacle_Reading(self):
+	def getObstacleReport(self):
 		#get locations of obstacles in adjacent blocks via a list
 		#right, front, left
-		commandObj = CommRequest('S' + '|O')
-		commandObj.setResponse('000')
-		return commandObj
+		return self.arduinofuncs.getObstacleReport()

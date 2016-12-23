@@ -36,6 +36,16 @@ class ArduinoFuncs():
         self.ard.requestCommand(commandObj)
         return commandObj
 
+    def getEMFreading(self):
+        commandObj = CommRequest('S' + '|E')
+        self.ard.requestCommand(commandObj)
+        return commandObj
+
+    def getObstacleReport(self):
+        commandObj = CommRequest('S' + '|O')
+        self.ard.requestCommand(commandObj)
+        return commandObj
+
     def performTap(self):
         commandObj = CommRequest('A' + '|1')
         self.ard.requestCommand(commandObj)
@@ -64,6 +74,7 @@ class ArduinoFuncs():
         self.ard.requestCommand(commandObj)
         return commandObj
 
+    #TO-DO: add value for which side of robot to use
     def goCalibrate(self):
         commandObj = CommRequest('c')
         self.ard.requestCommand(commandObj)
