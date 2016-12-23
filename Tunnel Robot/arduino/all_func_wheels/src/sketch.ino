@@ -7,7 +7,8 @@
 //test LED pins
 #define LED1 22
 #define LED2 23
-
+//EMF PINS
+#define EMF1 A0
 
 //8x8 pin
 #define PINM 6
@@ -182,22 +183,23 @@ String interpretCommand(String command, String value) {
       responseString += StopState;
     }
   }
-
   //check if 8x8 stuff
-  else {
-    // do 8x8 stuff
-    if (command == "T") {
+  else if (command == "T") {
       setToOT(value.toInt());
       responseString = "1";
-    }
-    else if (command == "D") {
-      setToDE(value.toInt());
-      responseString = "1";
-    }
-    else if (command == "E") {
-      setToEM(value.toInt());
-      responseString = "1";
-    }
+  }
+  else if (command == "D") {
+    setToDE(value.toInt());
+    responseString = "1";
+  }
+  else if (command == "E") {
+    setToEM(value.toInt());
+    responseString = "1";
+  }
+  //check if EMF stuff
+  else if (command == "e") {
+    responseString = "1";
+    responseString += String(readEMF());
   }
 
   return responseString;
@@ -321,6 +323,8 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   duration2 = 0;
   bool on1 = true;
   bool on2 = true;
+  int slowDiff = 200;
+  int slowPWM = 125;
   //run motors
   //set direction for motor 1
   changeDirection(pwm1,pwm2);
@@ -331,15 +335,25 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   digitalWrite(LED2,HIGH);
   //do stuff while not done
   while (on1 || on2) {
-    if (on1 && abs(duration1) >= value1) {
-      analogWrite(MOT1_PWM,0);
-      digitalWrite(LED1,LOW);
-      on1 = false;
+    if (on1) {
+      if (abs(duration1) >= value1) {
+        analogWrite(MOT1_PWM,0);
+        digitalWrite(LED1,LOW);
+        on1 = false;
+      }
+      else if (abs(duration1) >= value1-slowDiff) {
+        analogWrite(MOT1_PWM,slowPWM);
+      }
     }
-    if (on2 && abs(duration2) >= value2) {
-      analogWrite(MOT2_PWM,0);
-      digitalWrite(LED2,LOW);
-      on2 = false;
+    if (on2) {
+      if (abs(duration2) >= value2) {
+        analogWrite(MOT2_PWM,0);
+        digitalWrite(LED2,LOW);
+        on2 = false;
+      }
+      else if (abs(duration2) >= value2-slowDiff) {
+        analogWrite(MOT2_PWM,slowPWM);
+      }
     }
   }
   //stop both motors now, promptly
@@ -352,7 +366,7 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
 String goForward() {
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
   int forwCount = 2300;
-  int actualDur = runMotorsTill(forwCount-50,forwCount,255,255);
+  int actualDur = runMotorsTill(forwCount-25,forwCount,255,255);
   return "1";
 }
 
@@ -364,16 +378,40 @@ String goBackward() {
 
 String turnLeft() {
   //int actualDur = runMotorsTill(1050,1050,"1f9\r","2r9\r");
-  int actualDur = runMotorsTill(1050,1050,255,-255);
+  int actualDur = runMotorsTill(1125-25,1125,255,-255);
   return "1";
 }
 
 String turnRight() {
   //int actualDur = runMotorsTill(1100,1100,"1r9\r","2f9\r");
-  int actualDur = runMotorsTill(1100,1100,-255,255);
+  int actualDur = runMotorsTill(1140,1140,-255,255);
   return "1";
 }
 //END OF MOTOR STUFF
+
+//START OF SENSOR STUFF
+int readEMF() {
+  return getEMFreading(EMF1);
+}
+
+int getEMFreading(int port) {
+  int count = 0;
+  long int sum = 0;
+  for (int i = 0; i < 500; i++) {
+    int reading = analogRead(port);
+    if (reading != 0) {
+      count++;
+      //sum += reading*reading;
+      sum += pow(reading,2);
+      //sum += abs(reading);
+    }
+  }
+  long int average = 0;
+  if (count > 0)
+    average = sum/count;
+  return average;
+}
+//END OF SENSOR STUFF
 
 
 //START OF DISPLAY STUFF

@@ -44,7 +44,7 @@ while len(command_list) > 0:
 	resp1 = command_list.pop(0)()
 	strResp = wait_till_done(resp1)
 	print '%s done with response: %s' % (len(command_list),strResp) 
-	time.sleep(0.1)
+	time.sleep(0.5)
 #time.sleep(2)
 print 'was GoPressed? %s' % wait_till_done(robot_impl.getGoButton())
 print 'was StopPressed? %s' % wait_till_done(robot_impl.getStopButton())
