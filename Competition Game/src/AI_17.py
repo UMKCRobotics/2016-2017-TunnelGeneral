@@ -29,7 +29,6 @@ def simulation_impl(_sim_parameters):
     """
     Pull simulation robot from simulation.
     :param _sim_parameters: [SimRobot]
-    :return:
     """
     _sim_robot = _sim_parameters[0]
     _sim_buttons = _sim_parameters[1]
@@ -52,7 +51,8 @@ def translate_coordinate_to_index(coordinate):
     change a coordinate to the index on the robot's map display
     index is 0 in top left, counting up to the right
     :param coordinate: Coordinate
-    :return: int
+    :return: index on the robot's map display
+    :rtype: int
     """
     return ((DISPLAY_HEIGHT - 1) - coordinate.y) * DISPLAY_WIDTH + coordinate.x
 
@@ -83,7 +83,10 @@ class GridSpaceData:
         # TODO: this cache is open, this cache has die
 
     def set_obstacle(self, see_obstacle):
-        """ :return needs to be visited """
+        """
+        :return: needs to be visited
+        :rtype: bool
+        """
         if see_obstacle:
             self._obstacleHere = Knowledge.yes
         else:
@@ -172,7 +175,10 @@ class GridData:
         self.set_begin_known_information()
 
     def get(self, x_or_coordinate, y=-1):
-        """ :return GridSpaceData """
+        """
+        :return: the GridSpaceData at the given coordinate
+        :rtype: GridSpaceData
+        """
         if isinstance(x_or_coordinate, Coordinate):
             x = x_or_coordinate.x
             y = x_or_coordinate.y
@@ -204,11 +210,14 @@ class GridData:
 
     def find_shortest_known_path(self, from_coordinate, to_coordinate, current_facing_direction):
         """
-
+        find a path from one place to another with known information
         :param current_facing_direction:
         :param from_coordinate:
+        :type from_coordinate: Coordinate
         :param to_coordinate: destination or "s" for finding a path to side
-        :return list: list of directions
+        :type to_coordinate: str | Coordinate
+        :return: list of directions
+        :rtype: list
         """
         # BFS / Dijkstra's
         visited_in_this_bfs = set()
@@ -405,10 +414,14 @@ class Robot:
             # change color to mark visited
             self.sim_robot.MAP.grid[self.sim_robot.MAP.robotLoc[0]][self.sim_robot.MAP.robotLoc[1]].color = (75, 75, 75)
             # TODO: That ^ is not very modular
-            if self.wait_till_done(self.sim_robot.readSensor(2))[0] == 1:
+            self.gridData.get(self.position).wireReading = self.wait_till_done(self.sim_robot.readSensor(2))[0]
+            self.gridData.get(self.position).tunnelReading = self.wait_till_done(self.sim_robot.readSensor(3))[0]
+            """ uncomment this to re-enable old sim map marking
+            if self.gridData.get(self.position).wireReading == 1:
                 self.sim_robot.MAP.markOT()
-            elif self.wait_till_done(self.sim_robot.readSensor(3))[0] == 1:
+            elif self.gridData.get(self.position).tunnelReading == 1:
                 self.sim_robot.MAP.markDeadend()
+            """
 
     def explore(self):
         """ visit all possible grid spaces """
@@ -497,6 +510,9 @@ class Robot:
             dfs_stack.pop()
             print(dfs_stack)
 
+        # analyze readings to find tunnel and wire
+        self.analyze_readings()
+
         # TODO: look for dice in caches
 
         # go back to start
@@ -515,7 +531,8 @@ class Robot:
         :param coord_at_top: of stack before anything changed this cycle
         :param dfs_stack:
         :param visit_and_explore_along_the_way:
-        :return: boolean - keep going, the stop button has not been pressed
+        :return: keep going, the stop button has not been pressed
+        :rtype: bool
         """
         for direction in directions:
             # stop algorithm if stop button is pressed
@@ -549,6 +566,40 @@ class Robot:
 
         return True
 
+    def analyze_readings(self):
+        """
+        analyze readings to find where wire and tunnel are
+        :return:
+        """
+        # find thresholds
+        # TODO: use statistical analyses of data to find thresholds
+        wire_threshold = .5
+        tunnel_threshold = .5
+
+        # apply thresholds to knowledge
+        for space in self.gridData.data:
+            # tunnel first because wire/OT is subset of tunnel
+            if space.tunnelReading is not None:
+                if space.tunnelReading > tunnel_threshold:
+                    space.tunnelHere = Knowledge.yes
+                else:  # not > threshold
+                    space.tunnelHere = Knowledge.no
+            if space.wireReading is not None:
+                if space.wireReading > wire_threshold:
+                    space.wireHere = Knowledge.yes
+                else:  # not > threshold
+                    space.wireHere = Knowledge.no
+
+        # TODO: figure out wire(OT) under obstacles
+        edge_coordintes_with_wire = []
+        # top and bottom edges
+        # for x in range(1, GRID_WIDTH - 1):
+
+
+        # TODO: send information to 8x8 display
+        # preferably one interface works for both competition_game simulation and real robot
+        # something like this:
+        # self.sim_robot.display.set8x8(28, 'T')
 
 class OutsideGrid:
     class GridSpace:
