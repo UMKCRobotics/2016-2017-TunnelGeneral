@@ -1,20 +1,18 @@
 import random
 from collections import deque  # stack and queue
 import heapq  # priority queue
-from Robot import Robot as SimRobot  # passed to simulation_impl
 import time
 import sys
+
+from Robot import Robot as SimRobot  # passed to simulation_impl
+
 from Grid_Util import *
 from Static_Decorator import static_vars
+from hampath import HamiltonianPath
 
 PRIORITY_FOR_AVOIDING_TURNS = 1
 
 MOVE_COUNT_ALLOWED_AWAY_FROM_SIDES = 13
-
-GRID_WIDTH = 7
-GRID_HEIGHT = 7
-DISPLAY_WIDTH = 8
-DISPLAY_HEIGHT = 8
 
 BAD_CALIBRATION_COORDINATES = set()
 # If the 2x4s don't align well with each other on each side, uncomment the following lines
@@ -34,16 +32,6 @@ def simulation_impl(_sim_parameters):
     _sim_buttons = _sim_parameters[1]
     robot = Robot(_sim_robot, _sim_buttons)
     robot.explore3()
-
-
-# this is an enumeration, but we can't use enumerations because someone doesn't update their python
-class Knowledge:  # class Knowledge(IntEnum):
-    def __init__(self):
-        pass
-
-    unknown = -1
-    yes = 1
-    no = 0
 
 
 def translate_coordinate_to_index(coordinate):
@@ -590,16 +578,58 @@ class Robot:
                 else:  # not > threshold
                     space.wireHere = Knowledge.no
 
-        # TODO: figure out wire(OT) under obstacles
-        edge_coordintes_with_wire = []
+        # figure out wire(OT) under obstacles
+        edge_coordinates_with_wire = []
         # top and bottom edges
-        # for x in range(1, GRID_WIDTH - 1):
+        for x in range(1, GRID_WIDTH - 1):
+            if self.gridData.get(x, 0).wireHere == Knowledge.yes:
+                edge_coordinates_with_wire.append(Coordinate(x, 0))
+            if self.gridData.get(x, GRID_HEIGHT-1).wireHere == Knowledge.yes:
+                edge_coordinates_with_wire.append(Coordinate(x, GRID_HEIGHT-1))
+        # left and right edges
+        for y in range(1, GRID_HEIGHT - 1):
+            if self.gridData.get(0, y).wireHere == Knowledge.yes:
+                edge_coordinates_with_wire.append(Coordinate(0, y))
+            if self.gridData.get(GRID_WIDTH - 1, y).wireHere == Knowledge.yes:
+                edge_coordinates_with_wire.append(Coordinate(GRID_WIDTH - 1, y))
+        assert len(edge_coordinates_with_wire) == 2
+        print("There are 2 coordinates on the edges with the wire.")
+        # mark inside spaces adjacent to these edges as wire/OT
+        # then leave in scope to prepare for following wire
+        inner_coordinates = []
+        for each_space in edge_coordinates_with_wire:
+            if each_space.x == 0:
+                inner_coordinates.append(Coordinate(1, each_space.y))
+            elif each_space.x == GRID_WIDTH-1:
+                inner_coordinates.append(Coordinate(GRID_WIDTH-2, each_space.y))
+            elif each_space.y == 0:
+                inner_coordinates.append(Coordinate(each_space.x, 1))
+            elif each_space.y == GRID_HEIGHT-1:
+                inner_coordinates.append(Coordinate(each_space.x, GRID_HEIGHT-2))
+            self.gridData.get(inner_coordinates[-1]).wireHere = Knowledge.yes
 
+        # to make sure all the yes are included on the path, we need to count the yes
+        # (only counting inner 25)
+        yes_count = 0
+        for x in range(1, GRID_WIDTH-1):
+            for y in range(1, GRID_HEIGHT-1):
+                if self.gridData.get(x, y).wireHere == Knowledge.yes:
+                    yes_count += 1
+
+        algorithm_to_find_path = HamiltonianPath(self.gridData,
+                                                 inner_coordinates[1],
+                                                 inner_coordinates[0],
+                                                 yes_count)
+        found_path_under_obstacles = algorithm_to_find_path.find_path()
+        # put path knowledge under obstacles
+        for coordinate in found_path_under_obstacles:
+            self.gridData.get(coordinate).wireHere = Knowledge.yes
 
         # TODO: send information to 8x8 display
         # preferably one interface works for both competition_game simulation and real robot
         # something like this:
         # self.sim_robot.display.set8x8(28, 'T')
+
 
 class OutsideGrid:
     class GridSpace:

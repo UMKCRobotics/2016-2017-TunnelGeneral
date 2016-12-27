@@ -1,5 +1,19 @@
 # Utility classes for using a grid
-MAX_WIDTH = 8  # to make hashing efficient
+
+GRID_WIDTH = 7
+GRID_HEIGHT = 7
+DISPLAY_WIDTH = 8
+DISPLAY_HEIGHT = 8
+
+
+# this is an enumeration, but we can't use enumerations because someone doesn't update their python
+class Knowledge:  # class Knowledge(IntEnum):
+    def __init__(self):
+        pass
+
+    unknown = -1
+    yes = 1
+    no = 0
 
 
 class Coordinate:
@@ -14,7 +28,7 @@ class Coordinate:
         return not self.__eq__(other)
 
     def __hash__(self):
-        return self.x * MAX_WIDTH + self.y
+        return self.x * DISPLAY_WIDTH + self.y
 
     def __add__(self, other):
         return Coordinate(self.x + other.x, self.y + other.y)

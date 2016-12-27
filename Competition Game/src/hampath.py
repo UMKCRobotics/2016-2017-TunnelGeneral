@@ -1,0 +1,92 @@
+from Grid_Util import *
+
+
+# adapted from http://www.geeksforgeeks.org/backtracking-set-7-hamiltonian-cycle/
+
+class HamiltonianPath:
+    def __init__(self, _grid_data, _start, _end, _yes_count):
+        """
+        find path in middle 25
+        :param _grid_data: robot.gridData
+        :param _start: 1 away from the edge
+        :param _end: 1 away from the edge
+        :param _yes_count: not counting the 2 edges
+        """
+        self.gridData = _grid_data
+        self.path = [Coordinate(_start.x, _start.y)]
+        self.end = Coordinate(_end.x, _end.y)
+        self.yes_count = _yes_count
+
+    def is_safe(self, coordinate_to_add):
+        # don't go to the edges
+        if (coordinate_to_add.x == 0 or
+                coordinate_to_add.x == GRID_WIDTH-1 or
+                coordinate_to_add.y == 0 or
+                coordinate_to_add.y == GRID_HEIGHT-1):
+            return False
+
+        # check if we can move here from previous step in path
+        if self.gridData.get(coordinate_to_add).wireHere == Knowledge.yes:
+            if self.gridData.get(self.path[-1]).wireHere == Knowledge.unknown:
+                # moving from unknown to yes
+                adjacent_yes_count = 0
+                for direction in COORDINATE_CHANGE:
+                    coordinate_checking = coordinate_to_add + COORDINATE_CHANGE[direction]
+                    if self.gridData.get(coordinate_checking).wireHere == Knowledge.yes:
+                        adjacent_yes_count += 1
+                if adjacent_yes_count > 1:
+                    return False
+        elif self.gridData.get(coordinate_to_add).wireHere == Knowledge.unknown:
+            if self.gridData.get(self.path[-1]).wireHere == Knowledge.yes:
+                # moving from yes to unknown
+                adjacent_yes_count = 0
+                for direction in COORDINATE_CHANGE:
+                    coordinate_checking = self.path[-1] + COORDINATE_CHANGE[direction]
+                    if self.gridData.get(coordinate_checking).wireHere == Knowledge.yes:
+                        adjacent_yes_count += 1
+                if adjacent_yes_count > 1:
+                    return False
+        elif self.gridData.get(coordinate_to_add).wireHere == Knowledge.no:
+            return False
+
+        # check if we've already been here
+        for coordinate in self.path:
+            if coordinate == coordinate_to_add:
+                return False
+
+        return True
+
+    def ham_path_util(self):
+        """ recursive """
+        print("recursive function path:")
+        print(self.path)
+        # base case: have a valid path
+        if self.path[-1] == self.end:
+            yes_in_path_count = 0
+            for coordinate in self.path:
+                if self.gridData.get(coordinate).wireHere == Knowledge.yes:
+                    yes_in_path_count += 1
+            return yes_in_path_count == self.yes_count
+
+        # try adjacent yes and unknown as next candidate in path
+        for direction in COORDINATE_CHANGE:
+            candidate_coordinate = self.path[-1] + COORDINATE_CHANGE[direction]
+            if self.is_safe(candidate_coordinate):
+                self.path.append(candidate_coordinate)
+
+                # recur to construct the rest of the path
+                if self.ham_path_util():
+                    return True
+
+                # if adding that didn't lead to a solution, then remove it
+                self.path.pop()
+        return False
+
+    def find_path(self):
+        if not self.ham_path_util():
+            print("didn't find a path")
+            return []
+        else:
+            print("found path:")
+            print(self.path)
+            return self.path
