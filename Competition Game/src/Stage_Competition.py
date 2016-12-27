@@ -80,6 +80,55 @@ class Stage_Competition(Stage):
                            ['E', 'T', 'E', 'E', 'E', 'E', 'E'],
                            ['E', 'T', 'D', 'E', 'E', 'E', 'E'],
                            ['E', 'T', 'E', 'E', 'E', 'E', 'E']]
+    Test_Path_Under_Obstacle_1 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                                  ['E', 'E', 'E', 'EO', 'E', 'EO', 'E'],
+                                  ['E', 'T', 'T', 'T', 'E', 'E', 'E'],
+                                  ['E', 'TO', 'E', 'TO', 'E', 'E', 'E'],
+                                  ['E', 'T', 'EO', 'T', 'T', 'T', 'T'],
+                                  ['E', 'T', 'E', 'E', 'E', 'E', 'E'],
+                                  ['E', 'T', 'E', 'E', 'E', 'E', 'E']]
+    Test_Path_Under_Obstacle_2 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                                  ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                                  ['E', 'E', 'E', 'EO', 'E', 'E', 'E'],
+                                  ['T', 'T', 'EO', 'EO', 'EO', 'E', 'E'],
+                                  ['E', 'TO', 'E', 'T', 'T', 'T', 'T'],
+                                  ['E', 'TO', 'T', 'T', 'E', 'E', 'E'],
+                                  ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
+    Test_Path_Under_Obstacle_3 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                                  ['E', 'E', 'EO', 'E', 'EO', 'E', 'E'],
+                                  ['E', 'EO', 'T', 'TO', 'T', 'T', 'E'],
+                                  ['E', 'E', 'T', 'E', 'EO', 'T', 'E'],
+                                  ['E', 'EO', 'T', 'EO', 'T', 'T', 'E'],
+                                  ['T', 'T', 'T', 'E', 'T', 'E', 'E'],
+                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E']]
+    Test_Path_Under_Obstacle_4 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                                  ['E', 'E', 'EO', 'E', 'EO', 'E', 'E'],
+                                  ['E', 'EO', 'T', 'TO', 'T', 'T', 'E'],
+                                  ['E', 'E', 'T', 'E', 'EO', 'T', 'E'],
+                                  ['E', 'EO', 'T', 'EO', 'T', 'TO', 'E'],
+                                  ['T', 'T', 'T', 'E', 'T', 'E', 'E'],
+                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E']]
+    Test_Path_Under_Obstacle_5 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                                  ['E', 'E', 'EO', 'E', 'EO', 'E', 'E'],
+                                  ['E', 'EO', 'T', 'TO', 'T', 'T', 'E'],
+                                  ['E', 'E', 'T', 'E', 'EO', 'T', 'E'],
+                                  ['E', 'EO', 'T', 'EO', 'T', 'T', 'E'],
+                                  ['T', 'T', 'T', 'E', 'T', 'EO', 'E'],
+                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E']]
+    Test_Path_Under_Obstacle_6 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                                  ['E', 'E', 'EO', 'E', 'EO', 'E', 'E'],
+                                  ['E', 'EO', 'T', 'TO', 'T', 'T', 'E'],
+                                  ['E', 'E', 'T', 'E', 'EO', 'T', 'E'],
+                                  ['E', 'EO', 'T', 'EO', 'T', 'T', 'E'],
+                                  ['T', 'T', 'T', 'E', 'TO', 'E', 'E'],
+                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E']]
+    Test_Path_Under_Obstacle_7 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                                  ['E', 'E', 'EO', 'E', 'EO', 'E', 'E'],
+                                  ['E', 'EO', 'T', 'TO', 'T', 'T', 'E'],
+                                  ['E', 'E', 'T', 'E', 'EO', 'T', 'E'],
+                                  ['E', 'EO', 'T', 'EO', 'T', 'T', 'E'],
+                                  ['T', 'T', 'T', 'EO', 'T', 'E', 'E'],
+                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E']]
 
     # BOARD OFFSET VARIABLES
     global_grid_width = 100
