@@ -39,7 +39,7 @@ class RobotAlg():
         self.moves_since_cal = [0, 0]
         self.max_moves = [15, 15]
         self.goList = None
-        self.DEBUG_MODE = False
+        self.DEBUG_MODE = True
 
     def wait_till_done(self,resp):
         intermediateDelay = 0.01
@@ -271,6 +271,7 @@ class RobotAlg():
             while do_pathfinding:
                 if self.DEBUG_MODE: print 'finding path to %s' % str(goal)
                 path = self.get_path_to_block_multi([self.MAP.get_block(goal)])
+                print 'PATH: %s' % str(path)
                 finished_following = self.perform_path(path)
                 #if returns NONE, that means go button has been pressed
                 if finished_following == None:
@@ -367,11 +368,15 @@ class RobotAlg():
 
 
     def perform_path(self, path):
+        print 'first, checking if stop has been pressed'
         if int(self.wait_till_done(self.sim_buttons.getStopButton())):
             return None
+        print 'now, checking if path == None'
         if path == None:
             return False
+        print 'and now, trying to do path if len > 0'
         while len(path) > 0:
+            print 'trying to do path now'
             if not self.MAP.grid[self.MAP.robotLoc[0]][self.MAP.robotLoc[1]].visited:
                 self.visit()
             desired_block = path.pop(len(path) - 1)

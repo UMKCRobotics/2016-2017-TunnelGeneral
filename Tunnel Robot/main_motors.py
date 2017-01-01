@@ -18,7 +18,7 @@ from Robot import RobotMap
 from AI_JED import RobotAlg as AlgJed
 from AI_17 import Robot as Alg17
 
-ard_serial = serial.Serial('/dev/ttyUSB0',115200)
+ard_serial = serial.Serial('/dev/arduino_allfunc',115200)
 
 #motors = MotorsNXT()
 #emf = EMF_Sensors(emf_serial)
@@ -33,15 +33,15 @@ globalThreads = []
 
 #initialize Robot_Impl
 direction = 0
-robot_map = RobotMap(None,0,None,None,direction,shouldPlaySound=False)
-robot_impl = Robot_Impl(ard_funcs,ard_funcs,robot_map)
+robot_map = RobotMap(None,0,None,direction,shouldPlaySound=False)
+robot_impl = Robot_Impl(ard_funcs,robot_map)
 #alg17:
-robotAlgorithm = Alg17(robot_impl,display)
+#robotAlgorithm = Alg17(robot_impl,display)
 #robotAlgorithm.explore3()
 
 #algJed:
-#robotAlgorithm = AlgJed(robot_impl,display)
-#robotAlgorithm.doStuff()
+robotAlgorithm = AlgJed(robot_impl,robot_impl)
+robotAlgorithm.doStuff()
 
 
 for thread in globalThreads:
