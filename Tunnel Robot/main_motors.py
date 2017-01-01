@@ -33,7 +33,7 @@ globalThreads = []
 
 #initialize Robot_Impl
 direction = 0
-robot_map = RobotMap(None,0,None,direction,shouldPlaySound=False)
+robot_map = RobotMap(None,50,(0,0),direction,shouldPlaySound=False)
 robot_impl = Robot_Impl(ard_funcs,robot_map)
 #alg17:
 #robotAlgorithm = Alg17(robot_impl,display)

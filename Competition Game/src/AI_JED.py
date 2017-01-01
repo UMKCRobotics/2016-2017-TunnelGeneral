@@ -149,7 +149,9 @@ class RobotAlg():
 
     def see_obstacle(self, direction):
         which_sensor = (((direction - self.MAP.direction) % 4) + 1) % 4  # do we need the middle mod 4?
-        return self.wait_till_done(self.sim_robot.readSensor(1))[which_sensor]
+        sensor_val = self.wait_till_done(self.sim_robot.readSensor(1))[which_sensor]
+        print sensor_val
+        return sensor_val
 
     def get_vertical_path(self):
         return ['A6', 'A5', 'A4', 'A3', 'A2', 'A1',
@@ -223,6 +225,7 @@ class RobotAlg():
             goal = self.goList.pop(0)
             # get path to the goal block, if NOT obstructed
             if self.MAP.get_block(goal).obstructed:
+                print '%s is obstructed! skipping...' % goal
                 continue  # skip this block if obstructed
 
             # check if should calib on side
@@ -271,7 +274,6 @@ class RobotAlg():
             while do_pathfinding:
                 if self.DEBUG_MODE: print 'finding path to %s' % str(goal)
                 path = self.get_path_to_block_multi([self.MAP.get_block(goal)])
-                print 'PATH: %s' % str(path)
                 finished_following = self.perform_path(path)
                 #if returns NONE, that means go button has been pressed
                 if finished_following == None:
@@ -368,15 +370,11 @@ class RobotAlg():
 
 
     def perform_path(self, path):
-        print 'first, checking if stop has been pressed'
         if int(self.wait_till_done(self.sim_buttons.getStopButton())):
             return None
-        print 'now, checking if path == None'
         if path == None:
             return False
-        print 'and now, trying to do path if len > 0'
         while len(path) > 0:
-            print 'trying to do path now'
             if not self.MAP.grid[self.MAP.robotLoc[0]][self.MAP.robotLoc[1]].visited:
                 self.visit()
             desired_block = path.pop(len(path) - 1)

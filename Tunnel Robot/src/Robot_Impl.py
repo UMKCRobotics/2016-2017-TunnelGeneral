@@ -54,14 +54,14 @@ class Robot_Impl():
 		#get readings from EMF sensor
 		#uncomment next line if has working EMF set up
 		#return self.arduinofuncs.getEMFreading()
-		commandObj = CommRequest('S' + '|O')
-		commandObj.setResponse('000')
+		commandObj = CommRequest('S' + '|E')
+		commandObj.setResponse([0])
 		return commandObj
 
 	def getIfFoam(self):
 		#get readings from Capacitive sensor(s) via a list
 		commandObj = CommRequest('S' + '|F')
-		commandObj.setResponse('0')
+		commandObj.setResponse([0])
 		return commandObj
 
 	def getObstacleReport(self):
@@ -71,5 +71,5 @@ class Robot_Impl():
 		#return self.arduinofuncs.getObstacleReport()
 		#leave the next line uncommented if CANNOT detect obstacles:
 		commandObj = CommRequest('S' + '|O')
-		commandObj.setResponse('0000')
+		commandObj.setResponse([0,0,0,0])
 		return commandObj

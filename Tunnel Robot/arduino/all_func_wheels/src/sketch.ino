@@ -344,7 +344,7 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
       }
       else if (abs(duration1) >= value1-slowDiff) {
         int actualPWM1 = map(abs(duration1),value1-slowDiff,value1,slowPWM,slowestPWM);
-        analogWrite(MOT1_PWM,actualPWM1);
+        analogWrite(MOT1_PWM,actualPWM1-5);
       }
     }
     if (on2) {
@@ -368,8 +368,8 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
 
 String goForward() {
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
-  int forwCount = 2300;
-  int actualDur = runMotorsTill(forwCount,forwCount,255,255);
+  int forwCount = 2512;
+  int actualDur = runMotorsTill(forwCount-25,forwCount+25,251,255);
   return "1";
 }
 
