@@ -323,8 +323,9 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   duration2 = 0;
   bool on1 = true;
   bool on2 = true;
-  int slowDiff = 200;
+  int slowDiff = 400;
   int slowPWM = 125;
+  int slowestPWM = 85;
   //run motors
   //set direction for motor 1
   changeDirection(pwm1,pwm2);
@@ -342,7 +343,8 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
         on1 = false;
       }
       else if (abs(duration1) >= value1-slowDiff) {
-        analogWrite(MOT1_PWM,slowPWM);
+        int actualPWM1 = map(abs(duration1),value1-slowDiff,value1,slowPWM,slowestPWM);
+        analogWrite(MOT1_PWM,actualPWM1);
       }
     }
     if (on2) {
@@ -352,7 +354,8 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
         on2 = false;
       }
       else if (abs(duration2) >= value2-slowDiff) {
-        analogWrite(MOT2_PWM,slowPWM);
+        int actualPWM2 = map(abs(duration2),value2-slowDiff,value2,slowPWM,slowestPWM);
+        analogWrite(MOT2_PWM,actualPWM2);
       }
     }
   }
@@ -366,25 +369,26 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
 String goForward() {
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
   int forwCount = 2300;
-  int actualDur = runMotorsTill(forwCount-25,forwCount,255,255);
+  int actualDur = runMotorsTill(forwCount,forwCount,255,255);
   return "1";
 }
 
 String goBackward() {
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
-  int actualDur = runMotorsTill(1500,1500,-255,-255);
+  int backCount = 2300;
+  int actualDur = runMotorsTill(backCount,backCount,-255,-255);
   return "1";
 }
 
 String turnLeft() {
   //int actualDur = runMotorsTill(1050,1050,"1f9\r","2r9\r");
-  int actualDur = runMotorsTill(1125-25,1125,255,-255);
+  int actualDur = runMotorsTill(1202,1202,255,-255);
   return "1";
 }
 
 String turnRight() {
   //int actualDur = runMotorsTill(1100,1100,"1r9\r","2f9\r");
-  int actualDur = runMotorsTill(1140,1140,-255,255);
+  int actualDur = runMotorsTill(1223,1223,-255,255);
   return "1";
 }
 //END OF MOTOR STUFF
