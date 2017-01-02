@@ -1,6 +1,7 @@
 #include "Adafruit_GFX.h"
 #include "Adafruit_NeoMatrix.h"
 #include "Adafruit_NeoPixel.h"
+#include "PID.h"
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
 #endif
@@ -9,7 +10,15 @@
 #define LED2 23
 //EMF PINS
 #define EMF1 A0
-
+//IR PINS
+#define IR_R1 A8
+#define IR_R2 A9
+#define IR_B1 A10
+#define IR_B2 A11
+#define IR_L1 A12
+#define IR_L2 A13
+#define IR_F1 A14
+#define IR_F2 A15
 //8x8 pin
 #define PINM 6
 //7 segment pins
@@ -150,25 +159,29 @@ void loop() {
 String interpretCommand(String command, String value) {
   
   String responseString = "n";
+  String returnString = "";
 
   //check if motor stuff
   if (command == "f") {
-    String returnString = goForward();
+    returnString = goForward();
     responseString = "1";
     responseString += returnString;
   }
   else if (command == "l") {
-    String returnString = turnLeft();
+    returnString = turnLeft();
     responseString = "1";
     responseString += returnString;
   }
   else if (command == "r") {
-    String returnString = turnRight();
+    returnString = turnRight();
     responseString = "1";
     responseString += returnString;
   }
   else if (command == "c") {
-    String returnString = calibrateWithSwitches();
+    if (value == "")
+      returnString = calibrateWithSwitches();
+    else
+      returnString = calibrateWithIR(value);
     responseString = "1";
     responseString += returnString;
   }
@@ -352,6 +365,8 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   while (on1 || on2) {
     //if StopButton has been pressed, stop moving!
     if (StopState == '1') {
+      digitalWrite(LED1,LOW);
+      digitalWrite(LED2,LOW);
       break;
     }
     if (on1) {
@@ -405,6 +420,8 @@ int runCalibrationWithSwitches(int value1, int value2, int pwm1, int pwm2, int b
   while (on1 || on2) {
     //if StopButton has been pressed, stop moving!
     if (StopState == '1') {
+      digitalWrite(LED1,LOW);
+      digitalWrite(LED2,LOW);
       break;
     }
     //get state of switches
@@ -412,25 +429,17 @@ int runCalibrationWithSwitches(int value1, int value2, int pwm1, int pwm2, int b
     int switch2 = digitalRead(SWITCH_FL);
     //determine what to do with info
     if (on1) {
-      if (switch1 == LOW || abs(duration1) >= value1) {
+      if (switch1 == LOW) {
         analogWrite(MOT1_PWM,0);
         digitalWrite(LED1,LOW);
         on1 = false;
       }
-      else if (abs(duration1) >= value1-slowDiff) {
-        int actualPWM1 = map(abs(duration1),value1-slowDiff,value1,slowPWM,slowestPWM);
-        analogWrite(MOT1_PWM,actualPWM1-5);
-      }
     }
     if (on2) {
-      if (switch2 == LOW || abs(duration2) >= value2) {
+      if (switch2 == LOW) {
         analogWrite(MOT2_PWM,0);
         digitalWrite(LED2,LOW);
         on2 = false;
-      }
-      else if (abs(duration2) >= value2-slowDiff) {
-        int actualPWM2 = map(abs(duration2),value2-slowDiff,value2,slowPWM,slowestPWM);
-        analogWrite(MOT2_PWM,actualPWM2);
       }
     }
   }
@@ -439,6 +448,41 @@ int runCalibrationWithSwitches(int value1, int value2, int pwm1, int pwm2, int b
   analogWrite(MOT2_PWM,0);
   //now go backwards to be in center of block
   runMotorsTill(backCount,backCount-25,-255,-255);
+
+  return 1;
+}
+
+int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
+  //1 is on the right, 2 is on the left, let's just roll with it, okay?
+  int reading1 = analogRead(pin1);
+  int reading2 = analogRead(pin2);
+  int readingDiff = reading1-reading2;
+  int pidVal;
+  int minPWM = 100;
+  int maxPWM = 255;
+  int actualPWM;
+  //start PID, set proportional/integral/derivative gains 
+  PID<int> pid(1,1,1);
+  //do movement while readings are outside tolerance range
+  while (readingDiff > setPoint+tolerance || readingDiff < setPoint-tolerance) {
+    //calculate what PWM to use
+    pidVal = pid.calculate(readingDiff, setPoint);
+    //change equation for actualPWM to be reasonable with pidVals
+    actualPWM = min(minPWM + abs(pidVal),maxPWM);
+    //change directions appropriately, and use actualPWM
+    changeDirection(pidVal,-pidVal);
+    analogWrite(MOT1_PWM,actualPWM);
+    analogWrite(MOT2_PWM,actualPWM);
+    //get new measurements now
+    int reading1 = analogRead(pin1);
+    int reading2 = analogRead(pin2);
+    int readingDiff = reading1-reading2;
+    //now wait a little bit before trying again
+    delay(200);
+  }
+  //stop both motors
+  analogWrite(MOT1_PWM,0);
+  analogWrite(MOT2_PWM,0);
 
   return 1;
 }
@@ -457,9 +501,28 @@ String calibrateWithSwitches() {
   return "1";
 }
 
+String calibrateWithIR(String side) {
+  //if L, use IR on left side
+  if (side == "L")  
+    runCalibrationPivotIR(IR_L1,IR_L2,0,40);
+  //if R, use IR on right side
+  else if (side == "R")  
+    runCalibrationPivotIR(IR_R1,IR_R2,0,40);
+  //if B, use IR on back side
+  else if (side == "B")  
+    runCalibrationPivotIR(IR_B1,IR_B2,0,40);
+  //if F, use IR on front side (might not use)
+  else if (side == "F")  
+    runCalibrationPivotIR(IR_F1,IR_F2,0,40);
+  //signal if bad side received
+  else
+    return "BAD";
+  return "1";
+}
+
 String goBackward() {
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
-  int backCount = 2300;
+  int backCount = 2512;
   int actualDur = runMotorsTill(backCount,backCount,-255,-255);
   return "1";
 }
