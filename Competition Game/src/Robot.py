@@ -211,10 +211,11 @@ class Robot:
         # commObject.markDone()
         self.move_to_do = commObject
         return commObject
-	
-	def goCalibrate(self):
-		#just an alias for goForward in this sim
-		return self.goForward()
+    
+    def goCalibrate(self):
+        return self.goForward()
+        #just an alias for goForward in this sim
+        
 
     def goBackward(self):
         commObject = CommRequest('b')
