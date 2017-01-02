@@ -39,7 +39,7 @@ class RobotAlg():
         self.moves_since_cal = [0, 0]
         self.max_moves = [15, 15]
         self.goList = None
-        self.DEBUG_MODE = True
+        self.DEBUG_MODE = False
 
     def wait_till_done(self,resp):
         intermediateDelay = 0.01
@@ -162,6 +162,15 @@ class RobotAlg():
                 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7',
                 'G7', 'G6', 'G5', 'G4', 'G3', 'G2', 'G1']
 
+    def get_horizontal_path(self):
+        return ['B7','C7','D7','E7','F7','G7',
+                'G6','F6','E6','D6','C6','B6','A6',
+                'A5','B5','C5','D5','E5','F5','G5',
+                'G4','F4','E4','D4','C4','B4','A4',
+                'A3','B3','C3','D3','E3','F3','G3',
+                'G2','F2','E2','D2','C2','B2','A2',
+                'A1','B1','C1','D1','E1','F1','G1']
+
     def get_spiral_path(self):
         return ['A6', 'A5', 'A4', 'A3', 'A2', 'A1',
                 'B1', 'C1', 'D1', 'E1', 'F1', 'G1',
@@ -196,7 +205,8 @@ class RobotAlg():
         while not int(self.wait_till_done(self.sim_buttons.getGoButton())):
             sleep(0.25)
 
-        self.goList = self.get_vertical_path()
+        # self.goList = self.get_vertical_path()
+        self.goList = self.get_horizontal_path()
         # self.goList = self.get_spiral_path()
 
         with open(os.path.join(__location__, 'gridstates.txt'), 'wb') as gridstates:

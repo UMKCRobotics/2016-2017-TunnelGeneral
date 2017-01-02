@@ -37,6 +37,9 @@ volatile boolean Direction2;
 #define MOT2_PWM 45
 //motor modulus
 int motorMod = 0;
+//calibration switch pins
+#define SWITCH_FL 34 //front left
+#define SWITCH_FR 35 //front right
 //button pins
 #define GoPin 18 //Go button - INTERRUPT PIN
 #define StopPin 19 //Stop button - INTERRUPT PIN
@@ -104,6 +107,7 @@ void setup() {
   EncoderInit();
   MotorInit();
   ButtonInit();
+  SwitchInit();
   //Serial1.write("1f0\r");
   //delayMicroseconds(500);
   //Serial1.write("2f0\r");
@@ -160,6 +164,11 @@ String interpretCommand(String command, String value) {
   }
   else if (command == "r") {
     String returnString = turnRight();
+    responseString = "1";
+    responseString += returnString;
+  }
+  else if (command == "c") {
+    String returnString = calibrateWithSwitches();
     responseString = "1";
     responseString += returnString;
   }
@@ -221,6 +230,11 @@ void MotorInit() {
   pinMode(MOT2_PIN1,OUTPUT);
   pinMode(MOT2_PIN2,OUTPUT);
   pinMode(MOT2_PWM,OUTPUT);
+}
+
+void SwitchInit() {
+  pinMode(SWITCH_FR,INPUT);
+  pinMode(SWITCH_FL,INPUT);
 }
 
 void wheelSpeed1() {
@@ -336,6 +350,10 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   digitalWrite(LED2,HIGH);
   //do stuff while not done
   while (on1 || on2) {
+    //if StopButton has been pressed, stop moving!
+    if (StopState == '1') {
+      break;
+    }
     if (on1) {
       if (abs(duration1) >= value1) {
         analogWrite(MOT1_PWM,0);
@@ -366,10 +384,72 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   return 1;
 }
 
+int runCalibrationWithSwitches(int value1, int value2, int pwm1, int pwm2) {
+  unsigned long lastGoCommand = millis();
+  duration1 = 0;
+  duration2 = 0;
+  bool on1 = true;
+  bool on2 = true;
+  int slowDiff = 400;
+  int slowPWM = 125;
+  int slowestPWM = 85;
+  //run motors
+  //set direction for motor 1
+  changeDirection(pwm1,pwm2);
+  //set PWM for both with as little latency in between
+  analogWrite(MOT1_PWM,abs(pwm1));
+  digitalWrite(LED1,HIGH);
+  analogWrite(MOT2_PWM,abs(pwm2));
+  digitalWrite(LED2,HIGH);
+  //do stuff while not done
+  while (on1 || on2) {
+    //if StopButton has been pressed, stop moving!
+    if (StopState == '1') {
+      break;
+    }
+    //get state of switches
+    int switch1 = digitalRead(SWITCH_FR);
+    int switch2 = digitalRead(SWITCH_FL);
+    //determine what to do with info
+    if (on1) {
+      if (switch1 == LOW || abs(duration1) >= value1) {
+        analogWrite(MOT1_PWM,0);
+        digitalWrite(LED1,LOW);
+        on1 = false;
+      }
+      else if (abs(duration1) >= value1-slowDiff) {
+        int actualPWM1 = map(abs(duration1),value1-slowDiff,value1,slowPWM,slowestPWM);
+        analogWrite(MOT1_PWM,actualPWM1-5);
+      }
+    }
+    if (on2) {
+      if (switch2 == LOW || abs(duration2) >= value2) {
+        analogWrite(MOT2_PWM,0);
+        digitalWrite(LED2,LOW);
+        on2 = false;
+      }
+      else if (abs(duration2) >= value2-slowDiff) {
+        int actualPWM2 = map(abs(duration2),value2-slowDiff,value2,slowPWM,slowestPWM);
+        analogWrite(MOT2_PWM,actualPWM2);
+      }
+    }
+  }
+  //stop both motors now, promptly
+  analogWrite(MOT1_PWM,0);
+  analogWrite(MOT2_PWM,0);
+
+  return 1;
+}
+
 String goForward() {
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
   int forwCount = 2512;
   int actualDur = runMotorsTill(forwCount-25,forwCount+25,251,255);
+  return "1";
+}
+
+String calibrateWithSwitches() {
+  int actualDur = runCalibrationWithSwitches(1000-25,1000+25,251,255);
   return "1";
 }
 
