@@ -207,8 +207,8 @@ String interpretCommand(String command, String value) {
   }
   //check if 8x8 stuff
   else if (command == "T") {
-      setToOT(value.toInt());
-      responseString = "1";
+    setToOT(value.toInt());
+    responseString = "1";
   }
   else if (command == "D") {
     setToDE(value.toInt());
@@ -218,10 +218,24 @@ String interpretCommand(String command, String value) {
     setToEM(value.toInt());
     responseString = "1";
   }
-  //check if EMF stuff
+  //check if sensor stuff
   else if (command == "e") {
     responseString = "1";
     responseString += String(readEMF());
+  }
+  else if (command == "S") {
+    if (value == "E") {
+      responseString = "1";
+      responseString += String(readEMF());
+    }
+    else if (value == "O") {
+      responseString = "1";
+      responseString += getObstacleReport();
+    }
+    else if (value == "F") {
+      responseString = "1";
+      //lol good luck with that
+    }
   }
 
   return responseString;
@@ -541,6 +555,34 @@ String turnRight() {
 //END OF MOTOR STUFF
 
 //START OF SENSOR STUFF
+String getObstacleReport() {
+  String report = "";
+  //report format: right,front,left,back
+  int threshold = 200; //set this to something reasonable
+  //check right
+  if (analogRead(IR_R1) < threshold || analogRead(IR_R2) < threshold)
+    report += '1';
+  else
+    report += '0';
+  //check front
+  if (analogRead(IR_F1) < threshold)// || analogRead(IR_F2) < threshold)
+    report += '1';
+  else
+    report += '0';
+  //check left
+  if (analogRead(IR_L1) < threshold || analogRead(IR_L2) < threshold)
+    report += '1';
+  else
+    report += '0';
+  //check back
+  if (analogRead(IR_B1) < threshold || analogRead(IR_B2) < threshold)
+    report += '1';
+  else
+    report += '0';
+  //return the report
+  return report;
+}
+
 int readEMF() {
   return getEMFreading(EMF1);
 }
