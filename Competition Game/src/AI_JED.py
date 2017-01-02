@@ -86,7 +86,7 @@ class RobotAlg():
             self.turn(2)
         elif self.MAP.robotLoc[0] == 6:
             self.turn(0)
-        self.wait_till_done(self.sim_robot.goForward())
+        self.wait_till_done(self.sim_robot.goCalibrate())
         sleep(self.SLEEP_TIME)
 
     def calibrate_y(self):
@@ -95,7 +95,7 @@ class RobotAlg():
             self.turn(1)
         elif self.MAP.robotLoc[1] == 6:
             self.turn(3)
-        self.wait_till_done(self.sim_robot.goForward())
+        self.wait_till_done(self.sim_robot.goCalibrate())
         sleep(self.SLEEP_TIME)
 
     def generate_blank_grid(self):  # generate 7x7 grid for path algorithm

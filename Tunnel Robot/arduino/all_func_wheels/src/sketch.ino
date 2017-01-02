@@ -384,7 +384,7 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   return 1;
 }
 
-int runCalibrationWithSwitches(int value1, int value2, int pwm1, int pwm2) {
+int runCalibrationWithSwitches(int value1, int value2, int pwm1, int pwm2, int backCount) {
   unsigned long lastGoCommand = millis();
   duration1 = 0;
   duration2 = 0;
@@ -437,6 +437,8 @@ int runCalibrationWithSwitches(int value1, int value2, int pwm1, int pwm2) {
   //stop both motors now, promptly
   analogWrite(MOT1_PWM,0);
   analogWrite(MOT2_PWM,0);
+  //now go backwards to be in center of block
+  runMotorsTill(backCount,backCount-25,-255,-255);
 
   return 1;
 }
@@ -449,7 +451,9 @@ String goForward() {
 }
 
 String calibrateWithSwitches() {
-  int actualDur = runCalibrationWithSwitches(1000-25,1000+25,251,255);
+  int calCount = 2000;
+  int backCount = 500;
+  int actualDur = runCalibrationWithSwitches(calCount-25,calCount+25,201,205,backCount);
   return "1";
 }
 
