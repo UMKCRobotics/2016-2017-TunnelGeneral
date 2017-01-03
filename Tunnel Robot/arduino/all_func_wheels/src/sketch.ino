@@ -466,33 +466,55 @@ int runCalibrationWithSwitches(int value1, int value2, int pwm1, int pwm2, int b
   return 1;
 }
 
+int lowPass(int newVal,int oldVal, double prefVal) {
+  return int(newVal*prefVal + oldVal*(1.0-prefVal));
+}
+
 int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
   //1 is on the right, 2 is on the left, let's just roll with it, okay?
   int reading1 = analogRead(pin1);
   int reading2 = analogRead(pin2);
+  int lastReading1 = reading1;
+  int lastReading2 = reading2;
+  double readingPref = 0.6;
   int readingDiff = reading1-reading2;
   int pidVal;
-  int minPWM = 100;
-  int maxPWM = 255;
+  int correctedPidVal;
+  int minPWM = 65;
+  int maxPWM = 200;
   int actualPWM;
   //start PID, set proportional/integral/derivative gains 
-  PID<int> pid(1,1,1);
+  PID<int> pid(0.6,0.001,0);
   //do movement while readings are outside tolerance range
-  while (readingDiff > setPoint+tolerance || readingDiff < setPoint-tolerance) {
-    //calculate what PWM to use
-    pidVal = pid.calculate(readingDiff, setPoint);
-    //change equation for actualPWM to be reasonable with pidVals
-    actualPWM = min(minPWM + abs(pidVal),maxPWM);
-    //change directions appropriately, and use actualPWM
-    changeDirection(pidVal,-pidVal);
-    analogWrite(MOT1_PWM,actualPWM);
-    analogWrite(MOT2_PWM,actualPWM);
+  int countGood = 0;
+  int countRequired = 6;
+  while (countGood < countRequired) {
+    if (readingDiff < setPoint+tolerance && readingDiff > setPoint-tolerance) {
+      countGood += 1;
+      analogWrite(MOT1_PWM,0);
+      analogWrite(MOT2_PWM,0);
+    }
+    else {
+      countGood = 0;
+      //calculate what PWM to use
+      pidVal = pid.calculate(readingDiff, setPoint);
+      //change equation for actualPWM to be reasonable with pidVals
+      actualPWM = min(minPWM + abs(pidVal),maxPWM);
+      //change directions appropriately, and use actualPWM
+      changeDirection(pidVal,-pidVal);
+      analogWrite(MOT1_PWM,actualPWM);
+      analogWrite(MOT2_PWM,actualPWM);
+    }
     //get new measurements now
-    int reading1 = analogRead(pin1);
-    int reading2 = analogRead(pin2);
-    int readingDiff = reading1-reading2;
+    reading1 = lowPass(analogRead(pin1),lastReading1,readingPref);
+    reading2 = lowPass(analogRead(pin2),lastReading2,readingPref);
+    lastReading1 = reading1;
+    lastReading2 = reading2;
+    readingDiff = reading1-reading2;
     //now wait a little bit before trying again
-    delay(200);
+    //pid.logDiagnosticInfo();
+    //Serial.println(readingDiff);
+    delay(10);
   }
   //stop both motors
   analogWrite(MOT1_PWM,0);
@@ -517,17 +539,18 @@ String calibrateWithSwitches() {
 
 String calibrateWithIR(String side) {
   //if L, use IR on left side
+  int threshold = 5;
   if (side == "L")  
-    runCalibrationPivotIR(IR_L1,IR_L2,0,40);
+    runCalibrationPivotIR(IR_L1,IR_L2,0,threshold);
   //if R, use IR on right side
   else if (side == "R")  
-    runCalibrationPivotIR(IR_R1,IR_R2,0,40);
+    runCalibrationPivotIR(IR_R1,IR_R2,30,threshold);
   //if B, use IR on back side
   else if (side == "B")  
-    runCalibrationPivotIR(IR_B1,IR_B2,0,40);
+    runCalibrationPivotIR(IR_B1,IR_B2,0,threshold);
   //if F, use IR on front side (might not use)
   else if (side == "F")  
-    runCalibrationPivotIR(IR_F1,IR_F2,0,40);
+    runCalibrationPivotIR(IR_F1,IR_F2,0,threshold);
   //signal if bad side received
   else
     return "BAD";
@@ -558,24 +581,24 @@ String turnRight() {
 String getObstacleReport() {
   String report = "";
   //report format: right,front,left,back
-  int threshold = 200; //set this to something reasonable
+  int threshold = 190; //set this to something reasonable
   //check right
-  if (analogRead(IR_R1) < threshold || analogRead(IR_R2) < threshold)
+  if (analogRead(IR_R1) > threshold || analogRead(IR_R2) > threshold)
     report += '1';
   else
     report += '0';
   //check front
-  if (analogRead(IR_F1) < threshold)// || analogRead(IR_F2) < threshold)
+  if (analogRead(IR_F1) > threshold)// || analogRead(IR_F2) > threshold)
     report += '1';
   else
     report += '0';
   //check left
-  if (analogRead(IR_L1) < threshold || analogRead(IR_L2) < threshold)
+  if (analogRead(IR_L1) > threshold || analogRead(IR_L2) > threshold)
     report += '1';
   else
     report += '0';
   //check back
-  if (analogRead(IR_B1) < threshold || analogRead(IR_B2) < threshold)
+  if (analogRead(IR_B1) > threshold || analogRead(IR_B2) > threshold)
     report += '1';
   else
     report += '0';

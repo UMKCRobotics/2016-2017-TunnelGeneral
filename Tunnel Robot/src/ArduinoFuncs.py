@@ -79,6 +79,11 @@ class ArduinoFuncs():
         commandObj = CommRequest('c')
         self.ard.requestCommand(commandObj)
         return commandObj
+    
+    def goCalibrateIR(self,side):
+        commandObj = CommRequest('c|' + side)
+        self.ard.requestCommand(commandObj)
+        return commandObj
 
     def stopThread(self):
         self.ard.keepRunning = False

@@ -38,6 +38,9 @@ class Robot_Impl():
 	def goCalibrate(self):
 		#use perimeter to fix possible rotation/translation errors
 		return self.arduinofuncs.goCalibrate()
+	
+	def goCalibrateIR(self,side):
+		return self.arduinofuncs.goCalibrateIR(side)
 
 	def readSensor(self, value):
 		commObj = None
