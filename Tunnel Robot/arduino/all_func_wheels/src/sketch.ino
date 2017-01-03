@@ -466,7 +466,7 @@ int runCalibrationWithSwitches(int value1, int value2, int pwm1, int pwm2, int b
   return 1;
 }
 
-int lowPass(int newVal,int oldVal, double prefVal) {
+int expMovingAvg(int newVal,int oldVal, double prefVal) {
   return int(newVal*prefVal + oldVal*(1.0-prefVal));
 }
 
@@ -506,8 +506,8 @@ int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
       analogWrite(MOT2_PWM,actualPWM);
     }
     //get new measurements now
-    reading1 = lowPass(analogRead(pin1),lastReading1,readingPref);
-    reading2 = lowPass(analogRead(pin2),lastReading2,readingPref);
+    reading1 = expMovingAvg(analogRead(pin1),lastReading1,readingPref);
+    reading2 = expMovingAvg(analogRead(pin2),lastReading2,readingPref);
     lastReading1 = reading1;
     lastReading2 = reading2;
     readingDiff = reading1-reading2;
