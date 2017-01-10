@@ -67,7 +67,7 @@ while True:
                         continue
                 index = (index+1)%3
                 user_inp = possibilities[index]
-                time.sleep(0.001)
+                #time.sleep(0.001)
 	else:
                 user_inp = raw_input('> ')
 	if user_inp == 'y':

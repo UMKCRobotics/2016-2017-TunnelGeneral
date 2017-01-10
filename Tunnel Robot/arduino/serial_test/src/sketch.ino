@@ -1,6 +1,6 @@
-#define LED1 5
-#define LED2 6
-#define LED3 7
+#define LED1 8
+#define LED2 9
+#define LED3 10
 
 //parsing inputs
 String command; //used to store command from serial
