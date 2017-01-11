@@ -44,6 +44,10 @@ void loop() {
         value += readIn;
       }
     }
+    //clear anything remaining in serial
+    while (Serial.available() > 0) {
+      Serial.read();
+    }
     response = interpretCommand(command,value);
     Serial.println(response+previousValue); //sends response with \n at the end
     previousValue = value;
