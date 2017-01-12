@@ -85,5 +85,10 @@ class ArduinoFuncs():
         self.ard.requestCommand(commandObj)
         return commandObj
 
+    def performTap(self):
+        commandObj = CommRequest('A' + '|1')
+        self.ard.requestCommand(commandObj)
+        return commandObj
+
     def stopThread(self):
         self.ard.keepRunning = False

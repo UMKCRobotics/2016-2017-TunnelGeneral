@@ -1,7 +1,5 @@
 import threading,os,sys,serial,time
 
-import Motors
-import SensorArduino
 import ArduinoFuncs
 from DeviceComm import CommRequest
 

@@ -19,7 +19,7 @@ from Robot import RobotMap
 from AI_JED import RobotAlg as AlgJed
 from AI_17 import Robot as Alg17
 
-ard_serial = serial.Serial('/dev/ttyACM1',115200)
+ard_serial = serial.Serial('/dev/ttyACM0',115200)
 
 #motors = MotorsNXT()
 #emf = EMF_Sensors(emf_serial)
