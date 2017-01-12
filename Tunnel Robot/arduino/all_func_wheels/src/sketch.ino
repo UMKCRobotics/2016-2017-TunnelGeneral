@@ -148,6 +148,10 @@ void loop() {
         value += readIn;
       }
     }
+    //clear anything remaining in serial
+    while (Serial.available() > 0) {
+      Serial.read();
+    }
     response = interpretCommand(command,value);
     Serial.println(response); //sends response with \n at the end
   }
@@ -238,6 +242,10 @@ String interpretCommand(String command, String value) {
     }
   }
 
+  //check if any BADs were obtained
+  if (returnString == "BAD") {
+    return "n";
+  }
   return responseString;
 
 }

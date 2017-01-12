@@ -15,6 +15,7 @@ class SerialComm(DeviceComm):
 	# via serial communication
 	# such as: arduinos
 	termChar = '\n'
+	maxTries = 2
 
 	def __init__(self,comm):
 		DeviceComm.__init__(self,comm)
@@ -38,22 +39,26 @@ class SerialComm(DeviceComm):
 		print 'connection initialized'
 
 	def performCommand(self,commReq):
-		#print 'perfoming command --> <<<%s>>>' % (commReq.request)
-		self.serial.write(commReq.request+'\n')
-		#print 'waiting for response...'
-		#print self.serial
-		#wait for a response to change state of command Request
-		serin = ""
-		while serin.endswith('\n') != True:
-			serin += self.serial.read()
-			#time.sleep(0.1)
-		#print serin
-		if serin[0] == 'n':
-			response = 'BAD'
-		else:
-			response = serin.strip()[1:] #remove new line char, take out first char
-			#print response
-		#print 'command %s performed with response %s' % (commReq.request,response)
+		tries = 0
+		while tries < self.maxTries:
+			self.serial.write(commReq.request+'\n')
+			#wait for a response to change state of command Request
+			serin = ""
+			while serin.endswith('\n') != True:
+				serin += self.serial.read()
+				#time.sleep(0.1)
+			#print serin
+			if serin[0] == 'n':
+				response = 'BAD'
+				print "flushing serial..."
+				time.sleep(0.1)
+				self.serial.flushInput()
+				self.serial.flushOutput()
+				tries += 1
+			else:
+				response = serin.strip()[1:] #remove new line char, take out first char
+				break
+			#print 'command %s performed with response %s' % (commReq.request,response)
 		commReq.response = response #set response
 		commReq.markDone()
 		#insert stuff here

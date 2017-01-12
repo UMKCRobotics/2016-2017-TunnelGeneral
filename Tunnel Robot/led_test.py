@@ -19,7 +19,7 @@ from Robot import RobotMap
 from AI_JED import RobotAlg as AlgJed
 from AI_17 import Robot as Alg17
 
-ard_serial = serial.Serial('/dev/ttyACM0',115200)
+ard_serial = serial.Serial('/dev/ttyACM1',115200)
 
 #motors = MotorsNXT()
 #emf = EMF_Sensors(emf_serial)
@@ -61,7 +61,7 @@ while True:
                         automatic = False
                         print "was on: %s" % possibilities[index]
                         print 'attempting to flush...'
-                        time.sleep(0.5)
+                        time.sleep(0.1)
                         ard_funcs.ard.serial.flushInput()
                         ard_funcs.ard.serial.flushOutput()
                         continue
