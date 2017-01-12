@@ -50,7 +50,6 @@ class SerialComm(DeviceComm):
 			#print serin
 			if serin[0] == 'n':
 				response = 'BAD'
-				print "flushing serial..."
 				time.sleep(0.1)
 				self.serial.flushInput()
 				self.serial.flushOutput()
