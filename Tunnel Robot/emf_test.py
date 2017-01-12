@@ -10,8 +10,6 @@ main_dir = os.path.realpath(os.path.join(__location__,'..'))
 sys.path.insert(0, os.path.realpath(os.path.join(main_dir,'Competition Game/src')))
 
 
-#from SensorArduino import EMF_Sensors
-#from Displays import Displays
 from ArduinoFuncs import ArduinoFuncs
 from Robot_Impl import Robot_Impl
 from Robot import RobotMap
@@ -20,9 +18,6 @@ from AI_17 import Robot as Alg17
 
 ard_serial = serial.Serial('/dev/arduino_allfunc',115200)
 
-#motors = MotorsNXT()
-#emf = EMF_Sensors(emf_serial)
-#display  = Displays(disp_serial)
 ard_funcs = ArduinoFuncs(ard_serial)
 while not ard_funcs.isConnected():
 	time.sleep(0.1)
