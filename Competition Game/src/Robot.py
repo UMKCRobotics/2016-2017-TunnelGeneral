@@ -296,6 +296,22 @@ class Robot:
         if not self.leftA7 and not self.GAMEBOARD.get_block('A7').object.contains(self.object):
             self.leftA7 = True
 
+    # dummy functions to mimic RobotImpl
+    def setReadyLight(self):
+        commObject = CommRequest('b')
+        commObject.markDone()
+        return commObject
+
+    def set8x8(self,index,gridType):
+        commObject = CommRequest('b')
+        commObject.markDone()
+        return commObject
+
+    def set7segment(self,number):
+        commObject = CommRequest('b')
+        commObject.markDone()
+        return commObject
+
 
 # OT Map: Robot's internal map of the world
 class RobotMap:

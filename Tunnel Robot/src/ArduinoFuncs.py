@@ -9,6 +9,11 @@ class ArduinoFuncs():
         self.ard = SerialComm(serial)
         self.ard.start()
 
+    def setReadyLight(self):
+        commandObj = CommRequest('R')
+        self.ard.requestCommand(commandObj)
+        return commandObj
+
     def set8x8(self, index, gridType):
         # types:
         # T = objective tunnel,
@@ -19,11 +24,12 @@ class ArduinoFuncs():
         return commandObj
 
     def set7segment(self, number):
-        if number < 1 or number > 6:
-            return 'INVALID'
-
         commandObj = CommRequest('N' + '|' + str(number))
-        self.ard.requestCommand(commandObj)
+        if number < 1 or number > 6:
+            commandObj.response = 'INVALID'
+            commandObj.markDone()
+        else:
+            self.ard.requestCommand(commandObj)
         return commandObj
 
     def getGoButton(self):

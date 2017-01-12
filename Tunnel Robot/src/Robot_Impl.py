@@ -18,6 +18,19 @@ class Robot_Impl():
 	def getStopButton(self):
 		return self.arduinofuncs.getStopButton()
 
+	def setReadyLight(self):
+		return self.arduinofuncs.setReadyLight()
+
+	def set8x8(self,index,gridType):
+		# types:
+        # T = objective tunnel,
+        # D = dead end,
+        # E = empty
+		return self.arduinofuncs.set8x8(index,gridType)
+
+	def set7segment(self,number):
+		return self.arduinofuncs.set7segment(number)
+
 	def goForward(self):
 		#forward 1 foot, returns command object
 		self.MAP.drive(1)

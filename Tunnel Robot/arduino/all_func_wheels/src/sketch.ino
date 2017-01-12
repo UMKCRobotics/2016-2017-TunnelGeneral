@@ -101,8 +101,6 @@ void setup() {
   matrix.begin();
   matrix.setBrightness(20);
   matrix.show(); //set all to off
-  matrix.setPixelColor(56, 255, 255, 0);
-  matrix.show();
   //setup 7 digit display and clear it
   pinMode(LATCH, OUTPUT);
   pinMode(CLK, OUTPUT);
@@ -210,6 +208,10 @@ String interpretCommand(String command, String value) {
     }
   }
   //check if 8x8 stuff
+  else if (command == "R") {
+    setReadyLight();
+    responseString = "1";
+  }
   else if (command == "T") {
     setToOT(value.toInt());
     responseString = "1";
@@ -750,10 +752,14 @@ void clearDigit() {
   delay(1);
 }
 
+void setReadyLight() {
+  matrix.setPixelColor(56, 255, 255, 0);
+  matrix.show();
+}
+
 void setToOT(int index) {
   matrix.setPixelColor(index, 255, 0, 0);
   matrix.show();
-
 }
 
 void setToDE(int index) {
