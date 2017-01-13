@@ -201,6 +201,8 @@ class RobotAlg():
 
     def doStuff(self):
 
+        #light up yellow READY light on 8x8 (A7)
+        self.wait_till_done(self.sim_robot.setReadyLight())
         #wait for Go Button to be pressed
         while not int(self.wait_till_done(self.sim_buttons.getGoButton())):
             sleep(0.25)

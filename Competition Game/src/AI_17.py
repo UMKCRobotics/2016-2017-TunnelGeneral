@@ -452,8 +452,12 @@ class Robot:
         """ visit all possible grid spaces
             go back to sides, when away for a long time """
 
-        # wait for Go Button to be pressed
+
+        # perform if running a bot
         if not self.using_outside_grid:
+            # light up yellow READY light on 8x8 (A7)
+            self.wait_till_done(self.sim_robot.setReadyLight())
+            # wait for Go Button to be pressed
             while not int(self.wait_till_done(self.sim_buttons.getGoButton())):
                 time.sleep(0.25)
 
