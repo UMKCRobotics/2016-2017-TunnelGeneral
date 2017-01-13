@@ -8,6 +8,20 @@ UDEV rule commands (to find serial #):
 	4. Put that into the serial in the .rules file
 	5. Run make_udev_rules
 
+Launching main.py on Pi startup:
+	1. In home directory (NOT git proj dir), create logs directory, using:
+	>	mkdir logs 
+	2. Change working dir to root of git proj
+	3. Make main_launcher.py executable by performing:
+	>	chmod 755 main_launcher.sh
+	4. Open up a crontab by performing:
+	>	sudo crontab -e
+	5. Add a new line to start script at boot:
+	>	@reboot sh /home/pi/2016-2017-TunnelGeneral/main_launcher.sh >/home/pi/logs/cronlog 2>&1
+	6. Ctrl-X to exit, save when prompted
+	7. Done! Script will now launch after every Pi bootup
+ 
+
 Fixing git repo after .gitignore is updated:
 	1. Make sure the current working dir is the root of the proj
 	2. Run the following commands:
