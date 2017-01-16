@@ -8,6 +8,7 @@ from Robot import Robot as SimRobot  # passed to simulation_impl
 
 from Grid_Util import *
 from Static_Decorator import static_vars
+from ThresholdFinder import ThresholdFinder
 from hampath import HamiltonianPath
 
 PRIORITY_FOR_AVOIDING_TURNS = 1
@@ -564,9 +565,17 @@ class Robot:
         :return:
         """
         # find thresholds
-        # TODO: use statistical analyses of data to find thresholds
-        wire_threshold = .5
-        tunnel_threshold = .5
+        # > threshold is yes
+        # <= threshold is no (not >)
+        algorithm_to_find_thresholds = ThresholdFinder(self.gridData.data)
+        algorithm_to_find_thresholds.find_thresholds()
+        list_of_wire_thresholds = algorithm_to_find_thresholds.get_wire_thresholds()
+        list_of_tunnel_thresholds = algorithm_to_find_thresholds.get_tunnel_thresholds()
+
+        # TODO: iterate through thresholds until we find one that doesn't fail
+        # (right now it just assumes that the first one won't fail)
+        wire_threshold = list_of_wire_thresholds[0]
+        tunnel_threshold = list_of_tunnel_thresholds[0]
 
         # apply thresholds to knowledge
         for space in self.gridData.data:
