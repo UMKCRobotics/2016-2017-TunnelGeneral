@@ -453,7 +453,6 @@ class Robot:
         """ visit all possible grid spaces
             go back to sides, when away for a long time """
 
-
         # perform if running a bot
         if not self.using_outside_grid:
             # light up yellow READY light on 8x8 (A7)
@@ -572,76 +571,179 @@ class Robot:
         list_of_wire_thresholds = algorithm_to_find_thresholds.get_wire_thresholds()
         list_of_tunnel_thresholds = algorithm_to_find_thresholds.get_tunnel_thresholds()
 
-        # TODO: iterate through thresholds until we find one that doesn't fail
-        # (right now it just assumes that the first one won't fail)
-        wire_threshold = list_of_wire_thresholds[0]
-        tunnel_threshold = list_of_tunnel_thresholds[0]
+        # in case sensors malfunction and we get the same reading for everything
+        if len(list_of_wire_thresholds) == 0:
+            print("WARNING: no variation in wire sensor readings")
+            list_of_wire_thresholds.appemd(0)
+        if len(list_of_tunnel_thresholds) == 0:
+            print("WARNING: no variation in foam sensor readings")
+            list_of_tunnel_thresholds.append(0)
 
-        # apply thresholds to knowledge
-        for space in self.gridData.data:
-            # tunnel first because wire/OT is subset of tunnel
-            if space.tunnelReading is not None:
-                if space.tunnelReading > tunnel_threshold:
-                    space.tunnelHere = Knowledge.yes
-                else:  # not > threshold
-                    space.tunnelHere = Knowledge.no
-            if space.wireReading is not None:
-                if space.wireReading > wire_threshold:
-                    space.wireHere = Knowledge.yes
-                else:  # not > threshold
-                    space.wireHere = Knowledge.no
+        # iterate through wire thresholds until we find one that doesn't fail
+        # TODO: how to fail dead end tunnel thresholds?
+        # (right now it just assumes that the first tunnel threshold won't fail)
+        found_good_threshold = False
+        force_using_this_threshold = False  # if all fail, use the first one
+        wire_index = 0
+        tunnel_index = 0
 
-        # figure out wire(OT) under obstacles
-        edge_coordinates_with_wire = []
-        # top and bottom edges
-        for x in range(1, GRID_WIDTH - 1):
-            if self.gridData.get(x, 0).wireHere == Knowledge.yes:
-                edge_coordinates_with_wire.append(Coordinate(x, 0))
-            if self.gridData.get(x, GRID_HEIGHT-1).wireHere == Knowledge.yes:
-                edge_coordinates_with_wire.append(Coordinate(x, GRID_HEIGHT-1))
-        # left and right edges
-        for y in range(1, GRID_HEIGHT - 1):
-            if self.gridData.get(0, y).wireHere == Knowledge.yes:
-                edge_coordinates_with_wire.append(Coordinate(0, y))
-            if self.gridData.get(GRID_WIDTH - 1, y).wireHere == Knowledge.yes:
-                edge_coordinates_with_wire.append(Coordinate(GRID_WIDTH - 1, y))
-        assert len(edge_coordinates_with_wire) == 2
-        print("There are 2 coordinates on the edges with the wire.")
-        # mark inside spaces adjacent to these edges as wire/OT
-        # then leave in scope to prepare for following wire
-        inner_coordinates = []
-        for each_space in edge_coordinates_with_wire:
-            if each_space.x == 0:
-                inner_coordinates.append(Coordinate(1, each_space.y))
-            elif each_space.x == GRID_WIDTH-1:
-                inner_coordinates.append(Coordinate(GRID_WIDTH-2, each_space.y))
-            elif each_space.y == 0:
-                inner_coordinates.append(Coordinate(each_space.x, 1))
-            elif each_space.y == GRID_HEIGHT-1:
-                inner_coordinates.append(Coordinate(each_space.x, GRID_HEIGHT-2))
-            self.gridData.get(inner_coordinates[-1]).wireHere = Knowledge.yes
+        while not found_good_threshold:
+            wire_threshold = list_of_wire_thresholds[wire_index]
+            tunnel_threshold = list_of_tunnel_thresholds[tunnel_index]
 
-        # to make sure all the yes are included on the path, we need to count the yes
-        # (only counting inner 25)
-        yes_count = 0
-        for x in range(1, GRID_WIDTH-1):
-            for y in range(1, GRID_HEIGHT-1):
-                if self.gridData.get(x, y).wireHere == Knowledge.yes:
-                    yes_count += 1
+            reset_data = []
+            # if this threshold fails reset these spaces to these values
+            # tuple of (original wireHere, original tunnelHere)
 
-        algorithm_to_find_path = HamiltonianPath(self.gridData,
-                                                 inner_coordinates[1],
-                                                 inner_coordinates[0],
-                                                 yes_count)
-        found_path_under_obstacles = algorithm_to_find_path.find_path()
-        # put path knowledge under obstacles
-        for coordinate in found_path_under_obstacles:
-            self.gridData.get(coordinate).wireHere = Knowledge.yes
+            # apply thresholds to knowledge
+            for space in self.gridData.data:
+                reset_data.append((space.wireHere, space.tunnelHere))
+                # tunnel first because wire/OT is subset of tunnel
+                if space.tunnelReading is not None:
+                    if space.tunnelReading > tunnel_threshold:
+                        space.tunnelHere = Knowledge.yes
+                    else:  # not > threshold
+                        space.tunnelHere = Knowledge.no
+                if space.wireReading is not None:
+                    if space.wireReading > wire_threshold:
+                        space.wireHere = Knowledge.yes
+                    else:  # not > threshold
+                        space.wireHere = Knowledge.no
+
+            # make sure this didn't give us wire in the corners
+            if (not force_using_this_threshold) and \
+                    (self.gridData.get(0, 0).wireHere == Knowledge.yes or
+                     self.gridData.get(0, GRID_HEIGHT-1).wireHere == Knowledge.yes or
+                     self.gridData.get(GRID_WIDTH-1, 0).wireHere == Knowledge.yes or
+                     self.gridData.get(GRID_WIDTH-1, GRID_HEIGHT-1).wireHere == Knowledge.yes):
+
+                wire_index, force_using_this_threshold, cont = self.fail_threshold("puts wire in the corner",
+                                                                                   wire_index,
+                                                                                   list_of_wire_thresholds,
+                                                                                   force_using_this_threshold,
+                                                                                   reset_data)
+                if cont:
+                    continue
+
+            # figure out wire(OT) under obstacles
+            edge_coordinates_with_wire = []
+            # top and bottom edges
+            for x in range(1, GRID_WIDTH - 1):
+                if self.gridData.get(x, 0).wireHere == Knowledge.yes:
+                    edge_coordinates_with_wire.append(Coordinate(x, 0))
+                if self.gridData.get(x, GRID_HEIGHT-1).wireHere == Knowledge.yes:
+                    edge_coordinates_with_wire.append(Coordinate(x, GRID_HEIGHT-1))
+            # left and right edges
+            for y in range(1, GRID_HEIGHT - 1):
+                if self.gridData.get(0, y).wireHere == Knowledge.yes:
+                    edge_coordinates_with_wire.append(Coordinate(0, y))
+                if self.gridData.get(GRID_WIDTH - 1, y).wireHere == Knowledge.yes:
+                    edge_coordinates_with_wire.append(Coordinate(GRID_WIDTH - 1, y))
+            # make sure there are exactly 2 edge coordinates with wire
+            if (not force_using_this_threshold) and (len(edge_coordinates_with_wire) != 2):
+                wire_index, force_using_this_threshold, cont = self.fail_threshold("not 2 edge spaces with wire",
+                                                                                   wire_index,
+                                                                                   list_of_wire_thresholds,
+                                                                                   force_using_this_threshold,
+                                                                                   reset_data)
+                if cont:
+                    continue
+            # mark inside spaces adjacent to these edges as wire/OT
+            # then leave in scope to prepare for following wire
+            inner_coordinates = []
+            for each_space in edge_coordinates_with_wire:
+                if each_space.x == 0:
+                    inner_coordinates.append(Coordinate(1, each_space.y))
+                elif each_space.x == GRID_WIDTH-1:
+                    inner_coordinates.append(Coordinate(GRID_WIDTH-2, each_space.y))
+                elif each_space.y == 0:
+                    inner_coordinates.append(Coordinate(each_space.x, 1))
+                elif each_space.y == GRID_HEIGHT-1:
+                    inner_coordinates.append(Coordinate(each_space.x, GRID_HEIGHT-2))
+                self.gridData.get(inner_coordinates[-1]).wireHere = Knowledge.yes
+
+            # to make sure all the yes are included on the path, we need to count the yes
+            # (only counting inner 25)
+            yes_count = 0
+            for x in range(1, GRID_WIDTH-1):
+                for y in range(1, GRID_HEIGHT-1):
+                    if self.gridData.get(x, y).wireHere == Knowledge.yes:
+                        yes_count += 1
+
+            algorithm_to_find_path = HamiltonianPath(self.gridData,
+                                                     inner_coordinates[1],
+                                                     inner_coordinates[0],
+                                                     yes_count)
+            found_path_under_obstacles = algorithm_to_find_path.find_path()
+            # put path knowledge under obstacles
+            for coordinate in found_path_under_obstacles:
+                self.gridData.get(coordinate).wireHere = Knowledge.yes
+            if (not force_using_this_threshold) and (len(found_path_under_obstacles) == 0):
+                wire_index, force_using_this_threshold, cont = self.fail_threshold("couldn't find path under obstacles",
+                                                                                   wire_index,
+                                                                                   list_of_wire_thresholds,
+                                                                                   force_using_this_threshold,
+                                                                                   reset_data)
+                if cont:
+                    continue
+            found_good_threshold = True
 
         # TODO: send information to 8x8 display
         # preferably one interface works for both competition_game simulation and real robot
         # something like this:
         # self.sim_robot.display.set8x8(28, 'T')
+        pass
+
+    def fail_threshold(self, reason, wire_index, list_of_wire_thresholds, force_using_this_threshold, reset_data):
+        """
+        this threshold doesn't create a correct board configuration
+        :param reason: what failed
+        :type reason: str
+        :param wire_index:
+        :type wire_index: int
+        :param list_of_wire_thresholds:
+        :type list_of_wire_thresholds: list
+        :param force_using_this_threshold:
+        :type force_using_this_threshold: bool
+        :param reset_data:
+        :type reset_data: list
+        :return: wire_index, force_using_this_threshold, continue
+        :rtype: tuple
+        """
+
+        # TODO: to test this function, we need invalid board configurations
+        # like wire in the corner, or more than two side blocks with wire,
+        # or wire that doesn't go all the way from one end to the other
+        #
+        # so this functionality hasn't really been tested at all yet
+
+        index = wire_index
+        force = force_using_this_threshold
+        cont = False
+        print("wire threshold index " + str(wire_index) + " " + reason)
+        if wire_index == len(list_of_wire_thresholds) - 1:  # this is the last threshold there is to try
+            if wire_index == 0:  # there is only one threshold to try
+                force = True
+            else:  # there were earlier thresholds that failed
+                # use the first one even though it fails
+                self.reset_knowledge(reset_data)
+                index = 0
+                force = True
+                cont = True
+        else:  # there are more thresholds to try
+            # try the next threshold
+            self.reset_knowledge(reset_data)
+            index = wire_index + 1
+            cont = True
+
+        return index, force, cont
+
+    def reset_knowledge(self, reset_data):
+        index = 0
+        for space in self.gridData.data:
+            space.wireHere = reset_data[index][0]
+            space.tunnelHere = reset_data[index][1]
+            index += 1
 
 
 class OutsideGrid:

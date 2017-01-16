@@ -14,8 +14,8 @@ class _ThresholdPossibility:
 class ThresholdFinder:
     def __init__(self, data):
         self._data = data
-        self._list_of_wire_thresholds = None
-        self._list_of_tunnel_thresholds = None
+        self._list_of_wire_thresholds = []
+        self._list_of_tunnel_thresholds = []
 
     @staticmethod
     def _sort_threshold_possibilities(sorted_set_of_readings):
