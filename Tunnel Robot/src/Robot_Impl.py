@@ -1,16 +1,17 @@
 import threading,os,sys,serial,time
 
 import ArduinoFuncs
+from AcousticAnalysis import AcousticAnalysis
 from DeviceComm import CommRequest
 
 #class responsible for interfacing with physical robot
 
 class Robot_Impl():
 
-
 	def __init__(self,arduinofuncs,map_in):
 		self.arduinofuncs = arduinofuncs
 		self.MAP = map_in
+		self.acoustics = AcousticAnalysis(self.arduinofuncs,'svc_calib','svc_calib_scaler')
 		
 	def getGoButton(self):
 		return self.arduinofuncs.getGoButton()
@@ -77,6 +78,9 @@ class Robot_Impl():
 		commandObj = CommRequest('S' + '|F')
 		commandObj.setResponse([0])
 		return commandObj
+
+	def getIfFoamInProg(self):
+		return self.acoustics.getIfFoam()
 
 	def getObstacleReport(self):
 		#get locations of obstacles in adjacent blocks via a list
