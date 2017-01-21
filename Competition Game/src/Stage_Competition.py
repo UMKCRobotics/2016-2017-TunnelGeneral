@@ -150,8 +150,8 @@ class Stage_Competition(Stage):
         #self.board_template = self.Round3Example
         #self.board_template = self.Many_Obstacles_between
         #self.board_template = self.Old_Calibration_Bug
-        self.board_template = self.Test_Path_Under_Obstacle_2
-        #self.board_template = self.gameboard.generate_board_round(3)
+        #self.board_template = self.Test_Path_Under_Obstacle_2
+        self.board_template = self.gameboard.generate_board_round(3)
         self.gameboard.load_board(self.board_template)
 
         # choose visibility options to start

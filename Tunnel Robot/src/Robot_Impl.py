@@ -12,6 +12,7 @@ class Robot_Impl():
 		self.arduinofuncs = arduinofuncs
 		self.MAP = map_in
 		self.acoustics = AcousticAnalysis(self.arduinofuncs,'svc_calib','svc_calib_scaler')
+		self.EMF_thresh = 50
 		
 	def getGoButton(self):
 		return self.arduinofuncs.getGoButton()
@@ -33,22 +34,22 @@ class Robot_Impl():
 		return self.arduinofuncs.set7segment(number)
 
 	def goForward(self):
-		#forward 1 foot, returns command object
+		# forward 1 foot, returns command object
 		self.MAP.drive(1)
 		return self.arduinofuncs.moveForward()
 
 	def rotateCounterClockwise(self):
-		#left 90 degrees, returns command object
+		# left 90 degrees, returns command object
 		self.MAP.rotateCounterClockwise()
 		return self.arduinofuncs.moveLeft()
 
 	def rotateClockwise(self):
-		#right 90 degrees, returns command object
+		# right 90 degrees, returns command object
 		self.MAP.rotateClockwise()
 		return self.arduinofuncs.moveRight()
 
 	def goCalibrate(self):
-		#use perimeter to fix possible rotation/translation errors
+		# use perimeter to fix possible rotation/translation errors
 		return self.arduinofuncs.goCalibrate()
 	
 	def goCalibrateIR(self,side):
@@ -66,28 +67,29 @@ class Robot_Impl():
 		return commObj
 
 	def getEMFreading(self):
-		#get readings from EMF sensor
-		#uncomment next line if has working EMF set up
-		#return self.arduinofuncs.getEMFreading()
+		# get readings from EMF sensor
+		# uncomment next line if has working EMF set up
+		# return self.arduinofuncs.getEMFreading()
 		commandObj = CommRequest('S' + '|E')
 		commandObj.setResponse([0])
 		return commandObj
 
+
 	def getIfFoam(self):
-		#get readings from Capacitive sensor(s) via a list
+		# get readings from Capacitive sensor(s) via a list
 		commandObj = CommRequest('S' + '|F')
 		commandObj.setResponse([0])
 		return commandObj
 
 	def getIfFoamInProg(self):
-		return self.acoustics.getIfFoam()
+		return int(self.acoustics.getIfFoam())
 
 	def getObstacleReport(self):
-		#get locations of obstacles in adjacent blocks via a list
-		#right, front, left
-		#uncomment next line when obstacles CAN be dectected:
-		#return self.arduinofuncs.getObstacleReport()
-		#leave the next line uncommented if CANNOT detect obstacles:
+		# get locations of obstacles in adjacent blocks via a list
+		# right, front, left
+		# uncomment next line when obstacles CAN be dectected:
+		# return self.arduinofuncs.getObstacleReport()
+		# leave the next line uncommented if CANNOT detect obstacles:
 		commandObj = CommRequest('S' + '|O')
 		commandObj.setResponse([0,0,0,0])
 		return commandObj

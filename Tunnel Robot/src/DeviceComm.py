@@ -7,10 +7,11 @@ class CommRequest(object):
 	# this class is the object passed into
 	# a Device Comm as a request to an
 	# outside device
-	def __init__(self,request):
+	def __init__(self,request,returnAsList=False):
 		self.request = request #string
 		self.isDone = False #represents if command is done performing
 		self.response = None #optional string value from arduino
+		self.returnAsList = returnAsList
 
 	def checkDone(self):
 		return self.isDone
