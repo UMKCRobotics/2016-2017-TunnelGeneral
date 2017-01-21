@@ -12,7 +12,6 @@ class Robot_Impl():
 		self.arduinofuncs = arduinofuncs
 		self.MAP = map_in
 		self.acoustics = AcousticAnalysis(self.arduinofuncs,'svc_calib','svc_calib_scaler')
-		self.EMF_thresh = 50
 		
 	def getGoButton(self):
 		return self.arduinofuncs.getGoButton()
