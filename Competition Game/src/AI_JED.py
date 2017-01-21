@@ -12,21 +12,22 @@ def simulation_impl(sim_parameters):
     robot = RobotAlg(sim_robot,sim_buttons)
     robot.doStuff()
 
-
+""" Use the one in Robot.translate_coordinate_to_index
 def translate_coordinate_to_index(coord):
-    """
+    ""
     change a coordinate to the index on the 8x8 display
     index is 0 in top left, counting up to the right
 
     :param coord: a coordinate using this robot brain's system of coordinates
     :return: int - the index to be shown on the display
-    """
+    ""
     x = coord[0]
     y = coord[1]
 
     index = y * 8 + x + 8
 
     return index
+"""
 
 
 class RobotAlg():
@@ -144,8 +145,12 @@ class RobotAlg():
         # take readings of cap + EMF
         if (self.wait_till_done(self.sim_robot.readSensor(2))[0] == 1):
             self.MAP.markOT()
+            self.sim_robot.set8x8(Robot.translate_coordinate_to_index(robotLoc[1],
+                                                                      robotLoc[0]), "T")
         elif (self.wait_till_done(self.sim_robot.readSensor(3))[0] == 1):
             self.MAP.markDeadend()
+            self.sim_robot.set8x8(Robot.translate_coordinate_to_index(robotLoc[1],
+                                                                      robotLoc[0]), "D")
 
     def see_obstacle(self, direction):
         which_sensor = (((direction - self.MAP.direction) % 4) + 1) % 4  # do we need the middle mod 4?
@@ -364,6 +369,8 @@ class RobotAlg():
                                 common_segments += 1
                 if common_endpoints == 2 and ((common_endpoints+common_segments) < 3):
                     obs.setOT()
+                    obs_loc = self.MAP.get_location(obs.loc)
+                    self.sim_robot.set8x8(Robot.translate_coordinate_to_index(obs_loc[1], obs_loc[0]), "T")
 
 
     def createSegment(self,curr_block,blocks_checked,type_req):

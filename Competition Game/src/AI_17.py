@@ -688,11 +688,13 @@ class Robot:
                     continue
             found_good_threshold = True
 
-        # TODO: send information to 8x8 display
-        # preferably one interface works for both competition_game simulation and real robot
-        # something like this:
-        # self.sim_robot.display.set8x8(28, 'T')
-        pass
+        # send information to 8x8 display
+        for row in range(GRID_HEIGHT):
+            for col in range(GRID_WIDTH):
+                if self.gridData.get(col, row).wireHere == Knowledge.yes:
+                    self.sim_robot.set8x8(translate_coordinate_to_index(Coordinate(col, row)), "T")
+                elif self.gridData.get(col, row).tunnelHere == Knowledge.yes:
+                    self.sim_robot.set8x8(translate_coordinate_to_index(Coordinate(col, row)), "D")
 
     def fail_threshold(self, reason, wire_index, list_of_wire_thresholds, force_using_this_threshold, reset_data):
         """

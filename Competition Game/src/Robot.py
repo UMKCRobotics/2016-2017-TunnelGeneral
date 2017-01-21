@@ -1,4 +1,5 @@
 import pygame, sys, os, random, math, time, threading
+from Display import Display
 
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))  # directory from which this script is ran
@@ -72,7 +73,9 @@ class Robot:
         pygame.mixer.music.load(os.path.join(self.SOUND_FOLDER, '01-super-mario-bros.wav'))
         pygame.mixer.music.play(-1)
         self.move_to_do = None
-    # self.play_sound(self.song)
+        # self.play_sound(self.song)
+
+        self.display = Display()
 
     def play_sound(self, sound):
         soundT = threading.Thread(target=self.__play_sound__, args=(sound,))
@@ -302,15 +305,30 @@ class Robot:
         commObject.markDone()
         return commObject
 
-    def set8x8(self,index,gridType):
+    def set8x8(self, index, gridType):
+        # simulation
+        self.display.set8x8(index, gridType)
+        # real
         commObject = CommRequest('b')
         commObject.markDone()
         return commObject
 
-    def set7segment(self,number):
+    def set7segment(self, number):
         commObject = CommRequest('b')
         commObject.markDone()
         return commObject
+
+    @staticmethod
+    def translate_coordinate_to_index(row, col):
+        """
+        change a coordinate to the index on the robot's map display
+        index is 0 in top left, counting up to the right
+        :type row: int
+        :type col: int
+        :return: index on the robot's map display
+        :rtype: int
+        """
+        return (row + 1) * 8 + col
 
 
 # OT Map: Robot's internal map of the world

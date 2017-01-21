@@ -88,10 +88,10 @@ while 1:
             sensorConv = Sensor_Converter(stages[currentStage].robot, inputData[0], inputData[1])
             sensorConv.create_robot_sensors()
             #if you want to do 1 step at a time with 'b', set to false
-            stages[currentStage].shouldPerformRobotMove = False
+            stages[currentStage].shouldPerformRobotMove = True
             #choose an algorithm to load: AI_17,AI_JED
-            t1 = threading.Thread(target=AI_17.simulation_impl,args=([stages[currentStage].robot,stages[currentStage].options],))
-            #t1 = threading.Thread(target=AI_JED.simulation_impl, args=([stages[currentStage].robot,stages[currentStage].options],))
+            #t1 = threading.Thread(target=AI_17.simulation_impl,args=([stages[currentStage].robot,stages[currentStage].options],))
+            t1 = threading.Thread(target=AI_JED.simulation_impl, args=([stages[currentStage].robot,stages[currentStage].options],))
             t1.daemon = True
             t1.start()
             threads.append(t1)
