@@ -150,7 +150,7 @@ class Stage_Competition(Stage):
         #self.board_template = self.Round3Example
         #self.board_template = self.Many_Obstacles_between
         #self.board_template = self.Old_Calibration_Bug
-        self.board_template = self.Test_Path_Under_Obstacle_2
+        self.board_template = self.Test_Path_Under_Obstacle_3
         #self.board_template = self.gameboard.generate_board_round(3)
         self.gameboard.load_board(self.board_template)
 
@@ -164,6 +164,7 @@ class Stage_Competition(Stage):
         self.global_objects.append(self.gameboard)
         self.global_objects.append(self.robot.MAP)
         self.global_objects.append(self.options)
+        self.global_objects.append(EightByEight(self.screen, (1010, 480), self.robot.display))
         self.mouse = MouseEvents(self.global_objects)
         self.scored = False
         self.shouldPerformRobotMove = True
@@ -851,7 +852,6 @@ class Options():
                 obj.handleMouseEvent(event)
 
 
-
 class Button():
     coords = None
 
@@ -879,3 +879,32 @@ class Button():
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.clicked = True
             print 'CLICKED %s' % self.text_content
+
+
+class EightByEight:
+    ONE_SQUARE_SIZE = 24
+
+    def __init__(self, screen, offsets, robot_display):
+        self.screen = screen
+        self.OFFSETS = offsets
+        self.TOTAL_WIDTH = EightByEight.ONE_SQUARE_SIZE * 8
+        self.TOTAL_HEIGHT = EightByEight.ONE_SQUARE_SIZE * 8
+        self.color = (100, 100, 100)
+        self.object = pygame.Rect(self.OFFSETS, (self.TOTAL_WIDTH, self.TOTAL_HEIGHT))
+        self.lights = [None for i in range(64)]
+        self.robot_display = robot_display
+
+    def draw(self):
+        self.object.topleft = self.OFFSETS
+        self.screen.fill(self.color, self.object)
+
+        colors = {"T": (255, 0, 0), "D": (0, 255, 255), "E": (0, 0, 0)}
+        index = 0
+        for y in range(self.object.topleft[1], self.object.topleft[1] + self.TOTAL_HEIGHT, EightByEight.ONE_SQUARE_SIZE):
+            for x in range(self.object.topleft[0], self.object.topleft[0] + self.TOTAL_WIDTH, EightByEight.ONE_SQUARE_SIZE):
+                color_index = self.robot_display.matrix[index]
+                self.screen.fill(colors[color_index], pygame.Rect((x, y), (EightByEight.ONE_SQUARE_SIZE, EightByEight.ONE_SQUARE_SIZE)))
+                index += 1
+
+    def handleMouseEvent(self, event):
+        pass
