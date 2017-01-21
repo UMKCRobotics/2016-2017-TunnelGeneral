@@ -378,7 +378,7 @@ class Robot:
             # which sensor
             # 0 right, 1 front, 2 left, 3 back
             which_sensor = (((direction - self.facing) % 4) + 1) % 4  # do we need the middle mod 4?
-            return self.wait_till_done(self.sim_robot.readSensor(1))[which_sensor]
+            return int(self.wait_till_done(self.sim_robot.readSensor(1))[which_sensor])
 
     def visit(self):
         print("visiting: " + str(self.position))

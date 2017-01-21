@@ -43,7 +43,7 @@ class ArduinoFuncs():
         return commandObj
 
     def getEMFreading(self):
-        commandObj = CommRequest('S' + '|E')
+        commandObj = CommRequest('S' + '|E',returnAsList=True)
         self.ard.requestCommand(commandObj)
         return commandObj
 
@@ -88,11 +88,6 @@ class ArduinoFuncs():
     
     def goCalibrateIR(self,side):
         commandObj = CommRequest('c|' + side)
-        self.ard.requestCommand(commandObj)
-        return commandObj
-
-    def performTap(self):
-        commandObj = CommRequest('A' + '|1')
         self.ard.requestCommand(commandObj)
         return commandObj
 

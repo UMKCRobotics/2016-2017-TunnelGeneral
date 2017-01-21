@@ -58,6 +58,9 @@ class SerialComm(DeviceComm):
 				response = serin.strip()[1:] #remove new line char, take out first char
 				break
 			#print 'command %s performed with response %s' % (commReq.request,response)
-		commReq.response = response #set response
+		if commReq.returnAsList:
+			commReq.response  = [response] #set response
+		else:
+			commReq.response = response #set response
 		commReq.markDone()
 		#insert stuff here

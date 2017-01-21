@@ -154,7 +154,7 @@ class RobotAlg():
 
     def see_obstacle(self, direction):
         which_sensor = (((direction - self.MAP.direction) % 4) + 1) % 4  # do we need the middle mod 4?
-        sensor_val = self.wait_till_done(self.sim_robot.readSensor(1))[which_sensor]
+        sensor_val = int(self.wait_till_done(self.sim_robot.readSensor(1))[which_sensor])
         print sensor_val
         return sensor_val
 

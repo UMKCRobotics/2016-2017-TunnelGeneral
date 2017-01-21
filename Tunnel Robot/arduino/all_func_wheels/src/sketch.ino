@@ -55,6 +55,8 @@ int motorMod = 0;
 //button states
 volatile char GoState = '0';
 volatile char StopState = '0';
+//sensor thresholds
+int EMF_thresh = 45;
 //digit representations
 int digits[10] = {190,6,218,206,102,236,252,134,254,238};
 //matrix setup
@@ -703,7 +705,7 @@ String getObstacleReport() {
 }
 
 int readEMF() {
-  return getEMFreading(EMF1);
+  return int(getEMFreading(EMF1) > EMF_thresh);
 }
 
 int getEMFreading(int port) {
