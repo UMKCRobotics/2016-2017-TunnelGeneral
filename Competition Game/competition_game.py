@@ -90,8 +90,8 @@ while 1:
             #if you want to do 1 step at a time with 'b', set to false
             stages[currentStage].shouldPerformRobotMove = True
             #choose an algorithm to load: AI_17,AI_JED
-            #t1 = threading.Thread(target=AI_17.simulation_impl,args=([stages[currentStage].robot,stages[currentStage].options],))
-            t1 = threading.Thread(target=AI_JED.simulation_impl, args=([stages[currentStage].robot,stages[currentStage].options],))
+            t1 = threading.Thread(target=AI_17.simulation_impl,args=([stages[currentStage].robot,stages[currentStage].options],))
+            #t1 = threading.Thread(target=AI_JED.simulation_impl, args=([stages[currentStage].robot,stages[currentStage].options],))
             t1.daemon = True
             t1.start()
             threads.append(t1)

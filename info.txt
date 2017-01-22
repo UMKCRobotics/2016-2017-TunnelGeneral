@@ -28,3 +28,12 @@ Fixing git repo after .gitignore is updated:
 	>	git rm --cached -r .
 	>	git add .
 	3. Commit with a pretty message and push
+    
+AI_17 options:
+    (maybe incomplete)
+    ASSUME_PATH_CANT_GO_ADJACENT_TO_ITSELF in hampath.py
+    COORDINATE_CHANGE in Grid_Util.py has standard order of direction checking
+        (this order not used for DFS in explore3)
+    PRIORITY_FOR_AVOIDING_TURNS in AI_17.py
+    MOVE_COUNT_ALLOWED_AWAY_FROM_SIDES in AI_17.py
+    BAD_CALIBRATION_COORDINATES in AI_17.py

@@ -1,5 +1,7 @@
 from Grid_Util import *
 
+ASSUME_PATH_CANT_GO_ADJACENT_TO_ITSELF = True
+
 
 # adapted from http://www.geeksforgeeks.org/backtracking-set-7-hamiltonian-cycle/
 
@@ -25,7 +27,17 @@ class HamiltonianPath:
                 coordinate_to_add.y == GRID_HEIGHT-1):
             return False
 
+        if ASSUME_PATH_CANT_GO_ADJACENT_TO_ITSELF:
+            path_index = len(self.path) - 2  # second to last step in path
+            while path_index >= 0:
+                for direction in COORDINATE_CHANGE:
+                    if self.path[path_index] == coordinate_to_add + COORDINATE_CHANGE[direction]:
+                        return False
+                path_index -= 1
+
         # check if we can move here from previous step in path
+        """ I don't think this is necessary.
+        # restrict from moving from unknown to yes if yes can come from somewhere else
         if self.gridData.get(coordinate_to_add).wireHere == Knowledge.yes:
             if self.gridData.get(self.path[-1]).wireHere == Knowledge.unknown:
                 # moving from unknown to yes
@@ -36,7 +48,12 @@ class HamiltonianPath:
                         adjacent_yes_count += 1
                 if adjacent_yes_count > 1:
                     return False
-        elif self.gridData.get(coordinate_to_add).wireHere == Knowledge.unknown:
+        el"""
+        # restrict from moving from yes to unknown if yes can go somewhere else
+        # (only if assuming the path can't go adjacent to itself)
+        # this one might not be necessary either, I don't know
+        if ASSUME_PATH_CANT_GO_ADJACENT_TO_ITSELF and \
+                self.gridData.get(coordinate_to_add).wireHere == Knowledge.unknown:
             if self.gridData.get(self.path[-1]).wireHere == Knowledge.yes:
                 # moving from yes to unknown
                 adjacent_yes_count = 0
@@ -46,6 +63,7 @@ class HamiltonianPath:
                         adjacent_yes_count += 1
                 if adjacent_yes_count > 1:
                     return False
+        # don't go to a no
         elif self.gridData.get(coordinate_to_add).wireHere == Knowledge.no:
             return False
 
