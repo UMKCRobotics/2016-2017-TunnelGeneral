@@ -887,11 +887,11 @@ class EightByEight:
     def __init__(self, screen, offsets, robot_display):
         self.screen = screen
         self.OFFSETS = offsets
-        self.TOTAL_WIDTH = EightByEight.ONE_SQUARE_SIZE * 8
-        self.TOTAL_HEIGHT = EightByEight.ONE_SQUARE_SIZE * 8
+        self.TOTAL_WIDTH = EightByEight.ONE_SQUARE_SIZE * 8 + 7  # seven lines between the LEDs
+        self.TOTAL_HEIGHT = EightByEight.ONE_SQUARE_SIZE * 8 + 7
         self.color = (100, 100, 100)
         self.object = pygame.Rect(self.OFFSETS, (self.TOTAL_WIDTH, self.TOTAL_HEIGHT))
-        self.lights = [None for i in range(64)]
+        self.lights = ["E" for i in range(64)]
         self.robot_display = robot_display
 
     def draw(self):
@@ -900,10 +900,16 @@ class EightByEight:
 
         colors = {"T": (255, 0, 0), "D": (0, 255, 255), "E": (0, 0, 0)}
         index = 0
-        for y in range(self.object.topleft[1], self.object.topleft[1] + self.TOTAL_HEIGHT, EightByEight.ONE_SQUARE_SIZE):
-            for x in range(self.object.topleft[0], self.object.topleft[0] + self.TOTAL_WIDTH, EightByEight.ONE_SQUARE_SIZE):
+        for y in range(self.object.topleft[1],
+                       self.object.topleft[1] + self.TOTAL_HEIGHT,
+                       EightByEight.ONE_SQUARE_SIZE + 1):
+            for x in range(self.object.topleft[0],
+                           self.object.topleft[0] + self.TOTAL_WIDTH,
+                           EightByEight.ONE_SQUARE_SIZE + 1):
                 color_index = self.robot_display.matrix[index]
-                self.screen.fill(colors[color_index], pygame.Rect((x, y), (EightByEight.ONE_SQUARE_SIZE, EightByEight.ONE_SQUARE_SIZE)))
+                self.screen.fill(colors[color_index],
+                                 pygame.Rect((x, y),
+                                             (EightByEight.ONE_SQUARE_SIZE, EightByEight.ONE_SQUARE_SIZE)))
                 index += 1
 
     def handleMouseEvent(self, event):
