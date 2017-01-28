@@ -87,21 +87,22 @@ class Stage_Competition(Stage):
                                   ['E', 'T', 'EO', 'T', 'T', 'T', 'T'],
                                   ['E', 'T', 'E', 'E', 'E', 'E', 'E'],
                                   ['E', 'T', 'E', 'E', 'E', 'E', 'E']]
-    Test_Path_Under_Obstacle_2 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                  ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                  ['E', 'E', 'E', 'EO', 'E', 'E', 'E'],
-                                  ['T', 'T', 'EO', 'EO', 'EO', 'E', 'E'],
-                                  ['E', 'TO', 'E', 'T', 'T', 'T', 'T'],
-                                  ['E', 'TO', 'T', 'T', 'E', 'E', 'E'],
+    Test_Path_Under_Obstacle_2 = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
+                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E'],
+                                  ['E', 'E', 'E', 'EO', 'T', 'E', 'E'],
+                                  ['T', 'T', 'EO', 'EO', 'T', 'E', 'E'],
+                                  ['E', 'TO', 'E', 'E', 'T', 'E', 'E'],
+                                  ['E', 'TO', 'T', 'T', 'T', 'E', 'E'],
                                   ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
     # can't know if path can go adjacent to itself
     TPUO2_Rotated = [['E', 'E', 'E', 'T', 'E', 'E', 'E'],
                      ['E', 'TO', 'TO', 'T', 'E', 'E', 'E'],
                      ['E', 'T', 'E', 'EO', 'E', 'E', 'E'],
-                     ['E', 'T', 'T', 'EO', 'EO', 'E', 'E'],
-                     ['E', 'E', 'T', 'EO', 'E', 'E', 'E'],
-                     ['E', 'E', 'T', 'E', 'E', 'E', 'E'],
-                     ['E', 'E', 'T', 'E', 'E', 'E', 'E']]
+                     ['E', 'T', 'E', 'EO', 'EO', 'E', 'E'],
+                     ['E', 'T', 'T', 'T', 'T', 'T', 'T'],
+                     ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                     ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
+    # 3 through 7 are not valid, too many turns
     Test_Path_Under_Obstacle_3 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
                                   ['E', 'E', 'EO', 'E', 'EO', 'E', 'E'],
                                   ['E', 'EO', 'T', 'TO', 'T', 'T', 'E'],
@@ -137,21 +138,22 @@ class Stage_Competition(Stage):
                                   ['E', 'EO', 'T', 'EO', 'T', 'T', 'E'],
                                   ['T', 'T', 'T', 'EO', 'T', 'E', 'E'],
                                   ['E', 'E', 'E', 'E', 'T', 'E', 'E']]
-    Cannot_Know_With_Our_Robot = [['E', 'E', 'T', 'E', 'E', 'E', 'E'],
-                                  ['E', 'E', 'T', 'T', 'T', 'TO', 'E'],
+    Cannot_Know_With_Our_Robot = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                                  ['T', 'T', 'T', 'T', 'T', 'TO', 'E'],
                                   ['E', 'E', 'D', 'E', 'EO', 'T', 'E'],
                                   ['E', 'E', 'E', 'E', 'E', 'T', 'E'],
-                                  ['E', 'E', 'EO', 'E', 'E', 'T', 'T'],
-                                  ['E', 'EO', 'E', 'E', 'EO', 'E', 'E'],
-                                  ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
+                                  ['E', 'E', 'EO', 'E', 'E', 'T', 'E'],
+                                  ['E', 'EO', 'E', 'E', 'EO', 'T', 'E'],
+                                  ['E', 'E', 'E', 'E', 'E', 'T', 'E']]
     # in reference to the one above:
-    The_Other_Opt_With_That_One = [['E', 'E', 'T', 'E', 'E', 'E', 'E'],
-                                   ['E', 'E', 'T', 'T', 'T', 'EO', 'E'],
+    The_Other_Opt_With_That_One = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
+                                   ['T', 'T', 'T', 'T', 'T', 'EO', 'E'],
                                    ['E', 'E', 'D', 'E', 'TO', 'T', 'E'],
                                    ['E', 'E', 'E', 'E', 'E', 'T', 'E'],
-                                   ['E', 'E', 'EO', 'E', 'E', 'T', 'T'],
-                                   ['E', 'EO', 'E', 'E', 'EO', 'E', 'E'],
-                                   ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
+                                   ['E', 'E', 'EO', 'E', 'E', 'T', 'E'],
+                                   ['E', 'EO', 'E', 'E', 'EO', 'T', 'E'],
+                                   ['E', 'E', 'E', 'E', 'E', 'T', 'E']]
+    # v - not possible with no more than 3 90 degree turns
     Not_Assuming_Path_Not_Self_Adjacent = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
                                            ['E', 'E', 'T', 'T', 'T', 'E', 'E'],
                                            ['E', 'E', 'T', 'E', 'T', 'T', 'T'],
@@ -159,6 +161,7 @@ class Stage_Competition(Stage):
                                            ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
                                            ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
                                            ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
+    # also not possible
     Previous_With_Obstacles = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
                                ['E', 'E', 'T', 'TO', 'T', 'E', 'E'],
                                ['E', 'E', 'T', 'E', 'T', 'T', 'T'],
@@ -189,9 +192,9 @@ class Stage_Competition(Stage):
         #self.board_template = self.Old_Calibration_Bug
         #self.board_template = self.Test_Path_Under_Obstacle_2
         #self.board_template = self.TPUO2_Rotated
-        #self.board_template = self.Cannot_Know_With_Our_Robot
-        #self.board_template = self.Previous_With_Obstacles
-        self.board_template = self.gameboard.generate_board_round(3)
+        self.board_template = self.The_Other_Opt_With_That_One
+        #self.board_template = self.Not_Assuming_Path_Not_Self_Adjacent
+        #self.board_template = self.gameboard.generate_board_round(3)
         self.gameboard.load_board(self.board_template)
 
         # choose visibility options to start
