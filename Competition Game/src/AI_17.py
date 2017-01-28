@@ -651,15 +651,20 @@ class Robot:
             # mark inside spaces adjacent to these edges as wire/OT
             # then leave in scope to prepare for following wire
             inner_coordinates = []
+            directions_to_inner = []
             for each_space in edge_coordinates_with_wire:
                 if each_space.x == 0:
                     inner_coordinates.append(Coordinate(1, each_space.y))
+                    directions_to_inner.append(Direction.east)
                 elif each_space.x == GRID_WIDTH-1:
                     inner_coordinates.append(Coordinate(GRID_WIDTH-2, each_space.y))
+                    directions_to_inner.append(Direction.west)
                 elif each_space.y == 0:
                     inner_coordinates.append(Coordinate(each_space.x, 1))
+                    directions_to_inner.append(Direction.north)
                 elif each_space.y == GRID_HEIGHT-1:
                     inner_coordinates.append(Coordinate(each_space.x, GRID_HEIGHT-2))
+                    directions_to_inner.append(Direction.south)
                 self.gridData.get(inner_coordinates[-1]).wireHere = Knowledge.yes
 
             # to make sure all the yes are included on the path, we need to count the yes
@@ -670,10 +675,15 @@ class Robot:
                     if self.gridData.get(x, y).wireHere == Knowledge.yes:
                         yes_count += 1
 
+            max_turns = 3  # TODO: based on round (round 1: 2, round 2-3: 3)
+
             algorithm_to_find_path = HamiltonianPath(self.gridData,
                                                      inner_coordinates[1],
                                                      inner_coordinates[0],
-                                                     yes_count)
+                                                     directions_to_inner[1],
+                                                     Direction.opposite(directions_to_inner[0]),
+                                                     yes_count,
+                                                     max_turns)
             found_path_under_obstacles = algorithm_to_find_path.find_path()
             # put path knowledge under obstacles
             for coordinate in found_path_under_obstacles:

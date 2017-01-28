@@ -48,6 +48,11 @@ class Direction:  # class Direction(IntEnum):
     south = 3
     count = 4
 
+    @staticmethod
+    def opposite(given):
+        return (given + 2) % 4
+
+
 # To get the next coordinate in a given direction, add this coordinate
 COORDINATE_CHANGE = {
     Direction.east: Coordinate(1, 0),
