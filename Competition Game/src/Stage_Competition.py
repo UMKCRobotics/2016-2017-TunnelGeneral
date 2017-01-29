@@ -309,6 +309,8 @@ class Stage_Competition(Stage):
         total += 10*correctOT
         # for each wrong OT, subtract 10 points
         total -= 10*wrongOT
+        # for each wrong DE, subtract 10 points
+        total -= 10*wrongDE
 
         # add 20 points if robot returned to A7 at the end
         backToA7 = False
