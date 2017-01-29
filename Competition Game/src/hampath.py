@@ -23,11 +23,19 @@ class HamiltonianPath:
         self.max_turns = _max_turns
 
     def is_safe(self, coordinate_to_add, direction_to_add):
+        print("checking safety of:")
+        print(str(self.path) + str(coordinate_to_add))
         # don't go to the edges
         if (coordinate_to_add.x == 0 or
                 coordinate_to_add.x == GRID_WIDTH-1 or
                 coordinate_to_add.y == 0 or
                 coordinate_to_add.y == GRID_HEIGHT-1):
+            print("bad: it went to an edge")
+            return False
+
+        # don't go to a no
+        if self.gridData.get(coordinate_to_add).wireHere == Knowledge.no:
+            print("bad: went to a no")
             return False
 
         if ASSUME_PATH_CANT_GO_ADJACENT_TO_ITSELF:
@@ -35,6 +43,7 @@ class HamiltonianPath:
             while path_index >= 0:
                 for direction in COORDINATE_CHANGE:
                     if self.path[path_index] == coordinate_to_add + COORDINATE_CHANGE[direction]:
+                        print("bad: it went adjacent to itself")
                         return False
                 path_index -= 1
 
@@ -65,14 +74,13 @@ class HamiltonianPath:
                     if self.gridData.get(coordinate_checking).wireHere == Knowledge.yes:
                         adjacent_yes_count += 1
                 if adjacent_yes_count > 1:
+                    print("bad: moved from yes to unknown when could go to another yes")
                     return False
-        # don't go to a no
-        elif self.gridData.get(coordinate_to_add).wireHere == Knowledge.no:
-            return False
 
         # check if we've already been here
         for coordinate in self.path:
             if coordinate == coordinate_to_add:
+                print("bad: went someplace we've already been")
                 return False
 
         # not more than 2/3 turns
@@ -90,6 +98,7 @@ class HamiltonianPath:
             turn_count += 1
         # print("counted turns: " + str(turn_count))
         if turn_count > self.max_turns:
+            print("bad: too many turns in path")
             return False
 
         print("This one valid so far.")
@@ -97,7 +106,7 @@ class HamiltonianPath:
 
     def ham_path_util(self):
         """ recursive """
-        print("recursive function path and directions:")
+        print("  recursive function path and directions:")
         print(self.path)
         print(self.directions)
         # base case: have a valid path
