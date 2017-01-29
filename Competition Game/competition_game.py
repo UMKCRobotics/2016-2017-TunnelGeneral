@@ -9,6 +9,7 @@ __location__ = os.path.realpath(
 sys.path.insert(0, os.path.join(__location__, 'src/'))
 
 from Stage_Competition import Stage_Competition
+from GridChoose import GridChoose
 from Stage_Build import Stage_Build
 from Sensors import Sensor_Converter
 import AI_17
@@ -52,8 +53,9 @@ pygame.display.set_caption('IEEE 2017 UMKC Robotics')
 clock = pygame.time.Clock()
 
 build = Stage_Build(screen, saved=robotNameToLoad)
+grid_choose = GridChoose(screen)
 comp = Stage_Competition(screen)
-stages = [build, comp]
+stages = [build, grid_choose, comp]
 
 currentStage = 0
 previousStage = 0
@@ -84,9 +86,18 @@ while 1:
     if currentStage >= len(stages):
         quit_program()
     if previousStage != currentStage:
+        stages[currentStage].stage_input = inputData
         if isinstance(stages[currentStage], Stage_Competition):
-            sensorConv = Sensor_Converter(stages[currentStage].robot, inputData[0], inputData[1])
+            # load board
+            if isinstance(inputData[1], list):
+                stages[currentStage].board_template = inputData[1]
+            else:  # should be int for round number
+                stages[currentStage].board_template = stages[currentStage].gameboard.generate_board_round(inputData[1])
+            stages[currentStage].gameboard.load_board(stages[currentStage].board_template)
+
+            sensorConv = Sensor_Converter(stages[currentStage].robot, inputData[0][0], inputData[0][1])
             sensorConv.create_robot_sensors()
+
             #if you want to do 1 step at a time with 'b', set to false
             stages[currentStage].shouldPerformRobotMove = True
             #choose an algorithm to load: AI_17,AI_JED

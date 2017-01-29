@@ -12,163 +12,6 @@ MAX_OBSTACLES = 6
 
 
 class Stage_Competition(Stage):
-    Round1Example = [['E', 'E', 'E', 'E', 'TC', 'E', 'E'],
-                     ['E', 'E', 'E', 'E', 'T', 'E', 'E'],
-                     ['E', 'E', 'E', 'T', 'T', 'E', 'E'],
-                     ['E', 'E', 'E', 'T', 'E', 'E', 'E'],
-                     ['E', 'E', 'E', 'T', 'E', 'E', 'E'],
-                     ['E', 'E', 'E', 'T', 'E', 'E', 'E'],
-                     ['E', 'E', 'E', 'T', 'E', 'E', 'E']]
-
-    Round2Example = [['E', 'E', 'E', 'E', 'E', 'T', 'E'],
-                     ['E', 'E', 'D', 'E', 'E', 'T', 'E'],
-                     ['E', 'E', 'D', 'E', 'T', 'T', 'E'],
-                     ['E', 'E', 'D', 'E', 'T', 'E', 'E'],
-                     ['T', 'T', 'T', 'T', 'T', 'E', 'E'],
-                     ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                     ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
-
-    Round3Example = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                     ['E', 'E', 'T', 'T', 'T', 'E', 'E'],
-                     ['E', 'E', 'T', 'E', 'T', 'E', 'E'],
-                     ['E', 'E', 'TO', 'E', 'T', 'T', 'T'],
-                     ['E', 'E', 'T', 'E', 'E', 'E', 'E'],
-                     ['E', 'D', 'T', 'E', 'EO', 'E', 'E'],
-                     ['E', 'E', 'T', 'E', 'E', 'E', 'E']]
-    FixExample = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                  ['E', 'E', 'EO', 'E', 'E', 'E', 'E'],
-                  ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                  ['E', 'E', 'E', 'TO', 'T', 'TO', 'T'],
-                  ['E', 'E', 'TO', 'T', 'E', 'E', 'E'],
-                  ['E', 'EO', 'T', 'E', 'EO', 'E', 'E'],
-                  ['E', 'E', 'T', 'E', 'E', 'E', 'E']]
-    FixExample2 = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
-                   ['E', 'EO', 'E', 'EO', 'T', 'EO', 'E'],
-                   ['E', 'E', 'EO', 'E', 'TO', 'E', 'E'],
-                   ['E', 'EO', 'E', 'E', 'T', 'E', 'E'],
-                   ['E', 'E', 'E', 'T', 'TO', 'E', 'E'],
-                   ['T', 'T', 'TO', 'T', 'E', 'EO', 'E'],
-                   ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
-
-    One_with_a_bug = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
-                      ['E', 'E', 'E', 'E', 'T', 'E', 'E'],
-                      ['E', 'E', 'E', 'E', 'T', 'E', 'E'],
-                      ['E', 'E', 'E', 'E', 'T', 'D', 'E'],
-                      ['E', 'EO', 'T', 'T', 'TO', 'E', 'E'],
-                      ['T', 'T', 'T', 'E', 'E', 'EO', 'E'],
-                      ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
-    Obstacle_between = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
-                        ['T', 'T', 'T', 'EO', 'T', 'E', 'E'],
-                        ['E', 'E', 'T', 'E', 'TO', 'E', 'E'],
-                        ['E', 'E', 'T', 'T', 'T', 'EO', 'E'],
-                        ['E', 'E', 'D', 'E', 'E', 'E', 'E'],
-                        ['E', 'EO', 'E', 'EO', 'E', 'EO', 'E'],
-                        ['E', 'E', 'E', 'E', 'E', 'E', 'E']
-                        ]
-    Many_Obstacles_between = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                            ['T', 'T', 'EO', 'TO', 'T', 'T', 'T'],
-                            ['E', 'T', 'EO', 'T', 'E', 'E', 'E'],
-                            ['E', 'T', 'EO', 'T', 'E', 'E', 'E'],
-                            ['E', 'TO', 'T', 'TO', 'E', 'E', 'E'],
-                            ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                            ['E', 'E', 'E', 'E', 'E', 'E', 'E']
-                            ]
-    Old_Calibration_Bug = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                           ['E', 'E', 'E', 'EO', 'E', 'EO', 'E'],
-                           ['E', 'E', 'T', 'T', 'T', 'T', 'T'],
-                           ['E', 'TO', 'T', 'E', 'E', 'E', 'E'],
-                           ['E', 'T', 'E', 'E', 'E', 'E', 'E'],
-                           ['E', 'T', 'D', 'E', 'E', 'E', 'E'],
-                           ['E', 'T', 'E', 'E', 'E', 'E', 'E']]
-    Test_Path_Under_Obstacle_1 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                  ['E', 'E', 'E', 'EO', 'E', 'EO', 'E'],
-                                  ['E', 'T', 'T', 'T', 'E', 'E', 'E'],
-                                  ['E', 'TO', 'E', 'TO', 'E', 'E', 'E'],
-                                  ['E', 'T', 'EO', 'T', 'T', 'T', 'T'],
-                                  ['E', 'T', 'E', 'E', 'E', 'E', 'E'],
-                                  ['E', 'T', 'E', 'E', 'E', 'E', 'E']]
-    Test_Path_Under_Obstacle_2 = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
-                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E'],
-                                  ['E', 'E', 'E', 'EO', 'T', 'E', 'E'],
-                                  ['T', 'T', 'EO', 'EO', 'T', 'E', 'E'],
-                                  ['E', 'TO', 'E', 'E', 'T', 'E', 'E'],
-                                  ['E', 'TO', 'T', 'T', 'T', 'E', 'E'],
-                                  ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
-    # can't know if path can go adjacent to itself
-    TPUO2_Rotated = [['E', 'E', 'E', 'T', 'E', 'E', 'E'],
-                     ['E', 'TO', 'TO', 'T', 'E', 'E', 'E'],
-                     ['E', 'T', 'E', 'EO', 'E', 'E', 'E'],
-                     ['E', 'T', 'E', 'EO', 'EO', 'E', 'E'],
-                     ['E', 'T', 'T', 'T', 'T', 'T', 'T'],
-                     ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                     ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
-    # 3 through 7 are not valid, too many turns
-    Test_Path_Under_Obstacle_3 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                  ['E', 'E', 'EO', 'E', 'EO', 'E', 'E'],
-                                  ['E', 'EO', 'T', 'TO', 'T', 'T', 'E'],
-                                  ['E', 'E', 'T', 'E', 'EO', 'T', 'E'],
-                                  ['E', 'EO', 'T', 'EO', 'T', 'T', 'E'],
-                                  ['T', 'T', 'T', 'E', 'T', 'E', 'E'],
-                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E']]
-    Test_Path_Under_Obstacle_4 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                  ['E', 'E', 'EO', 'E', 'EO', 'E', 'E'],
-                                  ['E', 'EO', 'T', 'TO', 'T', 'T', 'E'],
-                                  ['E', 'E', 'T', 'E', 'EO', 'T', 'E'],
-                                  ['E', 'EO', 'T', 'EO', 'T', 'TO', 'E'],
-                                  ['T', 'T', 'T', 'E', 'T', 'E', 'E'],
-                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E']]
-    Test_Path_Under_Obstacle_5 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                  ['E', 'E', 'EO', 'E', 'EO', 'E', 'E'],
-                                  ['E', 'EO', 'T', 'TO', 'T', 'T', 'E'],
-                                  ['E', 'E', 'T', 'E', 'EO', 'T', 'E'],
-                                  ['E', 'EO', 'T', 'EO', 'T', 'T', 'E'],
-                                  ['T', 'T', 'T', 'E', 'T', 'EO', 'E'],
-                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E']]
-    Test_Path_Under_Obstacle_6 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                  ['E', 'E', 'EO', 'E', 'EO', 'E', 'E'],
-                                  ['E', 'EO', 'T', 'TO', 'T', 'T', 'E'],
-                                  ['E', 'E', 'T', 'E', 'EO', 'T', 'E'],
-                                  ['E', 'EO', 'T', 'EO', 'T', 'T', 'E'],
-                                  ['T', 'T', 'T', 'E', 'TO', 'E', 'E'],
-                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E']]
-    Test_Path_Under_Obstacle_7 = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                  ['E', 'E', 'EO', 'E', 'EO', 'E', 'E'],
-                                  ['E', 'EO', 'T', 'TO', 'T', 'T', 'E'],
-                                  ['E', 'E', 'T', 'E', 'EO', 'T', 'E'],
-                                  ['E', 'EO', 'T', 'EO', 'T', 'T', 'E'],
-                                  ['T', 'T', 'T', 'EO', 'T', 'E', 'E'],
-                                  ['E', 'E', 'E', 'E', 'T', 'E', 'E']]
-    Cannot_Know_With_Our_Robot = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                  ['T', 'T', 'T', 'T', 'T', 'TO', 'E'],
-                                  ['E', 'E', 'D', 'E', 'EO', 'T', 'E'],
-                                  ['E', 'E', 'E', 'E', 'E', 'T', 'E'],
-                                  ['E', 'E', 'EO', 'E', 'E', 'T', 'E'],
-                                  ['E', 'EO', 'E', 'E', 'EO', 'T', 'E'],
-                                  ['E', 'E', 'E', 'E', 'E', 'T', 'E']]
-    # in reference to the one above:
-    The_Other_Opt_With_That_One = [['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                   ['T', 'T', 'T', 'T', 'T', 'EO', 'E'],
-                                   ['E', 'E', 'D', 'E', 'TO', 'T', 'E'],
-                                   ['E', 'E', 'E', 'E', 'E', 'T', 'E'],
-                                   ['E', 'E', 'EO', 'E', 'E', 'T', 'E'],
-                                   ['E', 'EO', 'E', 'E', 'EO', 'T', 'E'],
-                                   ['E', 'E', 'E', 'E', 'E', 'T', 'E']]
-    # v - not possible with no more than 3 90 degree turns
-    Not_Assuming_Path_Not_Self_Adjacent = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
-                                           ['E', 'E', 'T', 'T', 'T', 'E', 'E'],
-                                           ['E', 'E', 'T', 'E', 'T', 'T', 'T'],
-                                           ['E', 'E', 'T', 'T', 'T', 'E', 'E'],
-                                           ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                           ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                                           ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
-    # also not possible
-    Previous_With_Obstacles = [['E', 'E', 'E', 'E', 'T', 'E', 'E'],
-                               ['E', 'E', 'T', 'TO', 'T', 'E', 'E'],
-                               ['E', 'E', 'T', 'E', 'T', 'T', 'T'],
-                               ['E', 'E', 'T', 'T', 'TO', 'E', 'E'],
-                               ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                               ['E', 'E', 'E', 'E', 'E', 'E', 'E'],
-                               ['E', 'E', 'E', 'E', 'E', 'E', 'E']]
 
     # BOARD OFFSET VARIABLES
     global_grid_width = 100
@@ -190,12 +33,13 @@ class Stage_Competition(Stage):
         #self.board_template = self.Round3Example
         #self.board_template = self.Many_Obstacles_between
         #self.board_template = self.Old_Calibration_Bug
-        self.board_template = self.Test_Path_Under_Obstacle_2
+        #self.board_template = self.Test_Path_Under_Obstacle_2
         #self.board_template = self.TPUO2_Rotated
         #self.board_template = self.The_Other_Opt_With_That_One
         #self.board_template = self.Not_Assuming_Path_Not_Self_Adjacent
         #self.board_template = self.gameboard.generate_board_round(3)
-        self.gameboard.load_board(self.board_template)
+        #self.gameboard.load_board(self.board_template)
+        self.board_template = None
 
         # choose visibility options to start
         self.gameboard.visible = True
