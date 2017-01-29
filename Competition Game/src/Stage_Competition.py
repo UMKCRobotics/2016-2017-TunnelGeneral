@@ -181,7 +181,7 @@ class Stage_Competition(Stage):
         # set stuff up
         # self.global_grid_width = global_grid_width
         self.gameboard = GameBoard(self.screen, self.global_grid_width, self.global_offsets)
-        self.robot = Robot(self.screen, self.gameboard, offsets=self.map_offsets)
+        self.robot = Robot(self.screen, self.gameboard, offsets=self.map_offsets, direction=0)
 
         # load in a board
         #self.gameboard.load_board(self.Round3Example)

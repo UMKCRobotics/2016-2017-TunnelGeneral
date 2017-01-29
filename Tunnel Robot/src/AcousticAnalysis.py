@@ -22,6 +22,7 @@ class AcousticAnalysis():
 
 	def __init__(self,ardfunc,clf_name,scaler_name):
 		self.doneRecording = True
+		self.p = pyaudio.PyAudio()
 		self.recordLock = threading.Lock()
 		self.ardfunc = ardfunc
 		self.clf_name = clf_name
@@ -39,6 +40,7 @@ class AcousticAnalysis():
 	def getIfFoam(self):
 		isFoam = None
 		# start recording
+		self.doneRecording = False
 		recordReturn = [None,None]
 		recordThread = threading.Thread(target=self.recordDuration,args=(0.300,5,os.path.join(self.calib_location,'wavfiles'),None,recordReturn))
 		recordThread.daemon = True
@@ -134,8 +136,7 @@ class AcousticAnalysis():
 		now = datetime.now()
 		timestamp = now.strftime("%Y%m%d%H%M%S.%f")
 
-		p = pyaudio.PyAudio()
-		stream = p.open(format=FORMAT,
+		stream = self.p.open(format=FORMAT,
 			channels=2,
 			rate=RATE,
 			input=True,
@@ -147,7 +148,7 @@ class AcousticAnalysis():
 		readFrames = 0
 		readLimit = RATE*recordLimit #stop trying to detect after 5 seconds
 		hasRead = False
-		print "STREAM SAMP WIDTH: %s" % p.get_sample_size(FORMAT)
+		print "STREAM SAMP WIDTH: %s" % self.p.get_sample_size(FORMAT)
 		while readFrames < readLimit:
 			found,framesToSave = self.get_next_tap_LIVE(stream,CHUNK_SIZE,CHANNELS,THRESHOLD,RATE,duration)
 			if found:
@@ -167,7 +168,7 @@ class AcousticAnalysis():
 				
 				wf = wave.open(wav_save_name, 'wb')
 				wf.setnchannels(CHANNELS)
-				wf.setsampwidth(p.get_sample_size(FORMAT))
+				wf.setsampwidth(self.p.get_sample_size(FORMAT))
 				wf.setframerate(RATE)
 				#framesToSave = b''.join(framesToSave)
 				wf.writeframes(framesToSave)
@@ -179,7 +180,6 @@ class AcousticAnalysis():
 		#close relevant things
 		if hasRead:
 			wf.close()
-		p.terminate()
 		#return success state
 		if returnList != None:
 			returnList[0] = hasRead
@@ -238,6 +238,9 @@ class AcousticAnalysis():
 		print 'tap found!'
 		print len(frames)
 		return True,frames
+
+	def stop(self):
+		self.p.terminate()
 
 
 class StreamReader():

@@ -19,7 +19,7 @@ class Robot:
     coords = None
     width = None
 
-    def __init__(self, screen, gameboard, coords=None, offsets=None):
+    def __init__(self, screen, gameboard, coords=None, offsets=None, direction=0):
         global __location__
         self.screen = screen
         self.coords = coords
@@ -36,7 +36,7 @@ class Robot:
                                          gameboard.PLEXI.y + self.GRID_WIDTH / 8),
                                         (gameboard.PLEXI.width - self.GRID_WIDTH / 4,
                                          gameboard.PLEXI.height - self.GRID_WIDTH / 4))
-        self.direction = 0
+        self.direction = direction
         self.dirIndicator = pygame.Rect(self.coords, (10, 10))
         self.dirIndicatorColor = (100, 100, 100)
         # self.errorMax = self.GRID_WIDTH/12

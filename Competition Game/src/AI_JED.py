@@ -122,23 +122,26 @@ class RobotAlg():
         robotLoc = self.MAP.robotLoc
         # check adjacent blocks for obstructions
         # dir = 0
+        # get obstacle report
+        obs_report = self.get_obstacle_report()
+        #now check specific directions
         if self.MAP.robotLoc[0] >= 0 and self.MAP.robotLoc[0] < 6:
-            self.MAP.grid[robotLoc[0] + 1][robotLoc[1]].obstructed = self.see_obstacle(0)
+            self.MAP.grid[robotLoc[0] + 1][robotLoc[1]].obstructed = self.see_obstacle(0,obs_report)
             self.MAP.grid[robotLoc[0] + 1][robotLoc[1]].observed = True
             if self.MAP.grid[robotLoc[0] + 1][robotLoc[1]].obstructed:
                 self.MAP.grid[robotLoc[0] + 1][robotLoc[1]].color = (255, 165, 0)
         if self.MAP.robotLoc[0] > 0 and self.MAP.robotLoc[0] <= 6:
-            self.MAP.grid[robotLoc[0] - 1][robotLoc[1]].obstructed = self.see_obstacle(2)
+            self.MAP.grid[robotLoc[0] - 1][robotLoc[1]].obstructed = self.see_obstacle(2,obs_report)
             self.MAP.grid[robotLoc[0] - 1][robotLoc[1]].observed = True
             if self.MAP.grid[robotLoc[0] - 1][robotLoc[1]].obstructed:
                 self.MAP.grid[robotLoc[0] - 1][robotLoc[1]].color = (255, 165, 0)
         if self.MAP.robotLoc[1] >= 0 and self.MAP.robotLoc[1] < 6:
-            self.MAP.grid[robotLoc[0]][robotLoc[1] + 1].obstructed = self.see_obstacle(3)
+            self.MAP.grid[robotLoc[0]][robotLoc[1] + 1].obstructed = self.see_obstacle(3,obs_report)
             self.MAP.grid[robotLoc[0]][robotLoc[1] + 1].observed = True
             if self.MAP.grid[robotLoc[0]][robotLoc[1] + 1].obstructed:
                 self.MAP.grid[robotLoc[0]][robotLoc[1] + 1].color = (255, 165, 0)
         if self.MAP.robotLoc[1] > 0 and self.MAP.robotLoc[1] <= 6:
-            self.MAP.grid[robotLoc[0]][robotLoc[1] - 1].obstructed = self.see_obstacle(1)
+            self.MAP.grid[robotLoc[0]][robotLoc[1] - 1].obstructed = self.see_obstacle(1,obs_report)
             self.MAP.grid[robotLoc[0]][robotLoc[1] - 1].observed = True
             if self.MAP.grid[robotLoc[0]][robotLoc[1] - 1].obstructed:
                 self.MAP.grid[robotLoc[0]][robotLoc[1] - 1].color = (255, 165, 0)
@@ -152,9 +155,12 @@ class RobotAlg():
             self.sim_robot.set8x8(Robot.translate_coordinate_to_index(robotLoc[1],
                                                                       robotLoc[0]), "D")
 
-    def see_obstacle(self, direction):
+    def get_obstacle_report(self):
+        return self.wait_till_done(self.sim_robot.readSensor(1))
+
+    def see_obstacle(self, direction, obs_report):
         which_sensor = (((direction - self.MAP.direction) % 4) + 1) % 4  # do we need the middle mod 4?
-        sensor_val = int(self.wait_till_done(self.sim_robot.readSensor(1))[which_sensor])
+        sensor_val = int(obs_report[which_sensor])
         print sensor_val
         return sensor_val
 
