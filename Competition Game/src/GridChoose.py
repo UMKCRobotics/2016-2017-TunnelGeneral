@@ -1,12 +1,12 @@
-import pygame, sys, os, random, math
-from ast import literal_eval as make_tuple
+import os
+import pygame
+import sys
 
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))  # directory from which this script is ran
 sys.path.insert(0, os.path.join(__location__))
 
 from Stage import Stage
-from MouseEvents import MouseEvents
 
 
 class GridChoose(Stage):
