@@ -28,6 +28,20 @@ Fixing git repo after .gitignore is updated:
 	>	git rm --cached -r .
 	>	git add .
 	3. Commit with a pretty message and push
+
+Setting up Rasp Pi:
+	1. Install python-dev using:
+	>	sudo apt-get install python-dev
+	2. Install/upgrade numpy:
+	>	sudo apt-get install python-numpy
+	3. Install scipy:
+	>	sudo apt-get install python-scipy
+	4. Install sklearn:
+	>	sudo apt-get install python-sklearn
+	5. Install matplotlib/pylab:
+	>	sudo apt-get install python-matplotlib
+	6. Install pyaudio:
+	>	sudo apt-get install python-pyaudio
     
 AI_17 options:
     (maybe incomplete)
