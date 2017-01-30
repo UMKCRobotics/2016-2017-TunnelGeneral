@@ -42,6 +42,8 @@ Setting up Rasp Pi:
 	>	sudo apt-get install python-matplotlib
 	6. Install pyaudio:
 	>	sudo apt-get install python-pyaudio
+	7. Install sortedcontainers:
+	>	sudo pip install sortedcontainers
     
 AI_17 options:
     (maybe incomplete)
