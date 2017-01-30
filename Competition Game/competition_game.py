@@ -73,7 +73,6 @@ def handle_returnVal(val):
     elif val[0] == 'NEXT_STAGE':
         currentStage += 1
         inputData = val[1]
-        print inputData
     elif val[0] == 'PREVIOUS_STAGE':
         currentStage -= 1
         inputData = None
@@ -92,7 +91,6 @@ while 1:
         stages[currentStage].stage_input = inputData
         if isinstance(stages[currentStage], Stage_Competition):
             # load board
-            print inputData
             if isinstance(inputData[1], list):
                 stages[currentStage].board_template = inputData[1]
             else:  # should be int for round number
