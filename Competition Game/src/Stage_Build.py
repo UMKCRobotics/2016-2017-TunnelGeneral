@@ -23,10 +23,10 @@ class Stage_Build(Stage):
         self.mouse_objects.append(Capacitive_Sensor_Creator(self.screen, self.mouse, self, (100, 200)))
         if saved != None:
             listLoad = self.load_robot(saved)
-            print listLoad
+            #print listLoad
             self.mouse_objects.extend(listLoad)
         self.global_objects.extend(self.mouse_objects)
-        print self.global_objects
+        #print self.global_objects
         self.color_HIGHLIGHT = (255, 255, 0)
 
     def remove_focused(self):
@@ -109,7 +109,7 @@ class Stage_Build(Stage):
     def load_robot(self, filename):
         robotpath = os.path.join(__location__, 'robots')
         files = os.listdir(robotpath)
-        print files
+        #print files
         if not filename.endswith('.txt'):
             filename += '.txt'
         if filename not in files:
@@ -141,7 +141,8 @@ class Stage_Build(Stage):
                         sensor_list.append(newSensor)
                         # sensor_list.reverse()
             for item in sensor_list:
-                print item.type
+                #print item.type
+                pass
             return sensor_list
 
 
@@ -200,7 +201,7 @@ class Sensor_Creator():
 
     def handleMouseEvent(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            print self.class_to_create
+            #print self.class_to_create
             self.stage.focused = self.class_to_create(self.screen, self.stage, self.OFFSETS,
                                                       (self.TOTAL_WIDTH, self.TOTAL_HEIGHT), self.color)
             self.stage.global_objects.append(self.stage.focused)
@@ -288,7 +289,7 @@ class Sensor_Template():
 
     def changeDirection(self, val):
         self.direction = (self.direction + val) % 4
-        print self.direction
+        #print self.direction
 
     def handleKeyEvent(self, event):
         if event.key in [pygame.K_a, pygame.K_LEFT]:

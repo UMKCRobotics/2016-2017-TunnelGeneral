@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.join(__location__))
 from Stage import Stage
 
 
-class GridChoose(Stage):
+class Stage_GridChoose(Stage):
     templates = [
         ("Round1Example", [['E', 'E', 'E', 'E', 'TC', 'E', 'E'],
                           ['E', 'E', 'E', 'E', 'T', 'E', 'E'],
@@ -195,7 +195,7 @@ class GridChoose(Stage):
         # from list
         x += 20 + ListButton.width
         y = 20
-        for template in GridChoose.templates:
+        for template in self.templates:
             self.all_buttons.append(ListButton(screen, x, y, template[0], template[1]))
             y += ListButton.height
             if y > 700:
@@ -245,7 +245,7 @@ class GridChoose(Stage):
     def choose_this(self):
         if self.cursored is None:
             return self.signal_NO_ACTION()
-        return self.signal_NEXT_STAGE((self.stage_input, self.all_buttons[self.cursored].command))
+        return self.signal_NEXT_STAGE([self.stage_input, self.all_buttons[self.cursored].command])
 
     def mouse_move(self, position):
         found_button_with_mouse_cursor = None

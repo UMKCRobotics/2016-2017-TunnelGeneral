@@ -9,7 +9,8 @@ __location__ = os.path.realpath(
 sys.path.insert(0, os.path.join(__location__, 'src/'))
 
 from Stage_Competition import Stage_Competition
-from GridChoose import GridChoose
+from Stage_GridChoose import Stage_GridChoose
+from Stage_AlgorithmChoose import Stage_AlgorithmChoose
 from Stage_Build import Stage_Build
 from Sensors import Sensor_Converter
 import AI_17
@@ -53,9 +54,10 @@ pygame.display.set_caption('IEEE 2017 UMKC Robotics')
 clock = pygame.time.Clock()
 
 build = Stage_Build(screen, saved=robotNameToLoad)
-grid_choose = GridChoose(screen)
+grid_choose = Stage_GridChoose(screen)
+alg_choose = Stage_AlgorithmChoose(screen)
 comp = Stage_Competition(screen)
-stages = [build, grid_choose, comp]
+stages = [build, grid_choose, alg_choose, comp]
 
 currentStage = 0
 previousStage = 0
@@ -71,6 +73,7 @@ def handle_returnVal(val):
     elif val[0] == 'NEXT_STAGE':
         currentStage += 1
         inputData = val[1]
+        print inputData
     elif val[0] == 'PREVIOUS_STAGE':
         currentStage -= 1
         inputData = None
@@ -89,6 +92,7 @@ while 1:
         stages[currentStage].stage_input = inputData
         if isinstance(stages[currentStage], Stage_Competition):
             # load board
+            print inputData
             if isinstance(inputData[1], list):
                 stages[currentStage].board_template = inputData[1]
             else:  # should be int for round number
@@ -101,8 +105,9 @@ while 1:
             #if you want to do 1 step at a time with 'b', set to false
             stages[currentStage].shouldPerformRobotMove = True
             #choose an algorithm to load: AI_17,AI_JED
-            t1 = threading.Thread(target=AI_17.simulation_impl,args=([stages[currentStage].robot,stages[currentStage].options],))
-            #t1 = threading.Thread(target=AI_JED.simulation_impl, args=([stages[currentStage].robot,stages[currentStage].options],))
+            algorithm_chosen = inputData[2]
+            #create thread for algorithm
+            t1 = threading.Thread(target=algorithm_chosen.simulation_impl,args=([stages[currentStage].robot,stages[currentStage].options],))
             t1.daemon = True
             t1.start()
             threads.append(t1)
