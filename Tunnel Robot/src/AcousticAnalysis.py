@@ -23,6 +23,8 @@ class AcousticAnalysis():
 	def __init__(self,ardfunc,clf_name,scaler_name):
 		self.doneRecording = True
 		self.p = pyaudio.PyAudio()
+		print self.p.get_default_input_device_info()
+		print pyaudio.__file__
 		self.recordLock = threading.Lock()
 		self.ardfunc = ardfunc
 		self.clf_name = clf_name
@@ -128,7 +130,7 @@ class AcousticAnalysis():
 		self.doneRecording = False
 		#self.recordLock.release()
 		THRESHOLD = 32000
-		CHANNELS = 2
+		CHANNELS = 1
 		FORMAT = pyaudio.paInt16
 		RATE = 44100
 		CHUNK_SIZE = int(RATE*duration)
@@ -137,10 +139,10 @@ class AcousticAnalysis():
 		timestamp = now.strftime("%Y%m%d%H%M%S.%f")
 
 		stream = self.p.open(format=FORMAT,
-			channels=2,
+			channels=CHANNELS,
 			rate=RATE,
 			input=True,
-			input_device_index = 0,
+			input_device_index = 9,
 			frames_per_buffer = CHUNK_SIZE*3
 			)
 
@@ -192,7 +194,7 @@ class AcousticAnalysis():
 
 	def get_next_tap_LIVE(self,stream,chunk_size,channels,threshold,rate,duration):
 		data_read = stream.read(chunk_size)
-		data_reader = StreamReader(data_read)
+		data_reader = StreamReader(data_read,channels)
 		
 		frames = ''
 

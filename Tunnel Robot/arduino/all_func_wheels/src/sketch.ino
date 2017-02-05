@@ -458,7 +458,7 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   bool on2 = true;
   int slowDiff = 400;
   int slowPWM = 125;
-  int slowestPWM = 85;
+  int slowestPWM = 90;
   //run motors
   //set direction for motor 1
   changeDirection(pwm1,pwm2);
@@ -664,7 +664,7 @@ String goBackward() {
 
 String turnLeft() {
   //int actualDur = runMotorsTill(1050,1050,"1f9\r","2r9\r");
-  int actualDur = runMotorsTill(1202,1202,255,-255);
+  int actualDur = runMotorsTill(1202,1202,235,-235);
   return "1";
 }
 
