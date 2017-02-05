@@ -12,8 +12,12 @@ import wave
 #time stuff
 from time import strftime, sleep, time
 from datetime import datetime
+#error suppression stuff
+from ctypes import *
+from contextlib import contextmanager
 
 from DeviceComm import CommRequest
+
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))) #directory from which this script is ran
 
@@ -22,9 +26,13 @@ class AcousticAnalysis():
 
 	def __init__(self,ardfunc,clf_name,scaler_name):
 		self.doneRecording = True
+		#with noalsaerror():
 		self.p = pyaudio.PyAudio()
-		print self.p.get_default_input_device_info()
-		print pyaudio.__file__
+		# use the default input device info to determine channels + input_device_index
+		maxChannels = self.p.get_default_input_device_info()['maxInputChannels']
+		self.channels = max(min(maxChannels,2),1)
+		self.input_device_index = self.p.get_default_input_device_info()['index']
+		print 'channels: %s, index: %s' % (self.channels,self.input_device_index)
 		self.recordLock = threading.Lock()
 		self.ardfunc = ardfunc
 		self.clf_name = clf_name
@@ -42,11 +50,7 @@ class AcousticAnalysis():
 	def getIfFoam(self):
 		isFoam = None
 		# start recording
-		self.doneRecording = False
-		recordReturn = [None,None]
-		recordThread = threading.Thread(target=self.recordDuration,args=(0.300,5,os.path.join(self.calib_location,'wavfiles'),None,recordReturn))
-		recordThread.daemon = True
-		recordThread.start()
+		recordReturn = self.startRecording()
 		# tell arduino to tap
 		resp = self.ardfunc.performTap()
 		#wait for recording to finish
@@ -67,6 +71,14 @@ class AcousticAnalysis():
 			isFoam = True
 		#return result
 		return isFoam
+	
+	def startRecording(self):
+		self.doneRecording = False
+		recordReturn = [None,None]
+		recordThread = threading.Thread(target=self.recordDuration,args=(0.300,5,os.path.join(self.calib_location,'wavfiles'),None,recordReturn))
+		recordThread.daemon = True
+		recordThread.start()
+		return recordReturn
 
 	#returns prediction
 	def predictWithFit(self,sample):
@@ -97,7 +109,11 @@ class AcousticAnalysis():
 		sampFreq, snd = wavfile.read(wav_file_name)
 		#convert 16 bit values to be between -1 to 1
 		snd = snd / (2.0**15)
-		s1 = self.getAverageData(snd)
+		#get average of data if more than 1 channels
+		if self.channels > 1:
+			s1 = self.getAverageData(snd)
+		else:
+			s1 = snd.T[0]
 
 		n = len(s1)
 		p = fft(s1)
@@ -130,7 +146,7 @@ class AcousticAnalysis():
 		self.doneRecording = False
 		#self.recordLock.release()
 		THRESHOLD = 32000
-		CHANNELS = 1
+		CHANNELS = self.channels
 		FORMAT = pyaudio.paInt16
 		RATE = 44100
 		CHUNK_SIZE = int(RATE*duration)
@@ -142,7 +158,7 @@ class AcousticAnalysis():
 			channels=CHANNELS,
 			rate=RATE,
 			input=True,
-			input_device_index = 9,
+			input_device_index = self.input_device_index,
 			frames_per_buffer = CHUNK_SIZE*3
 			)
 
@@ -186,6 +202,12 @@ class AcousticAnalysis():
 		if returnList != None:
 			returnList[0] = hasRead
 			returnList[1] = output_name
+
+		try:
+			stream.close()
+			print 'stream close success!'
+		except:
+			print 'ERROR: could not close stream'
 		#set doneRecording to True
 		#self.recordLock.acquire()
 		self.doneRecording = True
