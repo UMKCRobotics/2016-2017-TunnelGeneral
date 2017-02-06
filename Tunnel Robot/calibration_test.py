@@ -68,6 +68,8 @@ while True:
 		print wait_till_done(robot_impl.rotateCounterClockwise())
 	elif user_inp == 't':
 		print wait_till_done(robot_impl.arduinofuncs.performTap())
+	elif user_inp == 'o':
+		print wait_till_done(robot_impl.getObstacleReport())
 	elif user_inp == 'exit':
 		break
 	

@@ -198,10 +198,11 @@ String interpretCommand(String command, String value) {
       returnString = calibrateWithIR(value);
     responseString = "1";
     responseString += returnString;
+  }
   else if (command == "A") {
     //perform tap
-    returnString = performTap(value);
-    responseString += "1";
+    returnString = performTap();
+    responseString = "1";
     responseString += returnString;
   }
 
@@ -560,11 +561,11 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
 
 //ACTUAL implementation for tapping
 int runTappingTill(int value3, int pwm3) {
-  duration3 = 0
+  duration3 = 0;
   bool on3 = true;
   int slowDiff = 400;
-  int slowPWM = 125;
-  int slowestPWM = 90;
+  int slowPWM = 255;
+  int slowestPWM = 240;
   //set motor direction
   setTapperDirection(pwm3);
   //set PWM for motor to start it up
@@ -715,14 +716,10 @@ String goForward() {
   return "1";
 }
 
-String performTap(String rep) {
-  if (isDigit(rep[0])) {
-    int encCount = 100
-    int actualDur = runTappingTill(encCount,100);
-    return "1";
-  }
-  else
-    return "BAD";
+String performTap() {
+  int encCount = 1725;
+  int actualDur = runTappingTill(encCount,255);
+  return "1";
 }
 
 String calibrateWithSwitches() {

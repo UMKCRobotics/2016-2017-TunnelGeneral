@@ -53,7 +53,7 @@ class ArduinoFuncs():
         return commandObj
 
     def performTap(self):
-        commandObj = CommRequest('A' + '|1')
+        commandObj = CommRequest('A')
         self.ard.requestCommand(commandObj)
         return commandObj
 

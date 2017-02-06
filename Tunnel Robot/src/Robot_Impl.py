@@ -87,8 +87,8 @@ class Robot_Impl():
 		# get locations of obstacles in adjacent blocks via a list
 		# right, front, left
 		# uncomment next line when obstacles CAN be dectected:
-		# return self.arduinofuncs.getObstacleReport()
-		# leave the next line uncommented if CANNOT detect obstacles:
-		commandObj = CommRequest('S' + '|O')
-		commandObj.setResponse([0,0,0,0])
-		return commandObj
+		return self.arduinofuncs.getObstacleReport()
+		# leave the next lines uncommented if CANNOT detect obstacles:
+		#commandObj = CommRequest('S' + '|O')
+		#commandObj.setResponse([0,0,0,0])
+		#return commandObj
