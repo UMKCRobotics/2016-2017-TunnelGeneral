@@ -574,7 +574,7 @@ class Robot:
         # in case sensors malfunction and we get the same reading for everything
         if len(list_of_wire_thresholds) == 0:
             print("WARNING: no variation in wire sensor readings")
-            list_of_wire_thresholds.appemd(0)
+            list_of_wire_thresholds.append(0)
         if len(list_of_tunnel_thresholds) == 0:
             print("WARNING: no variation in foam sensor readings")
             list_of_tunnel_thresholds.append(0)
