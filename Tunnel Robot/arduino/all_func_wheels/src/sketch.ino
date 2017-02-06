@@ -31,12 +31,18 @@
 #define PINB1 4
 #define PINA2 3
 #define PINB2 5
+//tapper pins
+#define PINA3 20
+#define PINB3 26
 volatile byte PinA1Last;
 volatile byte PinA2Last;
+volatile byte PinA3Last;
 volatile int duration1;
 volatile int duration2;
+volatile int duration3;
 volatile boolean Direction1;
 volatile boolean Direction2;
+volatile boolean Direction3;
 //motor control
 #define MOT1_PIN1 40
 #define MOT1_PIN2 42
@@ -44,6 +50,10 @@ volatile boolean Direction2;
 #define MOT2_PIN1 41
 #define MOT2_PIN2 43
 #define MOT2_PWM 45
+//tapper control
+#define MOT3_PIN1 50
+#define MOT3_PIN2 48
+#define MOT3_PWM 46
 //motor modulus
 int motorMod = 0;
 //calibration switch pins
@@ -188,6 +198,11 @@ String interpretCommand(String command, String value) {
       returnString = calibrateWithIR(value);
     responseString = "1";
     responseString += returnString;
+  else if (command == "A") {
+    //perform tap
+    returnString = performTap(value);
+    responseString += "1";
+    responseString += returnString;
   }
 
   //check if 7 segment stuff
@@ -258,8 +273,10 @@ String interpretCommand(String command, String value) {
 void EncoderInit() {
   pinMode(PINB1,INPUT);
   pinMode(PINB2,INPUT);
+  pinMode(PINB3,INPUT);
   attachInterrupt(digitalPinToInterrupt(PINA1),wheelSpeed1,CHANGE);
   attachInterrupt(digitalPinToInterrupt(PINA2),wheelSpeed2,CHANGE);
+  attachInterrupt(digitalPinToInterrupt(PINA3),wheelSpeed3,CHANGE);
 }
 
 void MotorInit() {
@@ -269,6 +286,9 @@ void MotorInit() {
   pinMode(MOT2_PIN1,OUTPUT);
   pinMode(MOT2_PIN2,OUTPUT);
   pinMode(MOT2_PWM,OUTPUT);
+  pinMode(MOT3_PIN1,OUTPUT);
+  pinMode(MOT3_PIN2,OUTPUT);
+  pinMode(MOT3_PWM,OUTPUT);
 }
 
 void SwitchInit() {
@@ -314,6 +334,26 @@ void wheelSpeed2() {
   else duration2--;
 }
 
+void wheelSpeed3() {
+  int Lstate = digitalRead(PINA3);
+  if((PinA3Last == LOW) && Lstate == HIGH)
+  {
+    int val = digitalRead(PINB3);
+    if (val == LOW && Direction3)
+    {
+      Direction3 = false;
+    }
+    else if (val == HIGH && !Direction3)
+    {
+      Direction3 = true;
+    }
+  }
+  PinA3Last = Lstate;
+  if (!Direction3) duration3++;
+  else duration3--;
+}
+
+//used for Serial Motor Controller
 int runMotorsTill(int value1, int value2, const char* comm1, const char* comm2) {
   unsigned long lastGoCommand = millis();
   duration1 = 0;
@@ -370,6 +410,18 @@ void changeDirection(int pwm1, int pwm2) {
   }
 }
 
+void setTapperDirection(int pwm3) {
+  if (pwm3 >= 0) {
+    digitalWrite(MOT3_PIN1,HIGH);
+    digitalWrite(MOT3_PIN2,LOW);
+  }
+  else {
+    digitalWrite(MOT3_PIN1,LOW);
+    digitalWrite(MOT3_PIN2,HIGH);
+  }
+}
+
+//NOT IMPLEMENTED YET (OR MIGHT NOT BE)
 int runMotorsTillPID(int value1, int pwm1, int pwm2, int tolerance) {
   unsigned long lastGoCommand = millis();
   //for now, value1 must equal value2
@@ -450,6 +502,7 @@ int runMotorsTillPID(int value1, int pwm1, int pwm2, int tolerance) {
   return 1;
 }
 
+//ACTUAL implementation for direct motor controller
 int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   unsigned long lastGoCommand = millis();
   duration1 = 0;
@@ -501,6 +554,40 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   //stop both motors now, promptly
   analogWrite(MOT1_PWM,0);
   analogWrite(MOT2_PWM,0);
+
+  return 1;
+}
+
+//ACTUAL implementation for tapping
+int runTappingTill(int value3, int pwm3) {
+  duration3 = 0
+  bool on3 = true;
+  int slowDiff = 400;
+  int slowPWM = 125;
+  int slowestPWM = 90;
+  //set motor direction
+  setTapperDirection(pwm3);
+  //set PWM for motor to start it up
+  analogWrite(MOT3_PWM,abs(pwm3));
+  //do stuff while not done
+  while (on3) {
+    //if StopButton has been pressed, stop moving!
+    if (StopState == '1') {
+      break;
+    }
+    if (on3) {
+      if (abs(duration3) >= value3) {
+        analogWrite(MOT3_PWM,0);
+        on3 = false;
+      }
+      else if (abs(duration3) >= value3-slowDiff) {
+        int actualPWM3 = map(abs(duration3),value3-slowDiff,value3,slowPWM,slowestPWM);
+        analogWrite(MOT3_PWM,actualPWM3-5);
+      }
+    }
+  }
+  //stop motor now!
+  analogWrite(MOT3_PWM,0);
 
   return 1;
 }
@@ -626,6 +713,16 @@ String goForward() {
   int forwCount = 2512;
   int actualDur = runMotorsTill(forwCount-25,forwCount+25,251,255);
   return "1";
+}
+
+String performTap(String rep) {
+  if (isDigit(rep[0])) {
+    int encCount = 100
+    int actualDur = runTappingTill(encCount,100);
+    return "1";
+  }
+  else
+    return "BAD";
 }
 
 String calibrateWithSwitches() {
