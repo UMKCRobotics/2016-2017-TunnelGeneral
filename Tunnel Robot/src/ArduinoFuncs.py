@@ -1,4 +1,4 @@
-import threading, os, sys, time  #, serial
+import threading, os, sys, time  # , serial
 
 from SerialComm import SerialComm
 from DeviceComm import CommRequest
@@ -33,17 +33,17 @@ class ArduinoFuncs():
         return commandObj
 
     def getGoButton(self):
-    	commandObj = CommRequest('B' + '|G')
+        commandObj = CommRequest('B' + '|G')
         self.ard.requestCommand(commandObj)
         return commandObj
 
     def getStopButton(self):
-    	commandObj = CommRequest('B' + '|S')
+        commandObj = CommRequest('B' + '|S')
         self.ard.requestCommand(commandObj)
         return commandObj
 
     def getEMFreading(self):
-        commandObj = CommRequest('S' + '|E',returnAsList=True)
+        commandObj = CommRequest('S' + '|E', returnAsList=True)
         self.ard.requestCommand(commandObj)
         return commandObj
 
@@ -80,13 +80,13 @@ class ArduinoFuncs():
         self.ard.requestCommand(commandObj)
         return commandObj
 
-    #TO-DO: add value for which side of robot to use
+    # TO-DO: add value for which side of robot to use
     def goCalibrate(self):
         commandObj = CommRequest('c')
         self.ard.requestCommand(commandObj)
         return commandObj
-    
-    def goCalibrateIR(self,side):
+
+    def goCalibrateIR(self, side):
         commandObj = CommRequest('c|' + side)
         self.ard.requestCommand(commandObj)
         return commandObj
