@@ -11,14 +11,14 @@
 //EMF PINS
 #define EMF1 A0
 //IR PINS
-#define IR_R1 A8
-#define IR_R2 A9
-#define IR_B1 A10
-#define IR_B2 A11
-#define IR_L1 A12
-#define IR_L2 A13
-#define IR_F1 A14
-#define IR_F2 A15
+#define IR_R1 A14
+#define IR_R2 A13
+#define IR_B1 A11
+#define IR_B2 A12
+#define IR_L1 A9
+#define IR_L2 A10
+#define IR_F1 A8
+
 //8x8 pin
 #define PINM 6
 //7 segment pins
@@ -56,9 +56,7 @@ volatile boolean Direction3;
 #define MOT3_PWM 46
 //motor modulus
 int motorMod = 0;
-//calibration switch pins
-#define SWITCH_FL 34 //front left
-#define SWITCH_FR 35 //front right
+
 //button pins
 #define GoPin 18 //Go button - INTERRUPT PIN
 #define StopPin 19 //Stop button - INTERRUPT PIN
