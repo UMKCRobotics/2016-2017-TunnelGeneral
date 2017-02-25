@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.realpath(os.path.join(main_dir, 'Competition Game/src
 from ArduinoFuncs import ArduinoFuncs
 from Robot_Impl import Robot_Impl
 from Robot import RobotMap
-# from AI_JED import RobotAlg as AlgJed
+from AI_JED import RobotAlg as AlgJed
 from AI_17 import Robot as Alg17
 
 ard_serial = serial.Serial('/dev/arduino_allfunc', 115200)
