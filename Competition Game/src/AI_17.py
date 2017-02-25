@@ -29,9 +29,9 @@ def simulation_impl(_sim_parameters):
     Pull simulation robot from simulation.
     :param _sim_parameters: [SimRobot]
     """
-    _sim_robot = _sim_parameters[0]
+    _robot_interface = _sim_parameters[0]
     _sim_buttons = _sim_parameters[1]
-    robot = Robot(_sim_robot, _sim_buttons)
+    robot = Robot(_robot_interface, _sim_buttons)
     robot.explore3()
 
 
@@ -238,14 +238,14 @@ class GridData:
 class Robot:
     SLEEP_TIME = 0.1
 
-    def __init__(self, outside_grid_or_sim_robot_interface, outside_buttons=None):
+    def __init__(self, outside_grid_or_robot_interface, outside_buttons=None):
         self.gridData = GridData()
         self.position = Coordinate()
-        if isinstance(outside_grid_or_sim_robot_interface, OutsideGrid):
-            self.outside_grid = outside_grid_or_sim_robot_interface
+        if isinstance(outside_grid_or_robot_interface, OutsideGrid):
+            self.outside_grid = outside_grid_or_robot_interface
             self.using_outside_grid = True
-        elif isinstance(outside_grid_or_sim_robot_interface, SimRobot):
-            self.sim_robot = outside_grid_or_sim_robot_interface
+        elif isinstance(outside_grid_or_robot_interface, SimRobot):
+            self.robot_interface = outside_grid_or_robot_interface
             self.using_outside_grid = False
             self.sim_buttons = outside_buttons
         else:
@@ -268,7 +268,7 @@ class Robot:
         if self.using_outside_grid:
             self.display_grid_wait_enter()
         else:  # using simulation
-            self.wait_till_done(self.sim_robot.goForward())
+            self.wait_till_done(self.robot_interface.goForward())
             self.sleep_wait()
             self.display_grid_in_console()
         print("just moved to " + str(self.position))
@@ -278,7 +278,7 @@ class Robot:
         if self.using_outside_grid:
             pass  # TODO: calibrate
         else:
-            self.wait_till_done(self.sim_robot.goForward())
+            self.wait_till_done(self.robot_interface.goForward())
             Robot.sleep_wait()
         print("calibration done")
 
@@ -321,7 +321,7 @@ class Robot:
     def right(self):
         """ use turn """
         if not self.using_outside_grid:
-            self.wait_till_done(self.sim_robot.rotateClockwise())
+            self.wait_till_done(self.robot_interface.rotateClockwise())
             Robot.sleep_wait()
         if self.facing == Direction.east:
             self.facing = Direction.south
@@ -331,7 +331,7 @@ class Robot:
     def left(self):
         """ use turn """
         if not self.using_outside_grid:
-            self.wait_till_done(self.sim_robot.rotateCounterClockwise())
+            self.wait_till_done(self.robot_interface.rotateCounterClockwise())
             Robot.sleep_wait()
         if self.facing == Direction.south:
             self.facing = Direction.east
@@ -378,7 +378,7 @@ class Robot:
             # which sensor
             # 0 right, 1 front, 2 left, 3 back
             which_sensor = (((direction - self.facing) % 4) + 1) % 4  # do we need the middle mod 4?
-            return int(self.wait_till_done(self.sim_robot.readSensor(1))[which_sensor])
+            return int(self.wait_till_done(self.robot_interface.readSensor(1))[which_sensor])
 
     def visit(self):
         print("visiting: " + str(self.position))
@@ -401,15 +401,15 @@ class Robot:
             pass  # TODO:
         else:
             # change color to mark visited
-            self.sim_robot.MAP.grid[self.sim_robot.MAP.robotLoc[0]][self.sim_robot.MAP.robotLoc[1]].color = (75, 75, 75)
+            self.robot_interface.MAP.grid[self.robot_interface.MAP.robotLoc[0]][self.robot_interface.MAP.robotLoc[1]].color = (75, 75, 75)
             # TODO: That ^ is not very modular
-            self.gridData.get(self.position).wireReading = self.wait_till_done(self.sim_robot.readSensor(2))[0]
-            self.gridData.get(self.position).tunnelReading = self.wait_till_done(self.sim_robot.readSensor(3))[0]
+            self.gridData.get(self.position).wireReading = self.wait_till_done(self.robot_interface.readSensor(2))[0]
+            self.gridData.get(self.position).tunnelReading = self.wait_till_done(self.robot_interface.readSensor(3))[0]
             """ uncomment this to re-enable old sim map marking
             if self.gridData.get(self.position).wireReading == 1:
-                self.sim_robot.MAP.markOT()
+                self.robot_interface.MAP.markOT()
             elif self.gridData.get(self.position).tunnelReading == 1:
-                self.sim_robot.MAP.markDeadend()
+                self.robot_interface.MAP.markDeadend()
             """
 
     def explore(self):
@@ -456,7 +456,7 @@ class Robot:
         # perform if running a bot
         if not self.using_outside_grid:
             # light up yellow READY light on 8x8 (A7)
-            self.wait_till_done(self.sim_robot.setReadyLight())
+            self.wait_till_done(self.robot_interface.setReadyLight())
             # wait for Go Button to be pressed
             while not int(self.wait_till_done(self.sim_buttons.getGoButton())):
                 time.sleep(0.25)
@@ -702,9 +702,9 @@ class Robot:
         for row in range(GRID_HEIGHT):
             for col in range(GRID_WIDTH):
                 if self.gridData.get(col, row).wireHere == Knowledge.yes:
-                    self.sim_robot.set8x8(translate_coordinate_to_index(Coordinate(col, row)), "T")
+                    self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col, row)), "T")
                 elif self.gridData.get(col, row).tunnelHere == Knowledge.yes:
-                    self.sim_robot.set8x8(translate_coordinate_to_index(Coordinate(col, row)), "D")
+                    self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col, row)), "D")
 
     def fail_threshold(self, reason, wire_index, list_of_wire_thresholds, force_using_this_threshold, reset_data):
         """
