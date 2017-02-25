@@ -43,28 +43,27 @@ class DeviceComm(threading.Thread):
         self.commandList = []
 
     def requestCommand(self, commReq):
-        print("in DeviceComm requestCommand function")
-        self.commandLock.acquire()
-        print("acquired lock")
+        print("in DeviceComm requestCommand function - putting command in command list")
         self.commandList.append(commReq)
-        self.commandLock.release()
-        print("appended and released")
 
     def removeCommand(self, commReq):
-        self.commandLock.acquire()
         self.commandList.remove(commReq)
-        self.commandLock.release()
 
     def run(self):
         self.keepRunning = True
         while (self.keepRunning):
+            self.commandLock.acquire()
             if len(self.commandList) > 0:  # check if commands to perform
                 print("found command in commandList")
                 # do the item in queue
                 commandObj = self.commandList[0]
+                self.commandLock.release()
+                print(commandObj)
                 self.performCommand(commandObj)
                 # now remove the command from queue
+                self.commandLock.acquire()
                 self.removeCommand(commandObj)
+            self.commandLock.release()
             # wait a little
             time.sleep(0.01)
         # marked for stopping

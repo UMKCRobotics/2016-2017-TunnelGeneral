@@ -41,7 +41,7 @@ class SerialComm(DeviceComm):
         print 'connection initialized'
 
     def performCommand(self, commReq):
-        print("subclass performCommand")
+        print("performing command in SerialComm performCommand")
         tries = 0
         while tries < self.maxTries:
             self.serial.write(commReq.request + '\n')
