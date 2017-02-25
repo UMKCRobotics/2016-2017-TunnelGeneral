@@ -50,7 +50,7 @@ class SerialComm(DeviceComm):
             while not serin.endswith('\n'):
                 serin += self.serial.read()
             # time.sleep(0.1)
-            # print serin
+            print("got from serial read: %s" % serin)
             if serin[0] == 'n':
                 response = 'BAD'
                 time.sleep(0.1)
@@ -60,7 +60,7 @@ class SerialComm(DeviceComm):
             else:
                 response = serin.strip()[1:]  # remove new line char, take out first char
                 break
-            # print 'command %s performed with response %s' % (commReq.request,response)
+            print('command %s performed with response %s' % (commReq.request, str(response)))
         if commReq.returnAsList:
             commReq.response = [response]  # set response
         else:
