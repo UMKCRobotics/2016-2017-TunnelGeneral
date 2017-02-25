@@ -71,6 +71,7 @@ class ArduinoFuncs():
         return commandObj
 
     def moveLeft(self):
+        print("in arduinofuncs moveLeft function")
         commandObj = CommRequest('l')
         self.ard.requestCommand(commandObj)
         return commandObj
