@@ -536,6 +536,7 @@ class Robot:
         for direction in directions:
             # stop algorithm if stop button is pressed
             if (not self.using_outside_grid) and int(self.wait_till_done(self.sim_buttons.getStopButton())):
+                print("stop button pressed")
                 return False
 
             self.turn(direction)
