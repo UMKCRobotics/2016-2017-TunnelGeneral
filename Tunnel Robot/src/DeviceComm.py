@@ -59,6 +59,7 @@ class DeviceComm(threading.Thread):
         self.keepRunning = True
         while (self.keepRunning):
             if len(self.commandList) > 0:  # check if commands to perform
+                print("found command in commandList")
                 # do the item in queue
                 commandObj = self.commandList[0]
                 self.performCommand(commandObj)
@@ -72,5 +73,6 @@ class DeviceComm(threading.Thread):
         self.keepRunning = False
 
     def performCommand(self, commReq):
-        pass
+        print("performing command")
+        print(commReq)
         # fill this function with comm parsing
