@@ -38,7 +38,7 @@ direction = 0
 robot_map = RobotMap(None, 50, (0, 0), direction, shouldPlaySound=False)
 robot_impl = Robot_Impl(ard_funcs, robot_map)
 # alg17:
-robotAlgorithm = Alg17(robot_impl)
+robotAlgorithm = Alg17(robot_impl, robot_impl)
 robotAlgorithm.explore3()
 
 # algJed:
