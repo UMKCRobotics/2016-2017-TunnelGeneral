@@ -43,9 +43,12 @@ class DeviceComm(threading.Thread):
         self.commandList = []
 
     def requestCommand(self, commReq):
+        print("in DeviceComm requestCommand function")
         self.commandLock.acquire()
+        print("acquired lock")
         self.commandList.append(commReq)
         self.commandLock.release()
+        print("appended and released")
 
     def removeCommand(self, commReq):
         self.commandLock.acquire()
