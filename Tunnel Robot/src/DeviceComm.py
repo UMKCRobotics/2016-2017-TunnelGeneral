@@ -63,6 +63,8 @@ class DeviceComm(threading.Thread):
                 self.commandLock.release()
                 print(commandObj)
                 self.performCommand(commandObj)
+                print("done performing that command - now command object: ")
+                print(commandObj)
                 # now remove the command from queue
                 self.commandLock.acquire()
                 self.removeCommand(commandObj)
