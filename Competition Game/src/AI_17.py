@@ -452,6 +452,7 @@ class Robot:
             dfs_stack.pop()
 
     def explore3(self):
+        print("explore function has been called")
         """ visit all possible grid spaces
             go back to sides, when away for a long time """
 
@@ -469,6 +470,7 @@ class Robot:
         self.away_from_sides_count = 0
         dfs_stack = deque()
         dfs_stack.append(Coordinate(self.position.x, self.position.y))
+        print("about to enter main explore loop")
         while len(self.gridData.needToVisit) and keep_going:
             coord_at_top = dfs_stack[-1]
             if coord_at_top in self.gridData.needToVisit:
