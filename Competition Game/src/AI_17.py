@@ -262,6 +262,7 @@ class Robot:
         intermediate_delay = 0.01
         while not resp.isDone:
             time.sleep(intermediate_delay)
+        time.sleep(Robot.SLEEP_TIME)
         return resp.getResponse()
 
     def forward(self):

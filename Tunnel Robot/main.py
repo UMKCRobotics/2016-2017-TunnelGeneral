@@ -38,12 +38,12 @@ direction = 0
 robot_map = RobotMap(None, 50, (0, 0), direction, shouldPlaySound=False)
 robot_impl = Robot_Impl(ard_funcs, robot_map)
 # alg17:
-# robotAlgorithm = Alg17(robot_impl, robot_impl)
-# robotAlgorithm.explore3()
+robotAlgorithm = Alg17(robot_impl, robot_impl)
+robotAlgorithm.explore3()
 
 # algJed:
-robotAlgorithm = AlgJed(robot_impl, robot_impl)
-robotAlgorithm.doStuff()
+# robotAlgorithm = AlgJed(robot_impl, robot_impl)
+# robotAlgorithm.doStuff()
 
 for thread in globalThreads:
     thread.stopThread()
