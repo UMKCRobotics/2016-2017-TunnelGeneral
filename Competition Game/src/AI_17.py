@@ -244,12 +244,14 @@ class Robot:
         if isinstance(outside_grid_or_robot_interface, OutsideGrid):
             self.outside_grid = outside_grid_or_robot_interface
             self.using_outside_grid = True
-        elif isinstance(outside_grid_or_robot_interface, SimRobot):
+        else:  # isinstance(outside_grid_or_robot_interface, SimRobot):
             self.robot_interface = outside_grid_or_robot_interface
             self.using_outside_grid = False
             self.sim_buttons = outside_buttons
+        """
         else:
             raise TypeError("Invalid argument passed to constructor")
+        """
 
         self.facing = Direction.east  # TODO: can we get this from the SimRobot?
 
