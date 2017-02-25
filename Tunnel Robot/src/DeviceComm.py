@@ -73,6 +73,7 @@ class DeviceComm(threading.Thread):
         self.keepRunning = False
 
     def performCommand(self, commReq):
-        print("performing command")
+        print("base class performing command")
         print(commReq)
         # fill this function with comm parsing
+        # this function overloaded in SerialComm
