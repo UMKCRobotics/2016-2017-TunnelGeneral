@@ -27,6 +27,9 @@ class CommRequest(object):
     def getResponse(self):
         return self.response
 
+    def __repr__(self):
+        return "request: " + self.request + "\nisDone: " + str(self.isDone) + "\nresponse: " + self.response
+
 
 class DeviceComm(threading.Thread):
     # class used as template for all other
