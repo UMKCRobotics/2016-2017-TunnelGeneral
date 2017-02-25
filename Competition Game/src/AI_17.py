@@ -267,7 +267,7 @@ class Robot:
         self.move_where_i_think_i_am(1)
         if self.using_outside_grid:
             self.display_grid_wait_enter()
-        else:  # using simulation
+        else:  # using interface
             self.wait_till_done(self.robot_interface.goForward())
             self.sleep_wait()
             self.display_grid_in_console()
@@ -283,7 +283,7 @@ class Robot:
         print("calibration done")
 
     def reverse(self):
-        # TODO: this hasn't been updated for simulation (because it's not used)
+        # TODO: this hasn't been updated for a long time (because it's not used)
         self.move_where_i_think_i_am(-1)
 
     def move_where_i_think_i_am(self, move_amount):
