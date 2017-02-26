@@ -43,6 +43,7 @@ class SerialComm(DeviceComm):
     def performCommand(self, commReq):
         print("performing command in SerialComm performCommand")
         tries = 0
+        response = None
         while tries < self.maxTries:
             self.serial.write(commReq.request + '\n')
             # wait for a response to change state of command Request
@@ -59,8 +60,8 @@ class SerialComm(DeviceComm):
                 tries += 1
             else:
                 response = serin.strip()[1:]  # remove new line char, take out first char
+                print('command %s performed with response %s' % (commReq.request, str(response)))
                 break
-            print('command %s performed with response %s' % (commReq.request, str(response)))
         if commReq.returnAsList:
             commReq.response = [response]  # set response
         else:

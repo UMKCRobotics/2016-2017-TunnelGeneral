@@ -685,14 +685,17 @@ class Robot:
 
             max_turns = 3  # TODO: based on round (round 1: 2, round 2-3: 3)
 
-            algorithm_to_find_path = HamiltonianPath(self.gridData,
-                                                     inner_coordinates[1],
-                                                     inner_coordinates[0],
-                                                     directions_to_inner[1],
-                                                     Direction.opposite(directions_to_inner[0]),
-                                                     yes_count,
-                                                     max_turns)
-            found_path_under_obstacles = algorithm_to_find_path.find_path()
+            if len(inner_coordinates) > 1:
+                algorithm_to_find_path = HamiltonianPath(self.gridData,
+                                                         inner_coordinates[1],
+                                                         inner_coordinates[0],
+                                                         directions_to_inner[1],
+                                                         Direction.opposite(directions_to_inner[0]),
+                                                         yes_count,
+                                                         max_turns)
+                found_path_under_obstacles = algorithm_to_find_path.find_path()
+            else:  # not enough edge coordinates with wire found
+                found_path_under_obstacles = []
             # put path knowledge under obstacles
             for coordinate in found_path_under_obstacles:
                 self.gridData.get(coordinate).wireHere = Knowledge.yes
