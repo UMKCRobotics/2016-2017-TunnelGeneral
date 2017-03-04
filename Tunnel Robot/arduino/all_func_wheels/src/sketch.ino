@@ -100,7 +100,7 @@ void GoButtonFunc() {
 void StopButtonFunc() {
   int buttonStateStop = digitalRead(StopPin);
   if (buttonStateStop == HIGH) {
-    StopState = '1';
+    StopState = '0';
   }
 }
 
