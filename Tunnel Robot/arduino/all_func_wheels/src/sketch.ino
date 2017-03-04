@@ -170,8 +170,8 @@ void loop() {
 
 String interpretCommand(String command, String value) {
   
-  String responseString = "n";
-  String returnString = "";
+  String responseString = "n";  // what this function returns
+  String returnString = "";     // holds the return value of the command function
 
   //check if motor stuff
   if (command == "f") {
