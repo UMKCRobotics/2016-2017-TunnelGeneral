@@ -471,8 +471,6 @@ class Robot:
         self.away_from_sides_count = 0
         dfs_stack = deque()
         dfs_stack.append(Coordinate(self.position.x, self.position.y))
-        while True:
-            pass
         print("about to enter main explore loop")
         while len(self.gridData.needToVisit) and keep_going:
             coord_at_top = dfs_stack[-1]
@@ -541,6 +539,8 @@ class Robot:
                 print("stop button pressed")
                 return False
 
+            while True:
+                pass
             self.turn(direction)
             self.forward()
 
