@@ -742,9 +742,11 @@ String calibrateWithIR(String side) {
   //if B, use IR on back side
   else if (side == "B")  
     runCalibrationPivotIR(IR_B1,IR_B2,0,threshold);
+  /*
   //if F, use IR on front side (might not use)
   else if (side == "F")  
     runCalibrationPivotIR(IR_F1,IR_F2,0,threshold);
+  */
   //signal if bad side received
   else
     return "BAD";
