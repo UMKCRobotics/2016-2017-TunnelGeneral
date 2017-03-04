@@ -364,31 +364,31 @@ int runMotorsTill(int value1, int value2, const char* comm1, const char* comm2) 
   bool on1 = true;
   bool on2 = true;
   //run motors
-  Serial1.write(comm1);
+  Serial.write(comm1);
   digitalWrite(LED1,HIGH);
   delayMicroseconds(500);
-  Serial1.write(comm2);
+  Serial.write(comm2);
   digitalWrite(LED2,HIGH);
   delayMicroseconds(500);
   //do stuff while not done
   while (on1 || on2) {
     if (on1 && abs(duration1) >= value1) {
-      Serial1.write("1f0\r");
+      Serial.write("1f0\r");
       digitalWrite(LED1,LOW);
       on1 = false;
       delayMicroseconds(500);
     }
     if (on2 && abs(duration2) >= value2) {
-      Serial1.write("2f0\r");
+      Serial.write("2f0\r");
       digitalWrite(LED2,LOW);
       on2 = false;
       delayMicroseconds(500);
     }
   }
   //stop both motors now, promptly
-  Serial1.write("1r0\r");
+  Serial.write("1r0\r");
   delayMicroseconds(500);
-  Serial1.write("2r0\r");
+  Serial.write("2r0\r");
 
   return 1;
 }
