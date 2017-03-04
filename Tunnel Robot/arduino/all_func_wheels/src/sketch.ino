@@ -57,12 +57,16 @@ volatile boolean Direction3;
 //motor modulus
 int motorMod = 0;
 
+// just so we don't need to delete all the switch code
+#define SWITCH_FR 1
+#define SWITCH_FL 1
+
 //button pins
 #define GoPin 18 //Go button - INTERRUPT PIN
 #define StopPin 19 //Stop button - INTERRUPT PIN
 //button states
 volatile char GoState = '0';
-volatile char StopState = '0';
+volatile char StopState = '0';  // should these be initialized in the setup function instead of here?
 //sensor thresholds
 int EMF_thresh = 45;
 //digit representations
@@ -124,7 +128,7 @@ void setup() {
   EncoderInit();
   MotorInit();
   ButtonInit();
-  SwitchInit();
+  //SwitchInit();
   //Serial1.write("1f0\r");
   //delayMicroseconds(500);
   //Serial1.write("2f0\r");
@@ -191,7 +195,7 @@ String interpretCommand(String command, String value) {
   }
   else if (command == "c") {
     if (value == "")
-      returnString = calibrateWithSwitches();
+      returnString = "0";  // returnString = calibrateWithSwitches();
     else
       returnString = calibrateWithIR(value);
     responseString = "1";
