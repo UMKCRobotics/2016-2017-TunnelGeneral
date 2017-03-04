@@ -539,9 +539,9 @@ class Robot:
                 print("stop button pressed")
                 return False
 
+            self.turn(direction)
             while True:
                 pass
-            self.turn(direction)
             self.forward()
 
             if visit_and_explore_along_the_way:
