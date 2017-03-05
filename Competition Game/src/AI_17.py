@@ -453,6 +453,9 @@ class Robot:
             dfs_stack.pop()
 
     def explore3(self):
+        self.wait_till_done(self.robot_interface.goForward())
+
+    def explore3original(self):
         print("explore function has been called")
         """ visit all possible grid spaces
             go back to sides, when away for a long time """
@@ -540,8 +543,6 @@ class Robot:
                 return False
 
             self.turn(direction)
-            while True:
-                pass
             self.forward()
 
             if visit_and_explore_along_the_way:
