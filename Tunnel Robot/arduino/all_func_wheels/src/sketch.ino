@@ -88,7 +88,7 @@ void ButtonStates(){
     GoState = '1';
   }
   if (button2 == HIGH)
-    StopState = '1';
+    StopState = '0';
 }
 
 void GoButtonFunc() {
@@ -356,42 +356,6 @@ void wheelSpeed3() {
   else duration3--;
 }
 
-//used for Serial Motor Controller
-int runMotorsTill(int value1, int value2, const char* comm1, const char* comm2) {
-  unsigned long lastGoCommand = millis();
-  duration1 = 0;
-  duration2 = 0;
-  bool on1 = true;
-  bool on2 = true;
-  //run motors
-  Serial.write(comm1);
-  digitalWrite(LED1,HIGH);
-  delayMicroseconds(500);
-  Serial.write(comm2);
-  digitalWrite(LED2,HIGH);
-  delayMicroseconds(500);
-  //do stuff while not done
-  while (on1 || on2) {
-    if (on1 && abs(duration1) >= value1) {
-      Serial.write("1f0\r");
-      digitalWrite(LED1,LOW);
-      on1 = false;
-      delayMicroseconds(500);
-    }
-    if (on2 && abs(duration2) >= value2) {
-      Serial.write("2f0\r");
-      digitalWrite(LED2,LOW);
-      on2 = false;
-      delayMicroseconds(500);
-    }
-  }
-  //stop both motors now, promptly
-  Serial.write("1r0\r");
-  delayMicroseconds(500);
-  Serial.write("2r0\r");
-
-  return 1;
-}
 
 void changeDirection(int pwm1, int pwm2) {
   if (pwm1 >= 0) {
@@ -537,7 +501,7 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
         digitalWrite(LED1,LOW);
         on1 = false;
       }
-      else if (abs(duration1) >= value1-slowDiff) {
+      else if (abs(duration1) <= value1-slowDiff) {
         int actualPWM1 = map(abs(duration1),value1-slowDiff,value1,slowPWM,slowestPWM);
         analogWrite(MOT1_PWM,actualPWM1-5);
       }
@@ -548,7 +512,7 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
         digitalWrite(LED2,LOW);
         on2 = false;
       }
-      else if (abs(duration2) >= value2-slowDiff) {
+      else if (abs(duration2) <= value2-slowDiff) {
         int actualPWM2 = map(abs(duration2),value2-slowDiff,value2,slowPWM,slowestPWM);
         analogWrite(MOT2_PWM,actualPWM2);
       }

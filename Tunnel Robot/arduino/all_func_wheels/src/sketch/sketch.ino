@@ -57,12 +57,16 @@ volatile boolean Direction3;
 //motor modulus
 int motorMod = 0;
 
+// just so we don't need to delete all the switch code
+#define SWITCH_FR 1
+#define SWITCH_FL 1
+
 //button pins
 #define GoPin 18 //Go button - INTERRUPT PIN
 #define StopPin 19 //Stop button - INTERRUPT PIN
 //button states
 volatile char GoState = '0';
-volatile char StopState = '0';
+volatile char StopState = '0';  // should these be initialized in the setup function instead of here?
 //sensor thresholds
 int EMF_thresh = 45;
 //digit representations
@@ -84,7 +88,7 @@ void ButtonStates(){
     GoState = '1';
   }
   if (button2 == HIGH)
-    StopState = '1';
+    StopState = '0';
 }
 
 void GoButtonFunc() {
@@ -96,7 +100,7 @@ void GoButtonFunc() {
 void StopButtonFunc() {
   int buttonStateStop = digitalRead(StopPin);
   if (buttonStateStop == HIGH) {
-    StopState = '1';
+    StopState = '0';
   }
 }
 
@@ -124,7 +128,7 @@ void setup() {
   EncoderInit();
   MotorInit();
   ButtonInit();
-  SwitchInit();
+  //SwitchInit();
   //Serial1.write("1f0\r");
   //delayMicroseconds(500);
   //Serial1.write("2f0\r");
@@ -170,8 +174,8 @@ void loop() {
 
 String interpretCommand(String command, String value) {
   
-  String responseString = "n";
-  String returnString = "";
+  String responseString = "n";  // what this function returns
+  String returnString = "";     // holds the return value of the command function
 
   //check if motor stuff
   if (command == "f") {
@@ -191,7 +195,7 @@ String interpretCommand(String command, String value) {
   }
   else if (command == "c") {
     if (value == "")
-      returnString = calibrateWithSwitches();
+      returnString = "0";  // returnString = calibrateWithSwitches();
     else
       returnString = calibrateWithIR(value);
     responseString = "1";
@@ -352,42 +356,6 @@ void wheelSpeed3() {
   else duration3--;
 }
 
-//used for Serial Motor Controller
-int runMotorsTill(int value1, int value2, const char* comm1, const char* comm2) {
-  unsigned long lastGoCommand = millis();
-  duration1 = 0;
-  duration2 = 0;
-  bool on1 = true;
-  bool on2 = true;
-  //run motors
-  Serial1.write(comm1);
-  digitalWrite(LED1,HIGH);
-  delayMicroseconds(500);
-  Serial1.write(comm2);
-  digitalWrite(LED2,HIGH);
-  delayMicroseconds(500);
-  //do stuff while not done
-  while (on1 || on2) {
-    if (on1 && abs(duration1) >= value1) {
-      Serial1.write("1f0\r");
-      digitalWrite(LED1,LOW);
-      on1 = false;
-      delayMicroseconds(500);
-    }
-    if (on2 && abs(duration2) >= value2) {
-      Serial1.write("2f0\r");
-      digitalWrite(LED2,LOW);
-      on2 = false;
-      delayMicroseconds(500);
-    }
-  }
-  //stop both motors now, promptly
-  Serial1.write("1r0\r");
-  delayMicroseconds(500);
-  Serial1.write("2r0\r");
-
-  return 1;
-}
 
 void changeDirection(int pwm1, int pwm2) {
   if (pwm1 >= 0) {
@@ -533,7 +501,7 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
         digitalWrite(LED1,LOW);
         on1 = false;
       }
-      else if (abs(duration1) >= value1-slowDiff) {
+      else if (abs(duration1) <= value1-slowDiff) {
         int actualPWM1 = map(abs(duration1),value1-slowDiff,value1,slowPWM,slowestPWM);
         analogWrite(MOT1_PWM,actualPWM1-5);
       }
@@ -544,7 +512,7 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
         digitalWrite(LED2,LOW);
         on2 = false;
       }
-      else if (abs(duration2) >= value2-slowDiff) {
+      else if (abs(duration2) <= value2-slowDiff) {
         int actualPWM2 = map(abs(duration2),value2-slowDiff,value2,slowPWM,slowestPWM);
         analogWrite(MOT2_PWM,actualPWM2);
       }
@@ -738,9 +706,11 @@ String calibrateWithIR(String side) {
   //if B, use IR on back side
   else if (side == "B")  
     runCalibrationPivotIR(IR_B1,IR_B2,0,threshold);
+  /*
   //if F, use IR on front side (might not use)
   else if (side == "F")  
     runCalibrationPivotIR(IR_F1,IR_F2,0,threshold);
+  */
   //signal if bad side received
   else
     return "BAD";
