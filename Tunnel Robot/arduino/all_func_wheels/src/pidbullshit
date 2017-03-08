@@ -1,0 +1,79 @@
+int runMotorsTillPID(int value1, int pwm1, int pwm2, int tolerance) {
+  unsigned long lastGoCommand = millis();
+  //for now, value1 must equal value2
+  int value2 = value1;
+  duration1 = 0;
+  duration2 = 0;
+  bool on1 = true;
+  bool on2 = true;
+  int slowDiff = 400;
+  int slowPWM = 125;
+  int slowestPWM = 85;
+  int absDuration1;
+  int absDuration2;
+  //set PID
+  PID<int> pid(0.5,0,0);
+  //run motors
+  //set direction for motor 1
+  changeDirection(pwm1,pwm2);
+  //set PWM for both with as little latency in between
+  analogWrite(MOT1_PWM,abs(pwm1));
+  digitalWrite(LED1,HIGH);
+  analogWrite(MOT2_PWM,abs(pwm2));
+  digitalWrite(LED2,HIGH);
+  //do stuff while not done
+  while (true) {
+    //if StopButton has been pressed, stop moving!
+    if (StopState == '1') {
+      digitalWrite(LED1,LOW);
+      digitalWrite(LED2,LOW);
+      break;
+    }
+    //check if right motor is good to go
+    absDuration1 = abs(duration1);
+    absDuration2 = abs(duration2);
+    if (absDuration1 < value1+tolerance && absDuration1 > value1-tolerance) {
+       analogWrite(MOT1_PWM,0);
+       digitalWrite(LED1,LOW);
+    }
+    else {
+      //do something
+    }
+    if (absDuration2 < value2+tolerance && absDuration2 > value2-tolerance) {
+       analogWrite(MOT2_PWM,0);
+       digitalWrite(LED2,LOW);
+    }
+    else {
+      //do something
+    }
+
+    
+    if (on1) {
+      if (abs(duration1) >= value1) {
+        analogWrite(MOT1_PWM,0);
+        digitalWrite(LED1,LOW);
+        on1 = false;
+      }
+      else if (abs(duration1) >= value1-slowDiff) {
+        int actualPWM1 = map(abs(duration1),value1-slowDiff,value1,slowPWM,slowestPWM);
+        analogWrite(MOT1_PWM,actualPWM1-5);
+      }
+    }
+    if (on2) {
+      if (abs(duration2) >= value2) {
+        analogWrite(MOT2_PWM,0);
+        digitalWrite(LED2,LOW);
+        on2 = false;
+      }
+      else if (abs(duration2) >= value2-slowDiff) {
+        int actualPWM2 = map(abs(duration2),value2-slowDiff,value2,slowPWM,slowestPWM);
+        analogWrite(MOT2_PWM,actualPWM2);
+      }
+    }
+  }
+  //stop both motors now, promptly
+  analogWrite(MOT1_PWM,0);
+  analogWrite(MOT2_PWM,0);
+
+  return 1;
+}
