@@ -11,11 +11,19 @@
 
 typedef uint8_t byte;
 typedef bool boolean;
-typedef std::string String;
+
+class String : public std::string {
+public:
+    int toInt() { return 1; // TODO: real conversion }
+};
 
 class Serial_Class {
 public:
     void print(const std::string& param) {
+        std::cout << param;
+    }
+
+    void write(const char& param) {
         std::cout << param;
     }
 
@@ -27,7 +35,11 @@ public:
         std::cout << param << std::endl;
     }
 
+    char read() { return '\n'; }
+
     void begin(const int& a) {}
+
+    bool available() { return true; }
 };
 
 Serial_Class Serial;
@@ -36,5 +48,6 @@ long millis() { return 777; }
 int digitalRead(const int& pin) { return pin; }
 int pinMode(const int& pin, const int& mode) { return mode; }
 int clearDigit() { return 1; }
+int delay(const int& a) { return a; }
 
 #endif // ARDUINO_H_INCLUDED
