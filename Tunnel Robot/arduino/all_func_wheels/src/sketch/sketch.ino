@@ -134,9 +134,12 @@ void setup() {
   //Serial1.write("2f0\r");
   //send READY byte
   Serial.write('1');
+  
 }
 
+
 void loop() { 
+
   command = "";
   value = "";
   int addTo = 0; //0 for command, 1 for value
@@ -169,8 +172,9 @@ void loop() {
   }
   //small delay
   delay(20);
-  
+
 }
+
 
 String interpretCommand(String command, String value) {
   
@@ -390,6 +394,10 @@ void setTapperDirection(int pwm3) {
 
 //ACTUAL implementation for direct motor controller
 int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
+  //Serial.print("value1 = ");
+  //Serial.print(value1);
+  //Serial.print("value2 = ");
+  //Serial.print(value2);
   //used for running time calculations
   unsigned long goT1 = 0;
   unsigned long goT2 = 0;
@@ -415,35 +423,37 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
         on1 = false;
       }
       //if motor should be running
-      else if (duration1 <= value1-slowDiff) {
-          analogWrite(MOT1_PWM,150);
-          //updates durration if need be
-          //changes initial start condition
-          if(goT1 == 0)
-            goT1 = millis();
-          else
-            duration1 += (int) millis() - goT1;
-            goT1 = millis();
+      else if (duration1 <= value1) {
+        //Serial.println(duration1);
+        analogWrite(MOT1_PWM,150);
+        //updates durration if need be
+        //changes initial start condition
+        if(goT1 == 0)
+          goT1 = millis();
+        else
+          duration1 += (int) millis() - goT1;
+          goT1 = millis();
       }
     }
     //if motor2 should be running
     if (on2) {
       //stop motor2
-      if (abs(duration2) >= value2) {
+      if (duration2 >= value2) {
         analogWrite(MOT2_PWM,0);
         digitalWrite(LED2,LOW);
         on2 = false;
       }
       //if motor should be running
-      else if (abs(duration2) <= value2-slowDiff) {
-          analogWrite(MOT1_PWM,150);
-          //updates durration if need be
-          //changes initial start condition
-          if(goT2 == 0)
-            goT2 = millis();
-          else
-            duration2 += (int) millis() - goT2;
-            goT2 = millis();
+      else if (duration2 <= value2) {
+        //Serial.println(duration2);
+        analogWrite(MOT2_PWM,150);
+        //updates durration if need be
+        //changes initial start condition
+        if(goT2 == 0)
+          goT2 = millis();
+        else
+          duration2 += (int) millis() - goT2;
+          goT2 = millis();
       }
     }
   }
@@ -653,13 +663,13 @@ String goBackward() {
   return "1";
 }
 
-String turnLeft() {
+String turnRight() {
   //int actualDur = runMotorsTill(1050,1050,"1f9\r","2r9\r");
   int actualDur = runMotorsTill(1202,1202,235,-235);
   return "1";
 }
 
-String turnRight() {
+String turnLeft() {
   //int actualDur = runMotorsTill(1100,1100,"1r9\r","2f9\r");
   int actualDur = runMotorsTill(1223,1223,-255,255);
   return "1";
