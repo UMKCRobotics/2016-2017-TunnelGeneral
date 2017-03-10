@@ -390,50 +390,60 @@ void setTapperDirection(int pwm3) {
 
 //ACTUAL implementation for direct motor controller
 int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
-  unsigned long lastGoCommand = millis();
+  //used for running time calculations
+  unsigned long goT1 = 0;
+  unsigned long goT2 = 0;
+  //amount of running time
   duration1 = 0;
   duration2 = 0;
+  //used to tell if motor should still be running
   bool on1 = true;
   bool on2 = true;
-  int slowDiff = 400;
-  int slowPWM = 125;
-  int slowestPWM = 90;
+  
   //run motors
   //set direction for motor 1
   changeDirection(pwm1,pwm2);
-  //set PWM for both with as little latency in between
-  analogWrite(MOT1_PWM,abs(pwm1));
-  digitalWrite(LED1,HIGH);
-  analogWrite(MOT2_PWM,abs(pwm2));
-  digitalWrite(LED2,HIGH);
-  //do stuff while not done
+  
+  //if either motor should be running
   while (on1 || on2) {
-    //if StopButton has been pressed, stop moving!
-    if (StopState == '1') {
-      digitalWrite(LED1,LOW);
-      digitalWrite(LED2,LOW);
-      break;
-    }
+    //if motor1 should be running
     if (on1) {
-      if (abs(duration1) >= value1) {
+      //stop motor1
+      if (duration1 >= value1) {
         analogWrite(MOT1_PWM,0);
         digitalWrite(LED1,LOW);
         on1 = false;
       }
-      else if (abs(duration1) <= value1-slowDiff) {
-        int actualPWM1 = map(abs(duration1),value1-slowDiff,value1,slowPWM,slowestPWM);
-        analogWrite(MOT1_PWM,actualPWM1-5);
+      //if motor should be running
+      else if (duration1 <= value1-slowDiff) {
+          analogWrite(MOT1_PWM,150);
+          //updates durration if need be
+          //changes initial start condition
+          if(goT1 == 0)
+            goT1 = millis();
+          else
+            duration1 += (int) millis() - goT1;
+            goT1 = millis();
       }
     }
+    //if motor2 should be running
     if (on2) {
+      //stop motor2
       if (abs(duration2) >= value2) {
         analogWrite(MOT2_PWM,0);
         digitalWrite(LED2,LOW);
         on2 = false;
       }
+      //if motor should be running
       else if (abs(duration2) <= value2-slowDiff) {
-        int actualPWM2 = map(abs(duration2),value2-slowDiff,value2,slowPWM,slowestPWM);
-        analogWrite(MOT2_PWM,actualPWM2);
+          analogWrite(MOT1_PWM,150);
+          //updates durration if need be
+          //changes initial start condition
+          if(goT2 == 0)
+            goT2 = millis();
+          else
+            duration2 += (int) millis() - goT2;
+            goT2 = millis();
       }
     }
   }
