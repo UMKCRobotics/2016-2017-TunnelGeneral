@@ -14,5 +14,18 @@ String turnRight();
 String calibrateWithIR(String side);
 String performTap();
 
+void displayDigit(int dig);
+
+void setReadyLight();
+void setToOT(int index);
+void setToDE(int index);
+void setToEM(int index);
+
+int readEMF();
+String getObstacleReport();
+
+void wheelSpeed1();
+void wheelSpeed2();
+void wheelSpeed3();
 
 #endif // PREDECLARATIONS_H_INCLUDED
