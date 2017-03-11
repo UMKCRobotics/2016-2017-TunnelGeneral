@@ -7,12 +7,12 @@
 //EMF PINS
 #define EMF1 A0
 //IR PINS
-#define IR_R1 A14
-#define IR_R2 A13
+#define IR_L1 A14
+#define IR_L2 A13
 #define IR_B1 A11
 #define IR_B2 A12
-#define IR_L1 A9
-#define IR_L2 A10
+#define IR_R1 A9
+#define IR_R2 A10
 #define IR_F1 A8
 
 //8x8 pin
