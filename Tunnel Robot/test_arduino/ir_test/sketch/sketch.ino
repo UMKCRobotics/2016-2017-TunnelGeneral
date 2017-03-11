@@ -635,14 +635,24 @@ void sensorReport(String name, int number) {
   // Serial.write(' ');
 }
 
+int getIRReading(int whichPin) {
+  const int sampleCount = 200
+  int total = 0;
+  for (int i = sampleCount; i > 0; --i) {
+    total += analogRead(whichPin);
+  }
+
+  return total / sampleCount;
+}
+
 String getObstacleReport() {
-  int r1 = analogRead(IR_R1);
-  int r2 = analogRead(IR_R2);
-  int l1 = analogRead(IR_L1);
-  int l2 = analogRead(IR_L2);
-  int b1 = analogRead(IR_B1);
-  int b2 = analogRead(IR_B2);
-  int f1 = analogRead(IR_F1);
+  int r1 = getIRReading(IR_R1);
+  int r2 = getIRReading(IR_R2);
+  int l1 = getIRReading(IR_L1);
+  int l2 = getIRReading(IR_L2);
+  int b1 = getIRReading(IR_B1);
+  int b2 = getIRReading(IR_B2);
+  int f1 = getIRReading(IR_F1);
 
   String report = "";
   //report format: right,front,left,back
