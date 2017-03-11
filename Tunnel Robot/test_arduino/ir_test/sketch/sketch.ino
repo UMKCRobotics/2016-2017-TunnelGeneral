@@ -184,14 +184,6 @@ String interpretCommand(String command, String value) {
     responseString += returnString;
   }
 
-  //check if 7 segment stuff
-  else if (command == "N") {
-    // do 7 segment stuff
-    displayDigit(value.toInt());
-    responseString = "1";
-    responseString += value;
-  }
-
   //check if button stuff
   else if (command == "B") {
     if (value == "G") {
@@ -202,23 +194,6 @@ String interpretCommand(String command, String value) {
       responseString = "1";
       responseString += StopState;
     }
-  }
-  //check if 8x8 stuff
-  else if (command == "R") {
-    setReadyLight();
-    responseString = "1";
-  }
-  else if (command == "T") {
-    setToOT(value.toInt());
-    responseString = "1";
-  }
-  else if (command == "D") {
-    setToDE(value.toInt());
-    responseString = "1";
-  }
-  else if (command == "E") {
-    setToEM(value.toInt());
-    responseString = "1";
   }
   //check if sensor stuff
   else if (command == "e") {
@@ -536,7 +511,6 @@ int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
   int maxPWM = 200;
   int actualPWM;
   //start PID, set proportional/integral/derivative gains 
-  PID<int> pid(0.6,0.001,0);
   //do movement while readings are outside tolerance range
   int countGood = 0;
   int countRequired = 6;
@@ -554,8 +528,6 @@ int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
     }
     else {
       countGood = 0;
-      //calculate what PWM to use
-      pidVal = pid.calculate(readingDiff, setPoint);
       //change equation for actualPWM to be reasonable with pidVals
       actualPWM = min(minPWM + abs(pidVal),maxPWM);
       //change directions appropriately, and use actualPWM
@@ -647,11 +619,11 @@ String turnRight() {
 
 //START OF SENSOR STUFF
 void sensorReport(String name, int number) {
-  serial.write('\n');
-  serial.write(name);
-  serial.write(' ');
-  serial.write(number);
-  serial.write('\n');
+  Serial.write('\n');
+  Serial.print(name);
+  Serial.write(' ');
+  Serial.print(number);
+  Serial.write('\n');
 }
 
 String getObstacleReport() {
@@ -727,43 +699,5 @@ void ButtonInit() {
   pinMode(StopPin,INPUT);
   attachInterrupt(digitalPinToInterrupt(GoPin),GoButtonFunc, CHANGE);
   attachInterrupt(digitalPinToInterrupt(StopPin),StopButtonFunc, CHANGE);
-}
-
-void displayDigit(int dig) {
-  for (int i = digits[dig]; i <= digits[dig]+1; i++) {
-    digitalWrite(LATCH, HIGH);
-    int number = i;
-    shiftOut(DATA, CLK, MSBFIRST, ~(char)number); // digitOne
-    digitalWrite(LATCH, LOW);
-    delay(1);
-  }
-}
-
-void clearDigit() {
-  digitalWrite(LATCH, HIGH);
-  int number = 0;
-  shiftOut(DATA, CLK, MSBFIRST, ~(char)number); // digitOne
-  digitalWrite(LATCH, LOW);
-  delay(1);
-}
-
-void setReadyLight() {
-  matrix.setPixelColor(56, 255, 255, 0);
-  matrix.show();
-}
-
-void setToOT(int index) {
-  matrix.setPixelColor(index, 255, 0, 0);
-  matrix.show();
-}
-
-void setToDE(int index) {
-  matrix.setPixelColor(index, 0, 255, 255);
-  matrix.show();
-}
-
-void setToEM(int index) {
-  matrix.setPixelColor(index, 0, 0, 0);
-  matrix.show();
 }
 //END OF DISPLAY STUFF
