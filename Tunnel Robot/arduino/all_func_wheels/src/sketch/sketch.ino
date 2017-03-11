@@ -721,7 +721,7 @@ String getObstacleReport() {
 }
 
 int readEMF() {
-  return int(getEMFreading(EMF1) > EMF_thresh);
+  return getEMFreading(EMF1);
 }
 
 int getEMFreading(int port) {
