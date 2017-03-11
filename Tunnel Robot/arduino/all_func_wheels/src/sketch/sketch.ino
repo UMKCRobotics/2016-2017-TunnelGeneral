@@ -679,30 +679,43 @@ String turnRight() {
 //END OF MOTOR STUFF
 
 //START OF SENSOR STUFF
+
+int getIRReading(int whichPin) {
+  // average of lots of readings
+  const long sampleCount = 200;
+  long total = 0;
+  for (int i = sampleCount; i > 0; --i) {
+    total += analogRead(whichPin);
+  }
+
+  return total / sampleCount;
+}
+
 String getObstacleReport() {
   String report = "";
   //report format: right,front,left,back
-  int threshold = 190; //set this to something reasonable
+  const int threshold = 190;  // set this to something reasonable
   //check right
-  if (analogRead(IR_R1) > threshold || analogRead(IR_R2) > threshold)
+  if (getIRReading(IR_R1) > threshold || getIRReading(IR_R2) > threshold)
     report += '1';
   else
     report += '0';
   //check front
-  if (analogRead(IR_F1) > threshold)// || analogRead(IR_F2) > threshold)
+  if (getIRReading(IR_F1) > threshold)  // || getIRReading(IR_F2) > threshold)
     report += '1';
   else
     report += '0';
   //check left
-  if (analogRead(IR_L1) > threshold || analogRead(IR_L2) > threshold)
+  if (getIRReading(IR_L1) > threshold || getIRReading(IR_L2) > threshold)
     report += '1';
   else
     report += '0';
   //check back
-  if (analogRead(IR_B1) > threshold || analogRead(IR_B2) > threshold)
+  if (getIRReading(IR_B1) > threshold || getIRReading(IR_B2) > threshold)
     report += '1';
   else
     report += '0';
+
   //return the report
   return report;
 }

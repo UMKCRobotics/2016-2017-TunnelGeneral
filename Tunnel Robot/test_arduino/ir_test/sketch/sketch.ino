@@ -636,8 +636,9 @@ void sensorReport(String name, int number) {
 }
 
 int getIRReading(int whichPin) {
-  const int sampleCount = 200
-  int total = 0;
+  // average of lots of readings
+  const long sampleCount = 200;
+  long total = 0;
   for (int i = sampleCount; i > 0; --i) {
     total += analogRead(whichPin);
   }
