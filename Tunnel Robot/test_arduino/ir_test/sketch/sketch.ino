@@ -109,8 +109,13 @@ void setup() {
   
 }
 
+void loop() {
+  getObstacleReport();
+  Serial.write('\n');
+}
 
-void loop() { 
+// command interpreter
+void loopcommand() { 
 
   command = "";
   value = "";
@@ -619,11 +624,15 @@ String turnRight() {
 
 //START OF SENSOR STUFF
 void sensorReport(String name, int number) {
-  Serial.write('\n');
-  Serial.print(name);
+  char tbs[16];
+
+  sprintf(tbs, " %4d ", number);
+
   Serial.write(' ');
-  Serial.print(number);
-  Serial.write('\n');
+  Serial.print(name);
+  // Serial.write(' ');
+  Serial.print(tbs);
+  // Serial.write(' ');
 }
 
 String getObstacleReport() {
