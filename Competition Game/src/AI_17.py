@@ -452,10 +452,10 @@ class Robot:
             # if we arrive here, none of the adjacent blocks need to be visited
             dfs_stack.pop()
 
-    def explore3(self):
+    def explore3test(self):
         self.wait_till_done(self.robot_interface.goForward())
 
-    def explore3original(self):
+    def explore3(self):
         print("explore function has been called")
         """ visit all possible grid spaces
             go back to sides, when away for a long time """
