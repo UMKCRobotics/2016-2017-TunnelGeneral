@@ -21,6 +21,8 @@ from AI_JED import RobotAlg as AlgJed
 from AI_17 import Robot as Alg17
 
 ard_serial = serial.Serial('/dev/arduino_allfunc', 115200)
+ard_serial.setDTR(level=False)  # http://stackoverflow.com/questions/11385915
+time.sleep(2)
 
 # motors = MotorsNXT()
 # emf = EMF_Sensors(emf_serial)
