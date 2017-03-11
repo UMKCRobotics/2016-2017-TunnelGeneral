@@ -617,7 +617,7 @@ int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
 String goForward() {
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
   int forwCount = 2512;
-  int actualDur = runMotorsTill(forwCount-25,forwCount+25,251,255);
+  int actualDur = runMotorsTill(forwCount,forwCount+20,251,255);
   return "1";
 }
 
@@ -663,15 +663,17 @@ String goBackward() {
   return "1";
 }
 
-String turnRight() {
+//actually turns right
+String turnLeft() {
   //int actualDur = runMotorsTill(1050,1050,"1f9\r","2r9\r");
-  int actualDur = runMotorsTill(1202,1202,235,-235);
+  int actualDur = runMotorsTill(1500,1500,255,-255);
   return "1";
 }
 
-String turnLeft() {
+//actually turns left
+String turnRight() {
   //int actualDur = runMotorsTill(1100,1100,"1r9\r","2f9\r");
-  int actualDur = runMotorsTill(1223,1223,-255,255);
+  int actualDur = runMotorsTill(1500,1500,-255,255);
   return "1";
 }
 //END OF MOTOR STUFF
