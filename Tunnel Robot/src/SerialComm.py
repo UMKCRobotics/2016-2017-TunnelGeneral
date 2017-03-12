@@ -45,6 +45,7 @@ class SerialComm(DeviceComm):
         tries = 0
         response = None
         while tries < self.maxTries:
+            print("try #" + str(tries+1) + " - about to send to serial: " + commReq.request)
             self.serial.write(commReq.request + '\n')
             # wait for a response to change state of command Request
             serin = ""
