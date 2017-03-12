@@ -10,3 +10,5 @@ Competition Game/src/gridstates.txt
 *.depend
 bin
 obj
+
+cmake-build*
