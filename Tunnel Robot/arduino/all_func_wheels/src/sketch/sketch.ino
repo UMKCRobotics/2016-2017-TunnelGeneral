@@ -180,21 +180,22 @@ String interpretCommand(String command, String value) {
   
   String responseString = "n";  // what this function returns
   String returnString = "";     // holds the return value of the command function
+  const String responseHeader = "\t1";
 
   //check if motor stuff
   if (command == "f") {
     returnString = goForward();
-    responseString = "1";
+    responseString = responseHeader;
     responseString += returnString;
   }
   else if (command == "l") {
     returnString = turnLeft();
-    responseString = "1";
+    responseString = responseHeader;
     responseString += returnString;
   }
   else if (command == "r") {
     returnString = turnRight();
-    responseString = "1";
+    responseString = responseHeader;
     responseString += returnString;
   }
   else if (command == "c") {
@@ -202,13 +203,13 @@ String interpretCommand(String command, String value) {
       returnString = "0";  // returnString = calibrateWithSwitches();
     else
       returnString = calibrateWithIR(value);
-    responseString = "1";
+    responseString = responseHeader;
     responseString += returnString;
   }
   else if (command == "A") {
     //perform tap
     returnString = performTap();
-    responseString = "1";
+    responseString = responseHeader;
     responseString += returnString;
   }
 
@@ -216,54 +217,54 @@ String interpretCommand(String command, String value) {
   else if (command == "N") {
     // do 7 segment stuff
     displayDigit(value.toInt());
-    responseString = "1";
+    responseString = responseHeader;
     responseString += value;
   }
 
   //check if button stuff
   else if (command == "B") {
     if (value == "G") {
-      responseString = "1";
+      responseString = responseHeader;
       responseString += GoState;
     }
     else if (value == "S") {
-      responseString = "1";
+      responseString = responseHeader;
       responseString += StopState;
     }
   }
   //check if 8x8 stuff
   else if (command == "R") {
     setReadyLight();
-    responseString = "1";
+    responseString = responseHeader;
   }
   else if (command == "T") {
     setToOT(value.toInt());
-    responseString = "1";
+    responseString = responseHeader;
   }
   else if (command == "D") {
     setToDE(value.toInt());
-    responseString = "1";
+    responseString = responseHeader;
   }
   else if (command == "E") {
     setToEM(value.toInt());
-    responseString = "1";
+    responseString = responseHeader;
   }
   //check if sensor stuff
   else if (command == "e") {
-    responseString = "1";
+    responseString = responseHeader;
     responseString += String(readEMF());
   }
   else if (command == "S") {
     if (value == "E") {
-      responseString = "1";
+      responseString = responseHeader;
       responseString += String(readEMF());
     }
     else if (value == "O") {
-      responseString = "1";
+      responseString = responseHeader;
       responseString += getObstacleReport();
     }
     else if (value == "F") {
-      responseString = "1";
+      responseString = responseHeader;
       //lol good luck with that
     }
   }
@@ -696,6 +697,8 @@ String getObstacleReport() {
   //report format: right,front,left,back
   const int threshold = 190;  // set this to something reasonable
   //check right
+  Serial.print("IR_R1 giving ");
+  Serial.print(getIRReading(IR_R1));
   if (getIRReading(IR_R1) > threshold || getIRReading(IR_R2) > threshold)
     report += '1';
   else
