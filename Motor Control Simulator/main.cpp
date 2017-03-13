@@ -10,14 +10,19 @@
 
 #define WIDTH 500  // distance from left wheel to right wheel - in units that the encoder gives me
 
+struct RobotCoordinates
+{
+    double x[MOTOR_COUNT];
+    double y[MOTOR_COUNT];
+};
+
 class MotorInterface
 {
 public:  // would be private in a different setting
     double distanceTraveled[MOTOR_COUNT];
     double totalMeasuredAboveTheOther[MOTOR_COUNT];  // TODO: different class
     int currentPower[MOTOR_COUNT];
-    double cartesianCoordinateX[MOTOR_COUNT];
-    double cartesianCoordinateY[MOTOR_COUNT];
+    RobotCoordinates coordinates;
 
     /** power lost to friction */
     const double effectivePower(const size_t& which) const
@@ -38,18 +43,10 @@ public:  // would be private in a different setting
         // http://math.stackexchange.com/questions/2183324/cartesian-coordinates-on-2-circles
 
         // utur = untranslated unrotated (left wheel started at 0, 0 and right wheel started at WIDTH,0)
-        double uturXleft;
-        double uturYleft;
-
-        double uturXright;
-        double uturYright;
+        RobotCoordinates utur;
 
         // utr = untranslated rotated
-        double utrXleft;
-        double utrYleft;
-
-        double utrXright;
-        double utrYright;
+        RobotCoordinates utr;
 
         // angle of the distance around a circle that the robot traveled (radians)
         double t = (distance[LEFT] - distance[RIGHT]) / WIDTH;
@@ -63,19 +60,19 @@ public:  // would be private in a different setting
         {
             r = distance[RIGHT] / t;
 
-            uturXleft = (r+WIDTH) * (1 - cos_t);
-            uturYleft = (r+WIDTH) * sin_t;
+            utur.x[LEFT] = (r+WIDTH) * (1 - cos_t);
+            utur.y[LEFT] = (r+WIDTH) * sin_t;
 
-            uturXright = (r + WIDTH) - (r * cos_t);
-            uturYright = r * sin_t;
+            utur.x[RIGHT] = (r + WIDTH) - (r * cos_t);
+            utur.y[RIGHT] = r * sin_t;
         }
         else  // robot went straight
         {
-            uturXleft = 0;
-            uturYleft = distance[LEFT];
+            utur.x[LEFT] = 0;
+            utur.y[LEFT] = distance[LEFT];
 
-            uturXright = WIDTH;
-            uturYright = distance[RIGHT];
+            utur.x[RIGHT] = WIDTH;
+            utur.y[RIGHT] = distance[RIGHT];
         }
 
         // rotate and translate onto current coordinates
@@ -83,24 +80,24 @@ public:  // would be private in a different setting
         // first rotate - by the angle of the right wheel
         // we want to undo the rotation that would bring the current corrdinates back to straight,
         // so we use the clockwise (backwards) rotation matrix
-        t = std::atan2(cartesianCoordinateY[LEFT] - cartesianCoordinateY[RIGHT],
-                       cartesianCoordinateX[RIGHT] - cartesianCoordinateX[LEFT]);
+        t = std::atan2(coordinates.y[LEFT] - coordinates.y[RIGHT],
+                       coordinates.x[RIGHT] - coordinates.x[LEFT]);
         cos_t = std::cos(t);
         sin_t = std::sin(t);
 
-        utrXleft = uturXleft * cos_t + uturYleft * sin_t;
-        utrYleft = uturYleft * cos_t - uturXleft * sin_t;
+        utr.x[LEFT] = utur.x[LEFT] * cos_t + utur.y[LEFT] * sin_t;
+        utr.y[LEFT] = utur.y[LEFT] * cos_t - utur.x[LEFT] * sin_t;
 
-        utrXright = uturXright * cos_t + uturYright * sin_t;
-        utrYright = uturYright * cos_t - uturXright * sin_t;
+        utr.x[RIGHT] = utur.x[RIGHT] * cos_t + utur.y[RIGHT] * sin_t;
+        utr.y[RIGHT] = utur.y[RIGHT] * cos_t - utur.x[RIGHT] * sin_t;
 
         // now translate - add left wheel coordinate
         // right first, so we don't lose the left wheel coordinate
-        cartesianCoordinateX[RIGHT] = utrXright + cartesianCoordinateX[LEFT];
-        cartesianCoordinateY[RIGHT] = utrYright + cartesianCoordinateY[LEFT];
+        coordinates.x[RIGHT] = utr.x[RIGHT] + coordinates.x[LEFT];
+        coordinates.y[RIGHT] = utr.y[RIGHT] + coordinates.y[LEFT];
 
-        cartesianCoordinateX[LEFT] += utrXleft;
-        cartesianCoordinateY[LEFT] += utrYleft;
+        coordinates.x[LEFT] += utr.x[LEFT];
+        coordinates.y[LEFT] += utr.y[LEFT];
     }
 
 public:
@@ -111,8 +108,8 @@ public:
         {
             distanceTraveled[i] = 0;
             currentPower[i] = 0;
-            cartesianCoordinateX[i] = i * WIDTH;
-            cartesianCoordinateY[i] = 0;
+            coordinates.x[i] = i * WIDTH;
+            coordinates.y[i] = 0;
         }
     }
 
@@ -134,11 +131,11 @@ public:
     /** getters for coordinates */
     const double& getXofWheel(const size_t& wheel) const
     {
-        return cartesianCoordinateX[wheel];
+        return coordinates.x[wheel];
     }
     const double& getYofWheel(const size_t& wheel) const
     {
-        return cartesianCoordinateY[wheel];
+        return coordinates.y[wheel];
     }
 
     /** elapse a given amount of time */
