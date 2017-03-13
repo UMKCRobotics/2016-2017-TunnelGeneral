@@ -1,14 +1,14 @@
 import threading, os, sys, time  # , serial
 
-from SerialComm import SerialComm
-# from SerialCommNoThreading import SerialComm
+# from SerialComm import SerialComm
+from SerialCommNoThreading import SerialComm
 from DeviceComm import CommRequest
 
 
 class ArduinoFuncs():
     def __init__(self, serial):
         self.ard = SerialComm(serial)
-        self.ard.start()
+        # self.ard.start()
         # remove above line for no threading
 
     def setReadyLight(self):
