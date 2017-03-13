@@ -27,22 +27,22 @@
 #define CLK 8     // serial clock pin
 //encoder pins (PINAx MUST be interrupts)
 //NOTE: MOTOR1 is RIGHT, MOTOR2 is LEFT
-#define PINA1 2
-#define PINB1 4
-#define PINA2 3
-#define PINB2 5
+#define RIGHT_ENCODER_INTERRUPT_PIN 2  // "pin A"
+#define RIGHT_ENCODER_DIGITAL_PIN 4  // "pin B"
+#define LEFT_ENCODER_INTERRUPT_PIN 3
+#define LEFT_ENCODER_DIGITAL_PIN 5
 //tapper pins
-#define PINA3 20
-#define PINB3 26
-volatile byte PinA1Last;
-volatile byte PinA2Last;
-volatile byte PinA3Last;
-volatile int duration1;
-volatile int duration2;
-volatile int duration3;
-volatile boolean Direction1;
-volatile boolean Direction2;
-volatile boolean Direction3;
+#define TAPPER_ENCODER_INTERRUPT_PIN 20
+#define TAPPER_ENCODER_DIGITAL_PIN 26
+volatile byte rightEncoderIntPinLast;
+volatile byte leftEncoderIntPinLast;
+volatile byte tapperEncoderIntPinLast;
+volatile int rightEncoderOdometer;
+volatile int leftEncoderOdometer;
+volatile int tapperEncoderOdometer;
+volatile boolean rightEncoderDirection;
+volatile boolean leftEncoderDirection;
+volatile boolean tapperEncoderDirection;
 //motor control
 #define MOT1_PIN1 40
 #define MOT1_PIN2 42
@@ -279,12 +279,12 @@ String interpretCommand(String command, String value) {
 
 //START OF MOTOR STUFF
 void EncoderInit() {
-  pinMode(PINB1,INPUT);
-  pinMode(PINB2,INPUT);
-  pinMode(PINB3,INPUT);
-  attachInterrupt(digitalPinToInterrupt(PINA1),wheelSpeed1,CHANGE);
-  attachInterrupt(digitalPinToInterrupt(PINA2),wheelSpeed2,CHANGE);
-  attachInterrupt(digitalPinToInterrupt(PINA3),wheelSpeed3,CHANGE);
+  pinMode(RIGHT_ENCODER_DIGITAL_PIN, INPUT);
+  pinMode(LEFT_ENCODER_DIGITAL_PIN, INPUT);
+  pinMode(TAPPER_ENCODER_DIGITAL_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(RIGHT_ENCODER_INTERRUPT_PIN), rightEncoderInterruptFunction, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(LEFT_ENCODER_INTERRUPT_PIN), leftEncoderInterruptFunction, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(TAPPER_ENCODER_INTERRUPT_PIN), tapperEncoderInterruptFunction, CHANGE);
 }
 
 void MotorInit() {
@@ -304,61 +304,61 @@ void SwitchInit() {
   pinMode(SWITCH_FL,INPUT);
 }
 
-void wheelSpeed1() {
-  int Lstate = digitalRead(PINA1);
-  if((PinA1Last == LOW) && Lstate == HIGH)
+void rightEncoderInterruptFunction() {
+  int Lstate = digitalRead(RIGHT_ENCODER_INTERRUPT_PIN);
+  if((rightEncoderIntPinLast == LOW) && Lstate == HIGH)
   {
-    int val = digitalRead(PINB1);
-    if (val == LOW && Direction1)
+    int val = digitalRead(RIGHT_ENCODER_DIGITAL_PIN);
+    if (val == LOW && rightEncoderDirection)
     {
-      Direction1 = false;
+      rightEncoderDirection = false;
     }
-    else if (val == HIGH && !Direction1)
+    else if (val == HIGH && !rightEncoderDirection)
     {
-      Direction1 = true;
+      rightEncoderDirection = true;
     }
   }
-  PinA1Last = Lstate;
-  if (!Direction1) duration1++;
-  else duration1--;
+  rightEncoderIntPinLast = Lstate;
+  if (!rightEncoderDirection) rightEncoderOdometer++;
+  else rightEncoderOdometer--;
 }
 
-void wheelSpeed2() {
-  int Lstate = digitalRead(PINA2);
-  if((PinA2Last == LOW) && Lstate == HIGH)
+void leftEncoderInterruptFunction() {
+  int Lstate = digitalRead(LEFT_ENCODER_INTERRUPT_PIN);
+  if((leftEncoderIntPinLast == LOW) && Lstate == HIGH)
   {
-    int val = digitalRead(PINB2);
-    if (val == LOW && Direction2)
+    int val = digitalRead(LEFT_ENCODER_DIGITAL_PIN);
+    if (val == LOW && leftEncoderDirection)
     {
-      Direction2 = false;
+      leftEncoderDirection = false;
     }
-    else if (val == HIGH && !Direction2)
+    else if (val == HIGH && !leftEncoderDirection)
     {
-      Direction2 = true;
+      leftEncoderDirection = true;
     }
   }
-  PinA2Last = Lstate;
-  if (!Direction2) duration2++;
-  else duration2--;
+  leftEncoderIntPinLast = Lstate;
+  if (!leftEncoderDirection) leftEncoderOdometer++;
+  else leftEncoderOdometer--;
 }
 
-void wheelSpeed3() {
-  int Lstate = digitalRead(PINA3);
-  if((PinA3Last == LOW) && Lstate == HIGH)
+void tapperEncoderInterruptFunction() {
+  int Lstate = digitalRead(TAPPER_ENCODER_INTERRUPT_PIN);
+  if((tapperEncoderIntPinLast == LOW) && Lstate == HIGH)
   {
-    int val = digitalRead(PINB3);
-    if (val == LOW && Direction3)
+    int val = digitalRead(TAPPER_ENCODER_DIGITAL_PIN);
+    if (val == LOW && tapperEncoderDirection)
     {
-      Direction3 = false;
+      tapperEncoderDirection = false;
     }
-    else if (val == HIGH && !Direction3)
+    else if (val == HIGH && !tapperEncoderDirection)
     {
-      Direction3 = true;
+      tapperEncoderDirection = true;
     }
   }
-  PinA3Last = Lstate;
-  if (!Direction3) duration3++;
-  else duration3--;
+  tapperEncoderIntPinLast = Lstate;
+  if (!tapperEncoderDirection) tapperEncoderOdometer++;
+  else tapperEncoderOdometer--;
 }
 
 
@@ -403,8 +403,8 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   unsigned long goT1 = 0;
   unsigned long goT2 = 0;
   //amount of running time
-  duration1 = 0;
-  duration2 = 0;
+  rightEncoderOdometer = 0;
+  leftEncoderOdometer = 0;
   //used to tell if motor should still be running
   bool on1 = true;
   bool on2 = true;
@@ -418,42 +418,42 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
     //if motor1 should be running
     if (on1) {
       //stop motor1
-      if (duration1 >= value1) {
+      if (rightEncoderOdometer >= value1) {
         analogWrite(MOT1_PWM,0);
         digitalWrite(LED1,LOW);
         on1 = false;
       }
       //if motor should be running
-      else if (duration1 <= value1) {
-        //Serial.println(duration1);
+      else if (rightEncoderOdometer <= value1) {
+        //Serial.println(rightEncoderOdometer);
         analogWrite(MOT1_PWM,150);
         //updates durration if need be
         //changes initial start condition
         if(goT1 == 0)
           goT1 = millis();
         else
-          duration1 += (int) millis() - goT1;
+          rightEncoderOdometer += (int) millis() - goT1;
           goT1 = millis();
       }
     }
     //if motor2 should be running
     if (on2) {
       //stop motor2
-      if (duration2 >= value2) {
+      if (leftEncoderOdometer >= value2) {
         analogWrite(MOT2_PWM,0);
         digitalWrite(LED2,LOW);
         on2 = false;
       }
       //if motor should be running
-      else if (duration2 <= value2) {
-        //Serial.println(duration2);
+      else if (leftEncoderOdometer <= value2) {
+        //Serial.println(leftEncoderOdometer);
         analogWrite(MOT2_PWM,150);
         //updates durration if need be
         //changes initial start condition
         if(goT2 == 0)
           goT2 = millis();
         else
-          duration2 += (int) millis() - goT2;
+          leftEncoderOdometer += (int) millis() - goT2;
           goT2 = millis();
       }
     }
@@ -467,7 +467,7 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
 
 //ACTUAL implementation for tapping
 int runTappingTill(int value3, int pwm3) {
-  duration3 = 0;
+  tapperEncoderOdometer = 0;
   bool on3 = true;
   int slowDiff = 400;
   int slowPWM = 255;
@@ -483,12 +483,12 @@ int runTappingTill(int value3, int pwm3) {
       break;
     }
     if (on3) {
-      if (abs(duration3) >= value3) {
+      if (abs(tapperEncoderOdometer) >= value3) {
         analogWrite(MOT3_PWM,0);
         on3 = false;
       }
-      else if (abs(duration3) >= value3-slowDiff) {
-        int actualPWM3 = map(abs(duration3),value3-slowDiff,value3,slowPWM,slowestPWM);
+      else if (abs(tapperEncoderOdometer) >= value3-slowDiff) {
+        int actualPWM3 = map(abs(tapperEncoderOdometer),value3-slowDiff,value3,slowPWM,slowestPWM);
         analogWrite(MOT3_PWM,actualPWM3-5);
       }
     }
@@ -501,8 +501,8 @@ int runTappingTill(int value3, int pwm3) {
 
 int runCalibrationWithSwitches(int value1, int value2, int pwm1, int pwm2, int backCount) {
   unsigned long lastGoCommand = millis();
-  duration1 = 0;
-  duration2 = 0;
+  rightEncoderOdometer = 0;
+  leftEncoderOdometer = 0;
   bool on1 = true;
   bool on2 = true;
   int slowDiff = 400;
