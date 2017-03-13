@@ -1,6 +1,29 @@
 #ifndef PID_H
 #define PID_H
-#include "Arduino.h"
+// #include "Arduino.h"
+// for arduino comment out from here down to including millis
+#include <iostream>
+#include <chrono>
+
+class SerialClass
+{
+public:
+    static void print(const char* str)
+    {
+        std::cout << str;
+    }
+    static void println(const long& a)
+    {
+        std::cout << a;
+    }
+} Serial;
+
+long long int millis()
+{
+    return std::chrono::duration_cast< std::chrono::milliseconds >(
+            std::chrono::system_clock::now().time_since_epoch()
+    ).count();
+}
 
 
 typedef long double bigfloat;
@@ -28,18 +51,21 @@ template<class T>class PID{
 		Serial.println(dt);
 	}
 
+    void reset()
+    {
+        setPrevTimeNow();
+        integral = 0;
+        prev_error = 0;
+    }
+
 	PID(){
-	  setPrevTimeNow();
-	  setGains(1,1,1);
-	  integral = 0;
-	  prev_error = 0;
+        setGains(1,1,1);
+        reset();
 	}
 
 	PID(bigfloat p_gain, bigfloat i_gain, bigfloat d_gain){
-		setPrevTimeNow();
   		setGains(p_gain,i_gain,d_gain);
-  		integral = 0;
-  		prev_error = 0;
+        reset();
 	}
 
 	void setGains(bigfloat p_gain, bigfloat i_gain, bigfloat d_gain){
