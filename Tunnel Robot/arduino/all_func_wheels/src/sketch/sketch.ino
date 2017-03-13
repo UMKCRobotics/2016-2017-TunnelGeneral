@@ -619,6 +619,8 @@ String goForward() {
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
   int forwCount = 2512;
   int actualDur = runMotorsTill(forwCount,forwCount+20,251,255);
+  Serial.print("left encoder odometer: ");
+  Serial.print(leftEncoderOdometer);
   return "1";
 }
 
