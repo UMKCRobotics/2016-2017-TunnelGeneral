@@ -459,7 +459,8 @@ void testController()
 
 int main()
 {
-    testController();
+    testInterfaceSim();
+    // testController();
 
     return 0;
 }
