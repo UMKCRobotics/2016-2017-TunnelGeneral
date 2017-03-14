@@ -4,7 +4,15 @@
 #include <cmath>
 #include <cstddef>
 
-#include "Arduino.h"
+#ifdef SIM
+    #include <iostream>
+
+#endif
+
+#ifndef SIM
+    #include "Arduino.h"
+
+#endif
 
 // indexes for arrays
 #define LEFT 0
@@ -26,51 +34,10 @@ struct RobotCoordinates
     double y[MOTOR_COUNT];
 };
 
-class MotorInterface
+class ClassThatKeepsCoordinatesFromDistances
 {
-public:  // private
-    volatile int* odometers[MOTOR_COUNT];
-    uint8_t pins[MOTOR_COUNT];
-public:
-    MotorInterface(volatile int* leftOdometer,
-                   volatile int* rightOdometer,
-                   const uint8_t& leftAnalogPin,
-                   const uint8_t& rightAnalogPin)
-    {
-        odometers[LEFT] = leftOdometer;
-        odometers[RIGHT] = rightOdometer;
-        pins[LEFT] = leftAnalogPin;
-        pins[RIGHT] = rightAnalogPin;
-    }
-
-    int readEncoder(const size_t& which)
-    {
-        return *(odometers[which]);
-    }
-
-    void setMotorPower(const size_t& which, const int& howMuch)
-    {
-        analogWrite(pins[which], howMuch);
-    }
-
-    /** elapse the amount of time we want to take to travel twelve inches / segment count */
-    void passTime(const int& amount)
-    {
-        // TODO: implement passTime
-    }
-};
-
-class MotorController
-{
-public:  // private in a different setting
-
-    int powerNeeded[MOTOR_COUNT];  // the power needed to travel twelve inches / number of segments
-
-    RobotCoordinates coordinates;  // relative from where I started this movement
-    int travelTimeCount;  // counts down
-
-    MotorInterface motorInterface;
-    double startEncoderValues[MOTOR_COUNT];
+public:  // protected
+    RobotCoordinates coordinates;
 
     void calculateNewCoordinates(const double distance[])
     {
@@ -134,6 +101,80 @@ public:  // private in a different setting
         coordinates.y[LEFT] += utr.y[LEFT];
     }
 
+    virtual void reset()
+    {
+        coordinates.x[LEFT] = 0;
+        coordinates.y[LEFT] = 0;
+        coordinates.x[RIGHT] = WIDTH;
+        coordinates.y[RIGHT] = 0;
+    }
+};
+
+class MotorInterfaceBase
+{
+public:
+    virtual const int readEncoder(const size_t& which) const = 0;
+    virtual void setMotorPower(const size_t& which, const int& howMuch) = 0;
+    virtual void passTime(const int& amount) = 0;
+    virtual const char* report() const = 0;
+};
+
+#ifndef SIM
+class MotorInterface : public MotorInterfaceBase
+{
+public:  // private
+    volatile int* odometers[MOTOR_COUNT];
+    uint8_t pins[MOTOR_COUNT];
+public:
+    MotorInterface(volatile int* leftOdometer,
+                   volatile int* rightOdometer,
+                   const uint8_t& leftAnalogPin,
+                   const uint8_t& rightAnalogPin)
+    {
+        odometers[LEFT] = leftOdometer;
+        odometers[RIGHT] = rightOdometer;
+        pins[LEFT] = leftAnalogPin;
+        pins[RIGHT] = rightAnalogPin;
+    }
+
+    const int readEncoder(const size_t& which) const
+    {
+        return *(odometers[which]);
+    }
+
+    void setMotorPower(const size_t& which, const int& howMuch)
+    {
+        analogWrite(pins[which], howMuch);
+    }
+
+    /** elapse the amount of time we want to take to travel twelve inches / segment count */
+    void passTime(const int& amount)
+    {
+        // TODO: implement passTime
+    }
+
+    const char* report() const
+    {
+        return "";
+    }
+};
+
+#endif
+
+class MotorController : public ClassThatKeepsCoordinatesFromDistances
+{
+public:  // private in a different setting
+
+    int powerNeeded[MOTOR_COUNT];  // the power needed to travel twelve inches / number of segments
+
+    // inherited
+    // RobotCoordinates coordinates;  // relative from where I started this movement
+
+    int travelTimeCount;  // counts down
+
+    MotorInterfaceBase* motorInterface;
+    double startEncoderValues[MOTOR_COUNT];
+
     /** reset everything for a new movement */
     void reset()
     {
@@ -144,8 +185,8 @@ public:  // private in a different setting
 
         travelTimeCount = TRAVEL_TIME;
 
-        startEncoderValues[LEFT] = motorInterface.readEncoder(LEFT);
-        startEncoderValues[RIGHT] = motorInterface.readEncoder(RIGHT);
+        startEncoderValues[LEFT] = motorInterface->readEncoder(LEFT);
+        startEncoderValues[RIGHT] = motorInterface->readEncoder(RIGHT);
     }
 
     double distanceFromGoal(const size_t& which, const double& howMuchXMatters = 1)
@@ -161,14 +202,9 @@ public:  // private in a different setting
 
 public:
     // constructor
-    MotorController(volatile int* leftOdometer,
-                    volatile int* rightOdometer,
-                    const uint8_t& leftAnalogPin,
-                    const uint8_t& rightAnalogPin) : motorInterface(leftOdometer,
-                                                                    rightOdometer,
-                                                                    leftAnalogPin,
-                                                                    rightAnalogPin)
+    MotorController(MotorInterfaceBase* _motorInterface)
     {
+        motorInterface = _motorInterface;
         reset();
         powerNeeded[LEFT] = STARTING_POWER_NEEDED_FOR_LEFT;
         powerNeeded[RIGHT] = STARTING_POWER_NEEDED_FOR_RIGHT;
@@ -203,8 +239,8 @@ public:
             howMuchWeCareAboutXThisTime = 1.6667 * travelTimeCount / TRAVEL_TIME;
             // care more about x at the beginning of the move, less at the end
 
-            previousEncoderReading[LEFT] = motorInterface.readEncoder(LEFT);
-            previousEncoderReading[RIGHT] = motorInterface.readEncoder(RIGHT);
+            previousEncoderReading[LEFT] = motorInterface->readEncoder(LEFT);
+            previousEncoderReading[RIGHT] = motorInterface->readEncoder(RIGHT);
 
             previousDistanceFromGoal[LEFT] = distanceFromGoal(LEFT, howMuchWeCareAboutXThisTime);
             previousDistanceFromGoal[RIGHT] = distanceFromGoal(RIGHT, howMuchWeCareAboutXThisTime);
@@ -212,14 +248,14 @@ public:
             progressNeedToMake[LEFT] = previousDistanceFromGoal[LEFT] / travelTimeCount;
             progressNeedToMake[RIGHT] = previousDistanceFromGoal[RIGHT] / travelTimeCount;
 
-            motorInterface.setMotorPower(LEFT, powerNeeded[LEFT]);
-            motorInterface.setMotorPower(RIGHT, powerNeeded[RIGHT]);
+            motorInterface->setMotorPower(LEFT, powerNeeded[LEFT]);
+            motorInterface->setMotorPower(RIGHT, powerNeeded[RIGHT]);
 
-            motorInterface.passTime(1);
+            motorInterface->passTime(1);
             --travelTimeCount;
 
-            newEncoderReading[LEFT] = motorInterface.readEncoder(LEFT);
-            newEncoderReading[RIGHT] = motorInterface.readEncoder(RIGHT);
+            newEncoderReading[LEFT] = motorInterface->readEncoder(LEFT);
+            newEncoderReading[RIGHT] = motorInterface->readEncoder(RIGHT);
 
             distancesTraveledThisTime[LEFT] = newEncoderReading[LEFT] - previousEncoderReading[LEFT];
             distancesTraveledThisTime[RIGHT] = newEncoderReading[RIGHT] - previousEncoderReading[RIGHT];
@@ -235,11 +271,14 @@ public:
             powerNeeded[LEFT] = (int)round(progressNeedToMake[LEFT] * powerNeeded[LEFT] / progressMade[LEFT]);
             powerNeeded[RIGHT] = (int)round(progressNeedToMake[RIGHT] * powerNeeded[RIGHT] / progressMade[RIGHT]);
 
-            // std::cout << motorInterface.report() << std::endl;
+#ifdef SIM
+            std::cout << motorInterface->report() << std::endl;
+
+#endif
         }
 
-        motorInterface.setMotorPower(LEFT, 0);
-        motorInterface.setMotorPower(RIGHT, 0);
+        motorInterface->setMotorPower(LEFT, 0);
+        motorInterface->setMotorPower(RIGHT, 0);
     }
 };
 

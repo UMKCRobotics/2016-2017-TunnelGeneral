@@ -86,7 +86,8 @@ String value; //used to store value from serial
 String response; //used to store response to main program
 
 // this not used yet - it has goForward that can be used
-MotorController motorController(&leftEncoderOdometer, &rightEncoderOdometer, MOT2_PWM, MOT1_PWM);
+MotorInterface motorInterface(&leftEncoderOdometer, &rightEncoderOdometer, MOT2_PWM, MOT1_PWM);
+MotorController motorController(&motorInterface);
 
 void ButtonStates(){
   int button1 = digitalRead(GoPin);
