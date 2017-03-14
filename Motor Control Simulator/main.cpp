@@ -45,7 +45,7 @@ public:
     const int readEncoder(const size_t& which) const
     {
         if (which < MOTOR_COUNT)
-            return (int)round(distanceTraveled[which]);
+            return (int)distanceTraveled[which];
         throw;
     }
 
@@ -94,10 +94,14 @@ public:
         std::string out = outSS.str();
 
         // copy output to char array
-        for (size_t i = 0; i < MAX_LENGTH && i < out.size(); ++i)
+        for (size_t i = 0; i < MAX_LENGTH-1 && i < out.size(); ++i)
         {
             toReturn[i] = out[i];
         }
+        // end c string with null
+        toReturn[MAX_LENGTH-1] = 0;
+        if (out.size() < MAX_LENGTH-1)
+            toReturn[out.size()] = 0;
 
         // convert array to pointer
         return (char*)&toReturn;
