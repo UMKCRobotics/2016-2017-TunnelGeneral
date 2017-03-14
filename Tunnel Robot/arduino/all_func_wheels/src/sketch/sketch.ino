@@ -1,7 +1,11 @@
 #include "Adafruit_GFX.h"
 #include "Adafruit_NeoMatrix.h"
 #include "Adafruit_NeoPixel.h"
+
 #include "PID.h"
+
+#include "MotorController.h"
+
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
 #endif
@@ -80,6 +84,9 @@ Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PINM,
 String command; //used to store command from serial
 String value; //used to store value from serial
 String response; //used to store response to main program
+
+// this not used yet - it has goForward that can be used
+MotorController motorController(&leftEncoderOdometer, &rightEncoderOdometer, MOT2_PWM, MOT1_PWM);
 
 void ButtonStates(){
   int button1 = digitalRead(GoPin);

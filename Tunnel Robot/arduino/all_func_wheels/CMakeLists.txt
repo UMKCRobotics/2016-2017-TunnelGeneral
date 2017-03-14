@@ -8,6 +8,7 @@ include_directories(
         lib/Adafruit_NeoMatrix
         lib/Adafruit_NeoPixel
         F:/Arduino/hardware/arduino/avr/cores/arduino
+        /usr/share/arduino/hardware/arduino/cores/arduino
 )
 
 set(SOURCE_FILES
@@ -128,6 +129,7 @@ set(SOURCE_FILES
         lib/Adafruit_NeoPixel/esp8266.c
         lib/PID/PID.h
         src/sketch/PID.h
-        src/sketch/sketch.ino)
+        src/sketch/sketch.ino
+        src/sketch/MotorController.h)
 
 add_executable(all_func_wheels ${SOURCE_FILES})
