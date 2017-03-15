@@ -190,8 +190,20 @@ String interpretCommand(String command, String value) {
   String returnString = "";     // holds the return value of the command function
   const String responseHeader = "\t1";
 
+  // commands to read odometers
+  if (command == "<") {
+    returnString = "";
+    responseString = responseHeader;
+    responseString += leftEncoderOdometer;
+  }
+  else if (command == ">") {
+    returnString = "";
+    responseString = responseHeader;
+    responseString += rightEncoderOdometer;
+  }
+
   //check if motor stuff
-  if (command == "f") {
+  else if (command == "f") {
     returnString = goForward();
     responseString = responseHeader;
     responseString += returnString;
