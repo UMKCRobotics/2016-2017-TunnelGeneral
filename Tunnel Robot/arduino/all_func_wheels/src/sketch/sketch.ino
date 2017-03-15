@@ -86,7 +86,8 @@ String value; //used to store value from serial
 String response; //used to store response to main program
 
 // this not used yet - it has goForward that can be used
-MotorController motorController(&leftEncoderOdometer, &rightEncoderOdometer, MOT2_PWM, MOT1_PWM);
+MotorInterface motorInterface(&leftEncoderOdometer, &rightEncoderOdometer, MOT2_PWM, MOT1_PWM);
+MotorController motorController(&motorInterface);
 
 void ButtonStates(){
   int button1 = digitalRead(GoPin);
@@ -410,8 +411,8 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   unsigned long goT1 = 0;
   unsigned long goT2 = 0;
   //amount of running time
-  rightEncoderOdometer = 0;
-  leftEncoderOdometer = 0;
+  int duration1 = 0;
+  int duration2 = 0;
   //used to tell if motor should still be running
   bool on1 = true;
   bool on2 = true;
@@ -425,13 +426,13 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
     //if motor1 should be running
     if (on1) {
       //stop motor1
-      if (rightEncoderOdometer >= value1) {
+      if (duration1 >= value1) {
         analogWrite(MOT1_PWM,0);
         digitalWrite(LED1,LOW);
         on1 = false;
       }
       //if motor should be running
-      else if (rightEncoderOdometer <= value1) {
+      else if (duration1 <= value1) {
         //Serial.println(rightEncoderOdometer);
         analogWrite(MOT1_PWM,150);
         //updates durration if need be
@@ -439,20 +440,20 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
         if(goT1 == 0)
           goT1 = millis();
         else
-          rightEncoderOdometer += (int) millis() - goT1;
+          duration1 += (int) millis() - goT1;
           goT1 = millis();
       }
     }
     //if motor2 should be running
     if (on2) {
       //stop motor2
-      if (leftEncoderOdometer >= value2) {
+      if (duration2 >= value2) {
         analogWrite(MOT2_PWM,0);
         digitalWrite(LED2,LOW);
         on2 = false;
       }
       //if motor should be running
-      else if (leftEncoderOdometer <= value2) {
+      else if (duration2 <= value2) {
         //Serial.println(leftEncoderOdometer);
         analogWrite(MOT2_PWM,150);
         //updates durration if need be
@@ -460,7 +461,7 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
         if(goT2 == 0)
           goT2 = millis();
         else
-          leftEncoderOdometer += (int) millis() - goT2;
+            duration2 += (int) millis() - goT2;
           goT2 = millis();
       }
     }
