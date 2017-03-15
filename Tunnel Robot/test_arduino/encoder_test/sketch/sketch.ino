@@ -36,11 +36,11 @@ void EncoderInit()
 {
   rightDirection = true;  //default -> Forward
   pinMode(rightEncoder0DigitalPinB,INPUT);
-    attachInterrupt(0, rightEncoderInterruptFunction, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(rightEncoder0InterruptPinA), rightEncoderInterruptFunction, CHANGE);
 
     leftDirection = true;  //default -> Forward
     pinMode(leftEncoder0DigitalPinB,INPUT);
-    attachInterrupt(0, leftEncoderInterruptFunction, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(leftEncoder0InterruptPinA), leftEncoderInterruptFunction, CHANGE);
 }
 
 /** original name "wheelSpeed" */
