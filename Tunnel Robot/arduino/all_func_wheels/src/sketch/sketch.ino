@@ -331,35 +331,51 @@ void rightEncoderInterruptFunction() {
     int val = digitalRead(RIGHT_ENCODER_DIGITAL_PIN);
     if (val == LOW && rightEncoderDirection)
     {
-      rightEncoderDirection = false;
+      rightEncoderDirection = false;  // reverse
     }
     else if (val == HIGH && !rightEncoderDirection)
     {
-      rightEncoderDirection = true;
+      rightEncoderDirection = true;  // forward
     }
   }
   rightEncoderIntPinLast = Lstate;
-  if (rightEncoderDirection) rightEncoderOdometer++;
+  if (!rightEncoderDirection) rightEncoderOdometer++;
   else rightEncoderOdometer--;
 }
 
 void leftEncoderInterruptFunction() {
+  Serial.println("left encoder interrupt function called");
   int Lstate = digitalRead(LEFT_ENCODER_INTERRUPT_PIN);
+  Serial.print("read interrupt pin: ");
+  Serial.println(Lstate);
   if((leftEncoderIntPinLast == LOW) && Lstate == HIGH)
   {
+    Serial.println("last int pin read was low, now high");
     int val = digitalRead(LEFT_ENCODER_DIGITAL_PIN);
+    Serial.print("read digital pin: ");
+    Serial.println(val);
     if (val == LOW && leftEncoderDirection)
     {
-      leftEncoderDirection = false;
+      Serial.println("just switched to reverse");
+      leftEncoderDirection = false;  // reverse
     }
     else if (val == HIGH && !leftEncoderDirection)
     {
-      leftEncoderDirection = true;
+      Serial.println("just switch to forward");
+      leftEncoderDirection = true;  // forward
     }
   }
   leftEncoderIntPinLast = Lstate;
-  if (leftEncoderDirection) leftEncoderOdometer++;
-  else leftEncoderOdometer--;
+  if (!leftEncoderDirection)
+  {
+      Serial.println("direction currently false (reverse?)");
+      leftEncoderOdometer++;
+  }
+  else
+  {
+      Serial.println("direction currently true (forward?)");
+      leftEncoderOdometer--;
+  }
 }
 
 void tapperEncoderInterruptFunction() {
