@@ -14,6 +14,12 @@ byte leftEncoder0IntPinALast;
 int leftDuration;  //the number of the pulses
 boolean leftDirection;  //the rotation direction
 
+int leftInterruptCallCount = 0;
+int rightInterruptCallCount = 0;
+
+int leftIntReadDiffFromLastCount = 0;
+int rightIntReadDiffFromLastCount = 0;
+
 
 void setup()
 {
@@ -27,6 +33,14 @@ void loop()
   Serial.print(rightDuration);
   Serial.print(" left: ");
   Serial.println(leftDuration);
+    Serial.print("right call count: ");
+    Serial.print(rightInterruptCallCount);
+    Serial.print(" diff count: ");
+    Serial.println(rightIntReadDiffFromLastCount);
+    Serial.print("left call count: ");
+    Serial.print(leftInterruptCallCount);
+    Serial.print(" diff count: ");
+    Serial.println(leftIntReadDiffFromLastCount);
   rightDuration = 0;
   leftDuration = 0;
   delay(100);
@@ -46,9 +60,11 @@ void EncoderInit()
 /** original name "wheelSpeed" */
 void rightEncoderInterruptFunction()
 {
+  ++rightInterruptCallCount;
   int Lstate = digitalRead(rightEncoder0InterruptPinA);
   if((rightEncoder0IntPinALast == LOW) && Lstate==HIGH)
   {
+    ++rightIntReadDiffFromLastCount;
     int val = digitalRead(rightEncoder0DigitalPinB);
     if(val == LOW && rightDirection)
     {
@@ -67,9 +83,11 @@ void rightEncoderInterruptFunction()
 
 void leftEncoderInterruptFunction()
 {
+    ++leftInterruptCallCount;
     int Lstate = digitalRead(leftEncoder0InterruptPinA);
     if((leftEncoder0IntPinALast == LOW) && Lstate==HIGH)
     {
+        ++leftIntReadDiffFromLastCount;
         int val = digitalRead(leftEncoder0DigitalPinB);
         if(val == LOW && leftDirection)
         {
