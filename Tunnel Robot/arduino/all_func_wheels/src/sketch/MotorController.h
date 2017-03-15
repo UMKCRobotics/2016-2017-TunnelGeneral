@@ -1,16 +1,21 @@
 #ifndef ALL_FUNC_WHEELS_MOTORCONTROLLER_H
 #define ALL_FUNC_WHEELS_MOTORCONTROLLER_H
 
-#include <cmath>
-#include <cstddef>
 
 #ifdef SIM
     #include <iostream>
+    #include <cmath>
+    #include <cstddef>
+
+    #define cos std::cos
+    #define sin std::sin
+    #define atan2 std::atan2
 
 #endif
 
 #ifndef SIM
     #include "Arduino.h"
+    #include <math.h>
 
 #endif
 
@@ -56,8 +61,8 @@ public:  // protected
         // angle of the distance around a circle that the robot traveled (radians)
         double t = (distance[LEFT] - distance[RIGHT]) / WIDTH;
 
-        double cos_t = std::cos(t);
-        double sin_t = std::sin(t);
+        double cos_t = cos(t);
+        double sin_t = sin(t);
 
         // distance from the center of the circle to the right wheel
         double r;
@@ -85,10 +90,10 @@ public:  // protected
         // first rotate - by the angle of the right wheel
         // we want to undo the rotation that would bring the current coordinates back to straight,
         // so we use the clockwise (backwards) rotation matrix
-        t = std::atan2(coordinates.y[LEFT] - coordinates.y[RIGHT],
-                       coordinates.x[RIGHT] - coordinates.x[LEFT]);
-        cos_t = std::cos(t);
-        sin_t = std::sin(t);
+        t = atan2(coordinates.y[LEFT] - coordinates.y[RIGHT],
+                  coordinates.x[RIGHT] - coordinates.x[LEFT]);
+        cos_t = cos(t);
+        sin_t = sin(t);
 
         utr.x[LEFT] = utur.x[LEFT] * cos_t + utur.y[LEFT] * sin_t;
         utr.y[LEFT] = utur.y[LEFT] * cos_t - utur.x[LEFT] * sin_t;
