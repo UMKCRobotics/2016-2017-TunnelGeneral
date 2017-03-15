@@ -39,6 +39,10 @@ class ClassThatKeepsCoordinatesFromDistances
 public:  // protected
     RobotCoordinates coordinates;
 
+    /**
+     *  update coordinates according to the distances that the encoders say that we traveled
+     *  distance is array of distances that the encoders say that we traveled
+     */
     void calculateNewCoordinates(const double distance[])
     {
         // http://math.stackexchange.com/questions/2183324/cartesian-coordinates-on-2-circles
@@ -79,7 +83,7 @@ public:  // protected
         // rotate and translate onto current coordinates
 
         // first rotate - by the angle of the right wheel
-        // we want to undo the rotation that would bring the current corrdinates back to straight,
+        // we want to undo the rotation that would bring the current coordinates back to straight,
         // so we use the clockwise (backwards) rotation matrix
         t = std::atan2(coordinates.y[LEFT] - coordinates.y[RIGHT],
                        coordinates.x[RIGHT] - coordinates.x[LEFT]);
@@ -200,6 +204,23 @@ public:  // private in a different setting
         return sqrt(howMuchXMatters * xDifference*xDifference + (2-howMuchXMatters) * yDifference*yDifference);
     }
 
+    /**
+     *  on a scale of 0 to 2, how much we care about x axis in movement
+     *  movement is LEFT (0) or RIGHT (1) or anything else being forward
+     */
+    double howMuchToCareAboutX(int movement)
+    {
+        if (movement == LEFT || movement == RIGHT)
+        {
+            // care more about y at the beginning and more about x later
+            // from .33 to 1.67
+            return ((TRAVEL_TIME - travelTimeCount) * 1.3333 / TRAVEL_TIME) + 0.3333;
+        }
+        // care more about x at the beginning of the move, less at the end
+        // from 1.67 to 0
+        return 1.6667 * travelTimeCount / TRAVEL_TIME;
+    }
+
 public:
     // constructor
     MotorController(MotorInterfaceBase* _motorInterface)
@@ -236,8 +257,7 @@ public:
             Serial.print('\n');
             */
 
-            howMuchWeCareAboutXThisTime = 1.6667 * travelTimeCount / TRAVEL_TIME;
-            // care more about x at the beginning of the move, less at the end
+            howMuchWeCareAboutXThisTime = howMuchToCareAboutX(2);
 
             previousEncoderReading[LEFT] = motorInterface->readEncoder(LEFT);
             previousEncoderReading[RIGHT] = motorInterface->readEncoder(RIGHT);
