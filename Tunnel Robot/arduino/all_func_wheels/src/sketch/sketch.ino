@@ -327,7 +327,7 @@ void rightEncoderInterruptFunction() {
     }
   }
   rightEncoderIntPinLast = Lstate;
-  if (!rightEncoderDirection) rightEncoderOdometer++;
+  if (rightEncoderDirection) rightEncoderOdometer++;
   else rightEncoderOdometer--;
 }
 
@@ -346,7 +346,7 @@ void leftEncoderInterruptFunction() {
     }
   }
   leftEncoderIntPinLast = Lstate;
-  if (!leftEncoderDirection) leftEncoderOdometer++;
+  if (leftEncoderDirection) leftEncoderOdometer++;
   else leftEncoderOdometer--;
 }
 
@@ -624,13 +624,17 @@ int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
 }
 
 String goForward() {
+  Serial.print("before move left encoder odometer: ");
+  Serial.println(leftEncoderOdometer);
+  Serial.print("before move right encoder odometer: ");
+  Serial.println(rightEncoderOdometer);
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
   int forwCount = 2512;
   int actualDur = runMotorsTill(forwCount,forwCount+20,251,255);
-  Serial.print("left encoder odometer: ");
-  Serial.print(leftEncoderOdometer);
-  Serial.print("right encoder odometer: ");
-  Serial.print(rightEncoderOdometer);
+  Serial.print("after move left encoder odometer: ");
+  Serial.println(leftEncoderOdometer);
+  Serial.print("after move right encoder odometer: ");
+  Serial.println(rightEncoderOdometer);
   return "1";
 }
 
