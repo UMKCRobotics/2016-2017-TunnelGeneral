@@ -42,11 +42,12 @@
 #define MOTOR_COUNT 2
 
 // one motor consistently weaker than the other? make its number higher here
-#define STARTING_POWER_NEEDED_FOR_LEFT 200
-#define STARTING_POWER_NEEDED_FOR_RIGHT 200
+#define STARTING_POWER_NEEDED_FOR_LEFT 150
+#define STARTING_POWER_NEEDED_FOR_RIGHT 150
 
-#define WIDTH 500  // TODO: distance from left wheel to right wheel - in units that the encoder gives me
-#define TWELVE_INCH_DISTANCE 8000  // TODO: in units of the encoder
+// TODO: these might be able to be tuned better
+#define WIDTH 1618  // distance from left wheel to right wheel - in units that the encoder gives me
+#define TWELVE_INCH_DISTANCE 2427  // in units of the encoder
 
 #define TRAVEL_DURATION 3000  // milliseconds for one grid move
 #define TRAVEL_SEGMENT_COUNT 30  // the number of segments to break the travel into
@@ -348,7 +349,7 @@ public:
 
         while (travelTimeCount > 0)
         {
-            /*
+            
             Serial.print("time left ");
             Serial.print(travelTimeCount);
             Serial.print(" input left ");
@@ -356,7 +357,7 @@ public:
             Serial.print(" right ");
             Serial.print(powerNeeded[RIGHT]);
             Serial.print('\n');
-            */
+            
 
             howMuchWeCareAboutXThisTime = howMuchToCareAboutX(2);
 
