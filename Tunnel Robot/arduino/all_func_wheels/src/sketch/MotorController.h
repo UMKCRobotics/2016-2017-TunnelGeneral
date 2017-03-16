@@ -46,7 +46,9 @@
 #define WIDTH 500  // TODO: distance from left wheel to right wheel - in units that the encoder gives me
 #define TWELVE_INCH_DISTANCE 8000  // TODO: in units of the encoder
 
-#define TRAVEL_TIME 30  // the number of segments to break the travel into
+#define TRAVEL_DURATION 3000  // milliseconds for one grid move
+#define TRAVEL_SEGMENT_COUNT 30  // the number of segments to break the travel into
+const int SEGMENT_DURATION = TRAVEL_DURATION / TRAVEL_SEGMENT_COUNT;
 
 struct RobotCoordinates
 {
@@ -233,7 +235,8 @@ public:
     /** elapse the amount of time we want to take to travel twelve inches / segment count */
     void passTime(const int& amount)
     {
-        // TODO: implement passTime
+        long stopTime = millis() + SEGMENT_DURATION;
+        while (millis() < stopTime) ;
     }
 
     const char* report() const
@@ -266,7 +269,7 @@ public:  // private in a different setting
         coordinates.x[RIGHT] = WIDTH;
         coordinates.y[RIGHT] = 0;
 
-        travelTimeCount = TRAVEL_TIME;
+        travelTimeCount = TRAVEL_SEGMENT_COUNT;
 
         startEncoderValues[LEFT] = motorInterface->readEncoder(LEFT);
         startEncoderValues[RIGHT] = motorInterface->readEncoder(RIGHT);
@@ -293,11 +296,11 @@ public:  // private in a different setting
         {
             // care more about y at the beginning and more about x later
             // from .33 to 1.67
-            return ((TRAVEL_TIME - travelTimeCount) * 1.3333 / TRAVEL_TIME) + 0.3333;
+            return ((TRAVEL_SEGMENT_COUNT - travelTimeCount) * 1.3333 / TRAVEL_SEGMENT_COUNT) + 0.3333;
         }
         // care more about x at the beginning of the move, less at the end
         // from 1.67 to 0
-        return 1.6667 * travelTimeCount / TRAVEL_TIME;
+        return 1.6667 * travelTimeCount / TRAVEL_SEGMENT_COUNT;
     }
 
 public:
@@ -384,8 +387,17 @@ public:
             progressMade[LEFT] = previousDistanceFromGoal[LEFT] - newDistanceFromGoal[LEFT];
             progressMade[RIGHT] = previousDistanceFromGoal[RIGHT] - newDistanceFromGoal[RIGHT];
 
-            powerNeeded[LEFT] = (int)round(progressNeedToMake[LEFT] * powerNeeded[LEFT] / progressMade[LEFT]);
-            powerNeeded[RIGHT] = (int)round(progressNeedToMake[RIGHT] * powerNeeded[RIGHT] / progressMade[RIGHT]);
+            if (progressMade[LEFT])  // > 0
+            {
+                powerNeeded[LEFT] = (int)round(progressNeedToMake[LEFT] * powerNeeded[LEFT] / progressMade[LEFT]);
+            }
+            // else don't change it
+            
+            if (progressMade[RIGHT])  // > 0
+            {
+                powerNeeded[RIGHT] = (int)round(progressNeedToMake[RIGHT] * powerNeeded[RIGHT] / progressMade[RIGHT]);
+            }
+            // else don't change it
 
 #ifdef SIM
             std::cout << motorInterface->report() << std::endl;
