@@ -70,7 +70,7 @@ String value; //used to store value from serial
 String response; //used to store response to main program
 
 // this not used yet - it has goForward that can be used
-MotorInterface motorInterface;
+MotorInterface motorInterface(leftEncoderInterruptFunction, rightEncoderInterruptFunction);
 MotorController motorController(&motorInterface);
 
 void ButtonStates(){
@@ -180,12 +180,12 @@ String interpretCommand(String command, String value) {
   if (command == "<") {
     returnString = "";
     responseString = responseHeader;
-    responseString += leftEncoderOdometer;
+    responseString += motorInterface.readEncoder(LEFT);
   }
   else if (command == ">") {
     returnString = "";
     responseString = responseHeader;
-    responseString += rightEncoderOdometer;
+    responseString += motorInterface.readEncoder(RIGHT);
   }
 
   //check if motor stuff
@@ -359,7 +359,8 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   
   //run motors
   //set direction for motor 1
-  changeDirection(pwm1,pwm2);
+  motorInterface.changeDirection(RIGHT, pwm1>=0);
+  motorInterface.changeDirection(LEFT, pwm2>=0);
   
   //if either motor should be running
   while (on1 || on2) {
@@ -514,30 +515,15 @@ int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
 
 
 String goForwardOld() {
-  Serial.print("before move left encoder odometer: ");
-  Serial.println(leftEncoderOdometer);
-  Serial.print("before move right encoder odometer: ");
-  Serial.println(rightEncoderOdometer);
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
   int forwCount = 2512;
   int actualDur = runMotorsTill(forwCount,forwCount+20,251,255);
-  Serial.print("after move left encoder odometer: ");
-  Serial.println(leftEncoderOdometer);
-  Serial.print("after move right encoder odometer: ");
-  Serial.println(rightEncoderOdometer);
   return "1";
 }
 
 String performTap() {
   int encCount = 1725;
   int actualDur = runTappingTill(encCount,255);
-  return "1";
-}
-
-String calibrateWithSwitches() {
-  int calCount = 2000;
-  int backCount = 500;
-  int actualDur = runCalibrationWithSwitches(calCount-25,calCount+25,141,145,backCount);
   return "1";
 }
 

@@ -212,7 +212,7 @@ public:
 
     void setMotorPower(const size_t& which, const int& howMuch)
     {
-        changeDirection(which, howMuch >= 0)
+        changeDirection(which, howMuch >= 0);
         analogWrite(pwm_pins[which], howMuch);
     }
 
