@@ -69,7 +69,9 @@ String command; //used to store command from serial
 String value; //used to store value from serial
 String response; //used to store response to main program
 
-// this not used yet - it has goForward that can be used
+void leftEncoderInterruptFunction();
+void rightEncoderInterruptFunction();
+
 MotorInterface motorInterface(leftEncoderInterruptFunction, rightEncoderInterruptFunction);
 MotorController motorController(&motorInterface);
 
