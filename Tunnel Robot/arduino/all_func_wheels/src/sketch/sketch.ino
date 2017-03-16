@@ -344,36 +344,36 @@ void rightEncoderInterruptFunction() {
 }
 
 void leftEncoderInterruptFunction() {
-  Serial.println("left encoder interrupt function called");
+  // Serial.println("left encoder interrupt function called");
   int Lstate = digitalRead(LEFT_ENCODER_INTERRUPT_PIN);
-  Serial.print("read interrupt pin: ");
-  Serial.println(Lstate);
+  // Serial.print("read interrupt pin: ");
+  // Serial.println(Lstate);
   if((leftEncoderIntPinLast == LOW) && Lstate == HIGH)
   {
-    Serial.println("last int pin read was low, now high");
+    // Serial.println("last int pin read was low, now high");
     int val = digitalRead(LEFT_ENCODER_DIGITAL_PIN);
-    Serial.print("read digital pin: ");
-    Serial.println(val);
+    // Serial.print("read digital pin: ");
+    // Serial.println(val);
     if (val == LOW && leftEncoderDirection)
     {
-      Serial.println("just switched to reverse");
+      // Serial.println("just switched to reverse");
       leftEncoderDirection = false;  // reverse
     }
     else if (val == HIGH && !leftEncoderDirection)
     {
-      Serial.println("just switch to forward");
+      // Serial.println("just switch to forward");
       leftEncoderDirection = true;  // forward
     }
   }
   leftEncoderIntPinLast = Lstate;
   if (!leftEncoderDirection)
   {
-      Serial.println("direction currently false (reverse?)");
+      // Serial.println("direction currently false (reverse?)");
       leftEncoderOdometer++;
   }
   else
   {
-      Serial.println("direction currently true (forward?)");
+      // Serial.println("direction currently true (forward?)");
       leftEncoderOdometer--;
   }
 }
