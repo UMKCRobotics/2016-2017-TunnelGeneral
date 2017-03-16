@@ -34,16 +34,16 @@
 #define LEFT_MOTOR_PIN2 43
 #define LEFT_MOTOR_PWM 45
 
-#define MAX_MOTOR_POWER 500
+#define MAX_MOTOR_POWER 254
 
 // indexes for arrays
 #define LEFT 0
 #define RIGHT 1
 #define MOTOR_COUNT 2
 
-// right motor weaker than left
-#define STARTING_POWER_NEEDED_FOR_LEFT 297
-#define STARTING_POWER_NEEDED_FOR_RIGHT 445
+// one motor consistently weaker than the other? make its number higher here
+#define STARTING_POWER_NEEDED_FOR_LEFT 200
+#define STARTING_POWER_NEEDED_FOR_RIGHT 200
 
 #define WIDTH 500  // TODO: distance from left wheel to right wheel - in units that the encoder gives me
 #define TWELVE_INCH_DISTANCE 8000  // TODO: in units of the encoder
@@ -234,10 +234,10 @@ public:
     }
 
 
-    /** elapse the amount of time we want to take to travel twelve inches / segment count */
+    /** elapse the amount of time we want to take to travel twelve inches * amount / segment count */
     void passTime(const int& amount)
     {
-        long stopTime = millis() + SEGMENT_DURATION;
+        long stopTime = millis() + (SEGMENT_DURATION * amount);
         while (millis() < stopTime) ;
     }
 

@@ -131,16 +131,13 @@ void setup() {
   //send READY byte
   Serial.write('1');
 
-  analogWrite(motorInterface.pwm_pins[LEFT], 297);
 }
 
-void loop() {}
-
-void loopo() {
+void loop() {
 
   command = "";
   value = "";
-  int addTo = 0; //0 for command, 1 for value
+  String* addTo = &command;  // which information we are reading from serial
   //ButtonStates();
   if(Serial.available()){
     while (Serial.available() > 0)
@@ -150,16 +147,11 @@ void loopo() {
         break;
       }
       else if (readIn == '|') {
-        addTo = 1;
+        addTo = &value;  // value comes after the '|'
         continue;
       }
       //other stuff that is important
-      if (addTo == 0) {
-        command += readIn;
-      }
-      else if (addTo == 1) {
-        value += readIn;
-      }
+      (*addTo) += readIn;
     }
     //clear anything remaining in serial
     while (Serial.available() > 0) {
