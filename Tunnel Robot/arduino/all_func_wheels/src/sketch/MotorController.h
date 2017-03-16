@@ -84,7 +84,7 @@ public:  // protected
      *  update coordinates according to the distances that the encoders say that we traveled
      *  distance is array of distances that the encoders say that we traveled
      */
-    void calculateNewCoordinates(const double distance[])
+    void calculateNewCoordinates(const long distance[])
     {
         // http://math.stackexchange.com/questions/2183324/cartesian-coordinates-on-2-circles
 
@@ -95,7 +95,7 @@ public:  // protected
         RobotCoordinates utr;
 
         // angle of the distance around a circle that the robot traveled (radians)
-        double t = (distance[LEFT] - distance[RIGHT]) / WIDTH;
+        double t = (double)(distance[LEFT] - distance[RIGHT]) / WIDTH;
 
         double cos_t = cos(t);
         double sin_t = sin(t);
@@ -172,8 +172,6 @@ public:  // private
     uint8_t pwm_pins[MOTOR_COUNT];
     uint8_t motor_pins_1[MOTOR_COUNT];
     uint8_t motor_pins_2[MOTOR_COUNT];
-
-    volatile byte previousInterruptRead[MOTOR_COUNT];
 
     int direction[MOTOR_COUNT];  // 1 for forward, -1 for backward
 
@@ -274,9 +272,39 @@ public:
 
 #endif
 
+class GlobalCoordinates : public ClassThatKeepsCoordinatesFromDistances
+{
+public:
+    long distancesLeft[TRAVEL_SEGMENT_COUNT];
+    long distancesRight[TRAVEL_SEGMENT_COUNT];
+
+    void calculateForAll()
+    {
+        long distances[MOTOR_COUNT];
+        for (size_t i = 0; i < TRAVEL_SEGMENT_COUNT; ++i) {
+            distances[LEFT] = distancesLeft[i];
+            distances[RIGHT] = distancesRight[i];
+            calculateNewCoordinates(distances);
+        }
+#ifdef SIM
+        std::cout << coordinates.x[LEFT] << ' ' << coordinates.y[LEFT] << std::endl;
+#endif
+#ifndef SIM
+        Serial.print(coordinates.x[LEFT]);
+        Serial.print(' ');
+        Serial.println(coordinates.y[LEFT]);
+#endif
+    }
+
+    void save(const size_t& index, long distances[MOTOR_COUNT]) {
+        distancesLeft[index] = distances[LEFT];
+        distancesRight[index] = distances[RIGHT];
+    }
+};
+
 class MotorController : public ClassThatKeepsCoordinatesFromDistances
 {
-public:  // private in a different setting
+public:  // private
 
     int forwardPowerNeeded[MOTOR_COUNT];  // the power needed to travel twelve inches / number of segments
     int leftPowerNeeded[MOTOR_COUNT];
@@ -284,6 +312,8 @@ public:  // private in a different setting
 
     // inherited
     // RobotCoordinates coordinates;  // relative from where I started this movement
+
+    GlobalCoordinates global;  // for the whole grid, doesn't reset with each move
 
     int travelSegmentsRemaining;  // counts down
 
@@ -299,6 +329,8 @@ public:  // private in a different setting
         coordinates.y[RIGHT] = 0;
 
         travelSegmentsRemaining = TRAVEL_SEGMENT_COUNT;
+
+        global.calculateForAll();
 
         startEncoderValues[LEFT] = motorInterface->readEncoder(LEFT);
         startEncoderValues[RIGHT] = motorInterface->readEncoder(RIGHT);
@@ -375,9 +407,9 @@ public:
     {
         reset();
 
-        double previousEncoderReading[MOTOR_COUNT];
-        double newEncoderReading[MOTOR_COUNT];
-        double distancesTraveledThisTime[MOTOR_COUNT];
+        long previousEncoderReading[MOTOR_COUNT];
+        long newEncoderReading[MOTOR_COUNT];
+        long distancesTraveledThisTime[MOTOR_COUNT];
         double previousDistanceFromGoal[MOTOR_COUNT];
         double newDistanceFromGoal[MOTOR_COUNT];
         double progressMade[MOTOR_COUNT];
@@ -454,6 +486,8 @@ public:
 
             distancesTraveledThisTime[LEFT] = newEncoderReading[LEFT] - previousEncoderReading[LEFT];
             distancesTraveledThisTime[RIGHT] = newEncoderReading[RIGHT] - previousEncoderReading[RIGHT];
+
+            global.save((size_t)travelSegmentsRemaining, distancesTraveledThisTime);
 
             calculateNewCoordinates(distancesTraveledThisTime);
 
