@@ -34,6 +34,8 @@
 #define LEFT_MOTOR_PIN2 43
 #define LEFT_MOTOR_PWM 45
 
+#define MAX_MOTOR_POWER 500
+
 // indexes for arrays
 #define LEFT 0
 #define RIGHT 1
@@ -389,13 +391,15 @@ public:
 
             if (progressMade[LEFT])  // > 0
             {
-                powerNeeded[LEFT] = (int)round(progressNeedToMake[LEFT] * powerNeeded[LEFT] / progressMade[LEFT]);
+                powerNeeded[LEFT] = min(MAX_MOTOR_POWER, (int)round(progressNeedToMake[LEFT] * powerNeeded[LEFT]
+                                                                    / progressMade[LEFT]));
             }
             // else don't change it
-            
+
             if (progressMade[RIGHT])  // > 0
             {
-                powerNeeded[RIGHT] = (int)round(progressNeedToMake[RIGHT] * powerNeeded[RIGHT] / progressMade[RIGHT]);
+                powerNeeded[RIGHT] = min(MAX_MOTOR_POWER, (int)round(progressNeedToMake[RIGHT] * powerNeeded[RIGHT]
+                                                                     / progressMade[RIGHT]));
             }
             // else don't change it
 

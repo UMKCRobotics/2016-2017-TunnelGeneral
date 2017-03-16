@@ -130,11 +130,13 @@ void setup() {
   //Serial1.write("2f0\r");
   //send READY byte
   Serial.write('1');
-  
+
+  analogWrite(motorInterface.pwm_pins[LEFT], 297);
 }
 
+void loop() {}
 
-void loop() { 
+void loopo() {
 
   command = "";
   value = "";
