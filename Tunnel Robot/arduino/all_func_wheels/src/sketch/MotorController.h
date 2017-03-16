@@ -4,18 +4,23 @@
 
 #ifdef SIM
     #include <iostream>
-    #include <cmath>
-    #include <cstddef>
+    #include <cmath>      // sin cos atan2 sqrt
+    #include <cstddef>    // uint8_t
+    #include <cstdlib>    // abs
+    #include <algorithm>  // min
 
     #define cos std::cos
     #define sin std::sin
     #define atan2 std::atan2
+    #define MIN std::min
 
 #endif
 
 #ifndef SIM
     #include "Arduino.h"
     #include <math.h>
+
+    #define MIN min
 
 #endif
 
@@ -41,17 +46,28 @@
 #define RIGHT 1
 #define MOTOR_COUNT 2
 
+#define FORWARD 2
+
+// TODO: tune with average values in log
 // one motor consistently weaker than the other? make its number higher here
-#define STARTING_POWER_NEEDED_FOR_LEFT 150
-#define STARTING_POWER_NEEDED_FOR_RIGHT 150
+#define STARTING_FORWARD_POWER_NEEDED_FOR_LEFT 150
+#define STARTING_FORWARD_POWER_NEEDED_FOR_RIGHT 150
+#define STARTING_TURN_POWER_NEEDED_FOR_LEFT 120  // absolute values
+#define STARTING_TURN_POWER_NEEDED_FOR_RIGHT 120
 
 // TODO: these might be able to be tuned better
+// WIDTH tuned by making turns accurate 90 degrees
+// TWELVE_INCH_DISTANCE tuned by making forward accurate 12 inches
 #define WIDTH 1618  // distance from left wheel to right wheel - in units that the encoder gives me
 #define TWELVE_INCH_DISTANCE 2427  // in units of the encoder
 
-#define TRAVEL_DURATION 3000  // milliseconds for one grid move
 #define TRAVEL_SEGMENT_COUNT 30  // the number of segments to break the travel into
-const int SEGMENT_DURATION = TRAVEL_DURATION / TRAVEL_SEGMENT_COUNT;
+
+#define FORWARD_TRAVEL_DURATION 3000  // milliseconds for one grid move
+const int FORWARD_SEGMENT_DURATION = FORWARD_TRAVEL_DURATION / TRAVEL_SEGMENT_COUNT;
+
+#define TURN_TRAVEL_DURATION 2000  // milliseconds to turn
+const int TURN_SEGMENT_DURATION = TURN_TRAVEL_DURATION / TRAVEL_SEGMENT_COUNT;
 
 struct RobotCoordinates
 {
@@ -144,7 +160,7 @@ class MotorInterfaceBase
 public:
     virtual const long readEncoder(const size_t& which) const = 0;
     virtual void setMotorPower(const size_t& which, const int& howMuch) = 0;
-    virtual void passTime(const int& amount) = 0;
+    virtual void passTime(const size_t& movementType, const int& amount=1) = 0;
     virtual const char* report() const = 0;
 };
 
@@ -218,7 +234,7 @@ public:
     void setMotorPower(const size_t& which, const int& howMuch)
     {
         changeDirection(which, howMuch >= 0);
-        analogWrite(pwm_pins[which], howMuch);
+        analogWrite(pwm_pins[which], abs(howMuch));
     }
 
     void changeDirection(const size_t& which, bool forward) {
@@ -236,9 +252,17 @@ public:
 
 
     /** elapse the amount of time we want to take to travel twelve inches * amount / segment count */
-    void passTime(const int& amount)
+    void passTime(const size_t& movementType, const int& amount=1)
     {
-        long stopTime = millis() + (SEGMENT_DURATION * amount);
+        long stopTime;
+        if (movementType == FORWARD)
+        {
+            stopTime = millis() + (FORWARD_SEGMENT_DURATION * amount);
+        }
+        else  // turn
+        {
+            stopTime = millis() + (TURN_SEGMENT_DURATION * amount);
+        }
         while (millis() < stopTime) ;
     }
 
@@ -254,12 +278,14 @@ class MotorController : public ClassThatKeepsCoordinatesFromDistances
 {
 public:  // private in a different setting
 
-    int powerNeeded[MOTOR_COUNT];  // the power needed to travel twelve inches / number of segments
+    int forwardPowerNeeded[MOTOR_COUNT];  // the power needed to travel twelve inches / number of segments
+    int leftPowerNeeded[MOTOR_COUNT];
+    int rightPowerNeeded[MOTOR_COUNT];
 
     // inherited
     // RobotCoordinates coordinates;  // relative from where I started this movement
 
-    int travelTimeCount;  // counts down
+    int travelSegmentsRemaining;  // counts down
 
     MotorInterfaceBase* motorInterface;
     double startEncoderValues[MOTOR_COUNT];
@@ -272,20 +298,42 @@ public:  // private in a different setting
         coordinates.x[RIGHT] = WIDTH;
         coordinates.y[RIGHT] = 0;
 
-        travelTimeCount = TRAVEL_SEGMENT_COUNT;
+        travelSegmentsRemaining = TRAVEL_SEGMENT_COUNT;
 
         startEncoderValues[LEFT] = motorInterface->readEncoder(LEFT);
         startEncoderValues[RIGHT] = motorInterface->readEncoder(RIGHT);
     }
 
-    double distanceFromGoal(const size_t& which, const double& howMuchXMatters = 1)
+    /**
+     *  pythagorean theorem - distance from where we want wheel to end
+     *
+     *  whichMovement is LEFT, RIGHT, FORWARD
+     *  whichWheel is LEFT, RIGHT
+     *  howMuchXMatters is on a scale of 0 to 2 - default 1 is real pythagorean distance
+     */
+    double distanceFromGoal(const size_t& whichMovement, const size_t& whichWheel, const double& howMuchXMatters = 1)
     {
-        // pythagorean theorem distance from (0, twelve inches) or (width, twelve inches)
+        double xDifference;
+        double yDifference;
 
-        // howMuchXMatters on a scale of 0 to 2 - default 1 is real pythagorean distance
+        if (whichMovement == FORWARD)
+        {
+            xDifference = (whichWheel * WIDTH) - coordinates.x[whichWheel];
+            yDifference = TWELVE_INCH_DISTANCE - coordinates.y[whichWheel];
+        }
+        else  // LEFT or RIGHT
+        {
+            xDifference = WIDTH / 2 - coordinates.x[whichWheel];
+            if (whichMovement == LEFT)
+            {
+                yDifference = (WIDTH * (whichWheel - 0.5)) - coordinates.y[whichWheel];
+            }
+            else  // RIGHT
+            {
+                yDifference = (WIDTH * (0.5 - whichWheel)) - coordinates.y[whichWheel];
+            }
+        }
 
-        double xDifference = (which * WIDTH) - coordinates.x[which];
-        double yDifference = TWELVE_INCH_DISTANCE - coordinates.y[which];
         return sqrt(howMuchXMatters * xDifference*xDifference + (2-howMuchXMatters) * yDifference*yDifference);
     }
 
@@ -293,17 +341,17 @@ public:  // private in a different setting
      *  on a scale of 0 to 2, how much we care about x axis in movement
      *  movement is LEFT (0) or RIGHT (1) or anything else being forward
      */
-    double howMuchToCareAboutX(int movement)
+    double howMuchToCareAboutX(const size_t& movementType)
     {
-        if (movement == LEFT || movement == RIGHT)
+        if (movementType == LEFT || movementType == RIGHT)
         {
             // care more about y at the beginning and more about x later
             // from .33 to 1.67
-            return ((TRAVEL_SEGMENT_COUNT - travelTimeCount) * 1.3333 / TRAVEL_SEGMENT_COUNT) + 0.3333;
+            return ((TRAVEL_SEGMENT_COUNT - travelSegmentsRemaining) * 1.8 / TRAVEL_SEGMENT_COUNT) + 0.1;
         }
         // care more about x at the beginning of the move, less at the end
         // from 1.67 to 0
-        return 1.6667 * travelTimeCount / TRAVEL_SEGMENT_COUNT;
+        return 1.6667 * travelSegmentsRemaining / TRAVEL_SEGMENT_COUNT;
     }
 
 public:
@@ -312,28 +360,18 @@ public:
     {
         motorInterface = _motorInterface;
         reset();
-        powerNeeded[LEFT] = STARTING_POWER_NEEDED_FOR_LEFT;
-        powerNeeded[RIGHT] = STARTING_POWER_NEEDED_FOR_RIGHT;
+
+        forwardPowerNeeded[LEFT] = STARTING_FORWARD_POWER_NEEDED_FOR_LEFT;
+        forwardPowerNeeded[RIGHT] = STARTING_FORWARD_POWER_NEEDED_FOR_RIGHT;
+        leftPowerNeeded[LEFT] = 0 - STARTING_TURN_POWER_NEEDED_FOR_LEFT;
+        leftPowerNeeded[RIGHT] = STARTING_TURN_POWER_NEEDED_FOR_RIGHT;
+        rightPowerNeeded[LEFT] = STARTING_TURN_POWER_NEEDED_FOR_LEFT;
+        rightPowerNeeded[RIGHT] = 0 - STARTING_TURN_POWER_NEEDED_FOR_RIGHT;
+
     }
 
-    void turnLeft()
-    {
-#ifndef SIM
-        Serial.println("turn left function not implemented");
-
-#endif
-    }
-
-    void turnRight()
-    {
-#ifndef SIM
-        Serial.println("turn right function not implemented");
-
-#endif
-    }
-
-
-    void goForward()
+    /** movementType is FORWARD, LEFT, RIGHT */
+    void go(const size_t& movementType)
     {
         reset();
 
@@ -347,34 +385,69 @@ public:
 
         double howMuchWeCareAboutXThisTime;
 
-        while (travelTimeCount > 0)
-        {
-            
-            Serial.print("time left ");
-            Serial.print(travelTimeCount);
-            Serial.print(" input left ");
-            Serial.print(powerNeeded[LEFT]);
-            Serial.print(" right ");
-            Serial.print(powerNeeded[RIGHT]);
-            Serial.print('\n');
-            
+        long totalPower[MOTOR_COUNT];  // excluding first and last - for taking the average
+        totalPower[LEFT] = 0;
+        totalPower[RIGHT] = 0;
 
-            howMuchWeCareAboutXThisTime = howMuchToCareAboutX(2);
+        int* powerToGiveForThisSegment[MOTOR_COUNT];
+
+        switch (movementType)
+        {
+            case FORWARD:
+                powerToGiveForThisSegment[LEFT] = &forwardPowerNeeded[LEFT];
+                powerToGiveForThisSegment[RIGHT] = &forwardPowerNeeded[RIGHT];
+                break;
+            case LEFT:
+                powerToGiveForThisSegment[LEFT] = &leftPowerNeeded[LEFT];
+                powerToGiveForThisSegment[RIGHT] = &leftPowerNeeded[RIGHT];
+                break;
+            default:  // RIGHT
+                powerToGiveForThisSegment[LEFT] = &rightPowerNeeded[LEFT];
+                powerToGiveForThisSegment[RIGHT] = &rightPowerNeeded[RIGHT];
+                break;
+        }
+
+        while (travelSegmentsRemaining > 0)
+        {
+            // look for the average power over the segments - excluding first and last because they are often anomalies
+            if (travelSegmentsRemaining > 1 && travelSegmentsRemaining < (TRAVEL_SEGMENT_COUNT - 1))
+            {
+                totalPower[LEFT] += *(powerToGiveForThisSegment[LEFT]);
+                totalPower[RIGHT] += *(powerToGiveForThisSegment[RIGHT]);
+            }
+
+            howMuchWeCareAboutXThisTime = howMuchToCareAboutX(movementType);
+
+#ifdef SIM
+            std::cout << "time left: " << travelSegmentsRemaining
+                      << " input left " << *(powerToGiveForThisSegment[LEFT])
+                      << " right " << *(powerToGiveForThisSegment[RIGHT]) << std::endl;
+            std::cout << "caring about x: " << howMuchWeCareAboutXThisTime << std::endl;
+#endif
+            // TODO: disable this because serial communication can affect timing
+#ifndef SIM
+            Serial.print("time left ");
+            Serial.print(travelSegmentsRemaining);
+            Serial.print(" input left ");
+            Serial.print(*(powerToGiveForThisSegment[LEFT]));
+            Serial.print(" right ");
+            Serial.println(*(powerToGiveForThisSegment[RIGHT]));
+#endif
 
             previousEncoderReading[LEFT] = motorInterface->readEncoder(LEFT);
             previousEncoderReading[RIGHT] = motorInterface->readEncoder(RIGHT);
 
-            previousDistanceFromGoal[LEFT] = distanceFromGoal(LEFT, howMuchWeCareAboutXThisTime);
-            previousDistanceFromGoal[RIGHT] = distanceFromGoal(RIGHT, howMuchWeCareAboutXThisTime);
+            previousDistanceFromGoal[LEFT] = distanceFromGoal(movementType, LEFT, howMuchWeCareAboutXThisTime);
+            previousDistanceFromGoal[RIGHT] = distanceFromGoal(movementType, RIGHT, howMuchWeCareAboutXThisTime);
 
-            progressNeedToMake[LEFT] = previousDistanceFromGoal[LEFT] / travelTimeCount;
-            progressNeedToMake[RIGHT] = previousDistanceFromGoal[RIGHT] / travelTimeCount;
+            progressNeedToMake[LEFT] = previousDistanceFromGoal[LEFT] / travelSegmentsRemaining;
+            progressNeedToMake[RIGHT] = previousDistanceFromGoal[RIGHT] / travelSegmentsRemaining;
 
-            motorInterface->setMotorPower(LEFT, powerNeeded[LEFT]);
-            motorInterface->setMotorPower(RIGHT, powerNeeded[RIGHT]);
+            motorInterface->setMotorPower(LEFT, *(powerToGiveForThisSegment[LEFT]));
+            motorInterface->setMotorPower(RIGHT, *(powerToGiveForThisSegment[RIGHT]));
 
-            motorInterface->passTime(1);
-            --travelTimeCount;
+            motorInterface->passTime(movementType);
+            --travelSegmentsRemaining;
 
             newEncoderReading[LEFT] = motorInterface->readEncoder(LEFT);
             newEncoderReading[RIGHT] = motorInterface->readEncoder(RIGHT);
@@ -384,25 +457,33 @@ public:
 
             calculateNewCoordinates(distancesTraveledThisTime);
 
-            newDistanceFromGoal[LEFT] = distanceFromGoal(LEFT, howMuchWeCareAboutXThisTime);
-            newDistanceFromGoal[RIGHT] = distanceFromGoal(RIGHT, howMuchWeCareAboutXThisTime);
-
-            progressMade[LEFT] = previousDistanceFromGoal[LEFT] - newDistanceFromGoal[LEFT];
-            progressMade[RIGHT] = previousDistanceFromGoal[RIGHT] - newDistanceFromGoal[RIGHT];
-
-            if (progressMade[LEFT])  // > 0
+            // TODO: test whether we get better results if we do this the last time
+            if (travelSegmentsRemaining)  // don't do this the last time
             {
-                powerNeeded[LEFT] = min(MAX_MOTOR_POWER, (int)round(progressNeedToMake[LEFT] * powerNeeded[LEFT]
-                                                                    / progressMade[LEFT]));
-            }
-            // else don't change it
+                newDistanceFromGoal[LEFT] = distanceFromGoal(movementType, LEFT, howMuchWeCareAboutXThisTime);
+                newDistanceFromGoal[RIGHT] = distanceFromGoal(movementType, RIGHT, howMuchWeCareAboutXThisTime);
 
-            if (progressMade[RIGHT])  // > 0
-            {
-                powerNeeded[RIGHT] = min(MAX_MOTOR_POWER, (int)round(progressNeedToMake[RIGHT] * powerNeeded[RIGHT]
-                                                                     / progressMade[RIGHT]));
+                progressMade[LEFT] = previousDistanceFromGoal[LEFT] - newDistanceFromGoal[LEFT];
+                progressMade[RIGHT] = previousDistanceFromGoal[RIGHT] - newDistanceFromGoal[RIGHT];
+
+                if (progressMade[LEFT])  // > 0
+                {
+                    *(powerToGiveForThisSegment[LEFT]) = MIN(MAX_MOTOR_POWER,
+                                                             (int) round(progressNeedToMake[LEFT] *
+                                                                         *(powerToGiveForThisSegment[LEFT]) /
+                                                                         progressMade[LEFT]));
+                }
+                // else don't change it
+
+                if (progressMade[RIGHT])  // > 0
+                {
+                    *(powerToGiveForThisSegment[RIGHT]) = MIN(MAX_MOTOR_POWER,
+                                                              (int) round(progressNeedToMake[RIGHT] *
+                                                                          *(powerToGiveForThisSegment[RIGHT]) /
+                                                                          progressMade[RIGHT]));
+                }
+                // else don't change it
             }
-            // else don't change it
 
 #ifdef SIM
             std::cout << motorInterface->report() << std::endl;
@@ -412,6 +493,21 @@ public:
 
         motorInterface->setMotorPower(LEFT, 0);
         motorInterface->setMotorPower(RIGHT, 0);
+
+        // calculate average power
+        double average[MOTOR_COUNT];
+        average[LEFT] = (double)(totalPower[LEFT]) / (TRAVEL_SEGMENT_COUNT - 2);  // minus first and last
+        average[RIGHT] = (double)(totalPower[RIGHT]) / (TRAVEL_SEGMENT_COUNT - 2);
+#ifdef SIM
+        std::cout << "average left power: " << average[LEFT] << std::endl;
+        std::cout << "average right power: " << average[RIGHT] << std::endl;
+#endif
+#ifndef SIM
+        Serial.print("average left power: ");
+        Serial.println(average[LEFT]);
+        Serial.print("average right power: ");
+        Serial.println(average[RIGHT]);
+#endif
     }
 };
 

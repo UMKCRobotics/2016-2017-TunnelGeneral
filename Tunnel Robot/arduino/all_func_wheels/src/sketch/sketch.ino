@@ -186,19 +186,19 @@ String interpretCommand(String command, String value) {
 
   //check if motor stuff
   else if (command == "f") {
-    motorController.goForward();
+    motorController.go(FORWARD);
     returnString = "1";
     responseString = responseHeader;
     responseString += returnString;
   }
   else if (command == "l") {
-    motorController.turnLeft();
+    motorController.go(LEFT);
     returnString = "1";
     responseString = responseHeader;
     responseString += returnString;
   }
   else if (command == "r") {
-    motorController.turnRight();
+    motorController.go(RIGHT);
     returnString = "1";
     responseString = responseHeader;
     responseString += returnString;

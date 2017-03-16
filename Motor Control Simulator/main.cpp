@@ -42,10 +42,10 @@ public:
     }
 
     /** getter for distance traveled */
-    const int readEncoder(const size_t& which) const
+    const long readEncoder(const size_t& which) const
     {
         if (which < MOTOR_COUNT)
-            return (int)distanceTraveled[which];
+            return (long)distanceTraveled[which];
         throw;
     }
 
@@ -67,7 +67,7 @@ public:
     }
 
     /** elapse a given amount of time */
-    void passTime(const int& amount)
+    void passTime(const size_t& movementType, const int& amount=1)
     {
         double distanceTraveledInThisTime[MOTOR_COUNT];
         for(size_t i = 0; i < MOTOR_COUNT; ++i)
@@ -157,7 +157,7 @@ public:  // private
         totalMeasuredAboveTheOther[LEFT] = 0;
         totalMeasuredAboveTheOther[RIGHT] = 0;
 
-        travelTimeCount = TRAVEL_TIME;
+        travelTimeCount = TRAVEL_SEGMENT_COUNT;
 
         pid.reset();
 
@@ -252,7 +252,7 @@ void testController()
     MotorInterfaceSim motorInterfaceSim;
     MotorController motorController(&motorInterfaceSim);
 
-    motorController.goForward();
+    motorController.go(RIGHT);
 }
 
 int main()
