@@ -386,6 +386,19 @@ public:  // private
         return 1.6667 * travelSegmentsRemaining / TRAVEL_SEGMENT_COUNT;
     }
 
+    int motorSpeedLimit(const int& speed)
+    {
+        if (speed > MAX_MOTOR_POWER)
+        {
+            return MAX_MOTOR_POWER;
+        }
+        // else not above max
+        if (speed < 0-MAX_MOTOR_POWER)
+            return 0-MAX_MOTOR_POWER;
+        // else between
+        return speed;
+    }
+
 public:
     // constructor
     MotorController(MotorInterfaceBase* _motorInterface)
@@ -502,19 +515,19 @@ public:
 
                 if (progressMade[LEFT])  // > 0
                 {
-                    *(powerToGiveForThisSegment[LEFT]) = MIN(MAX_MOTOR_POWER,
-                                                             (int) round(progressNeedToMake[LEFT] *
-                                                                         *(powerToGiveForThisSegment[LEFT]) /
-                                                                         progressMade[LEFT]));
+                    *(powerToGiveForThisSegment[LEFT]) = motorSpeedLimit(
+                            (int) round(progressNeedToMake[LEFT] *
+                                        *(powerToGiveForThisSegment[LEFT]) /
+                                        progressMade[LEFT]));
                 }
                 // else don't change it
 
                 if (progressMade[RIGHT])  // > 0
                 {
-                    *(powerToGiveForThisSegment[RIGHT]) = MIN(MAX_MOTOR_POWER,
-                                                              (int) round(progressNeedToMake[RIGHT] *
-                                                                          *(powerToGiveForThisSegment[RIGHT]) /
-                                                                          progressMade[RIGHT]));
+                    *(powerToGiveForThisSegment[RIGHT]) = motorSpeedLimit(
+                            (int) round(progressNeedToMake[RIGHT] *
+                                        *(powerToGiveForThisSegment[RIGHT]) /
+                                        progressMade[RIGHT]));
                 }
                 // else don't change it
             }
