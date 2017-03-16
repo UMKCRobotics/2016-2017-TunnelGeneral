@@ -583,7 +583,7 @@ int getIRReading(int whichPin) {
 String getObstacleReport() {
   String report = "";
   //report format: right,front,left,back
-  const int threshold = 190;  // set this to something reasonable
+  const int threshold = 260;  // set this to something reasonable
   //check right
   Serial.print("IR_R1 giving ");
   Serial.print(getIRReading(IR_R1));
