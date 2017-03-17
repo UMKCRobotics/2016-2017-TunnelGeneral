@@ -568,14 +568,15 @@ public:
                                                                                   *(powerToGiveForThisSegment[RIGHT]));
 
                 // now set new values to give next segment
-                // *(powerToGiveForThisSegment[LEFT]) = proportionalCalculation[LEFT];
-                // *(powerToGiveForThisSegment[RIGHT]) = proportionalCalculation[RIGHT];
+                *(powerToGiveForThisSegment[LEFT]) = proportionalCalculation[LEFT];
+                *(powerToGiveForThisSegment[RIGHT]) = proportionalCalculation[RIGHT];
                 // TODO: try different weighted averaging schemes
+                /*
                 *(powerToGiveForThisSegment[LEFT]) = motorSpeedLimit((int)round(proportionalCalculation[LEFT] * .7 +
                                                                                 *(powerToGiveForThisSegment[LEFT]) * .3));
                 *(powerToGiveForThisSegment[RIGHT]) = motorSpeedLimit((int)round(proportionalCalculation[RIGHT] * .7 +
                                                                                  *(powerToGiveForThisSegment[RIGHT]) * .3));
-
+                */
             }
 
 #ifdef SIM
