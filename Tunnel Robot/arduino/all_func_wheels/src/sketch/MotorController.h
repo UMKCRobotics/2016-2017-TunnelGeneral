@@ -49,13 +49,6 @@
 
 #define FORWARD 2
 
-// TODO: tune with average values in log
-// one motor consistently weaker than the other? make its number higher here
-#define STARTING_FORWARD_POWER_NEEDED_FOR_LEFT 150
-#define STARTING_FORWARD_POWER_NEEDED_FOR_RIGHT 150
-#define STARTING_TURN_POWER_NEEDED_FOR_LEFT 120  // absolute values
-#define STARTING_TURN_POWER_NEEDED_FOR_RIGHT 120
-
 // TODO: these might be able to be tuned better
 // WIDTH tuned by making turns accurate 90 degrees
 // TWELVE_INCH_DISTANCE tuned by making forward accurate 12 inches
@@ -69,6 +62,18 @@ const int FORWARD_SEGMENT_DURATION = FORWARD_TRAVEL_DURATION / TRAVEL_SEGMENT_CO
 
 #define TURN_TRAVEL_DURATION 2000  // milliseconds to turn
 const int TURN_SEGMENT_DURATION = TURN_TRAVEL_DURATION / TRAVEL_SEGMENT_COUNT;
+
+// TODO: tune with average values in log
+// one motor consistently weaker than the other? make its number higher here
+// TODO: these should also be a function of duration - I'm tired of math
+const double STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT
+        = 150.0 / (TWELVE_INCH_DISTANCE / TRAVEL_SEGMENT_COUNT);
+const double STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT
+        = 150.0 / (TWELVE_INCH_DISTANCE / TRAVEL_SEGMENT_COUNT);
+const double STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_LEFT
+        = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT * 3 / 4;  // absolute values
+const double STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT
+        = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT * 3 / 4;
 
 struct RobotCoordinates
 {
@@ -307,8 +312,8 @@ class MotorController : public ClassThatKeepsCoordinatesFromDistances
 {
 public:  // private
 
-    int forwardPowerNeeded[MOTOR_COUNT];  // the power needed to travel twelve inches / number of segments
-    int turnPowerNeeded[MOTOR_COUNT];
+    double forwardPowerPerDistance[MOTOR_COUNT];  // the power needed to travel twelve inches / number of segments
+    double turnPowerPerDistance[MOTOR_COUNT];
 
     // inherited
     // RobotCoordinates coordinates;  // relative from where I started this movement
@@ -412,7 +417,6 @@ public:  // private
     }
 
     int calculateProportionalCalculation(const double& progressMade,
-                                         const double& progressNeededToMake,
                                          const int& gaveForThisSegment)
     {
         if (progressMade)  // > 0
@@ -444,10 +448,10 @@ public:
         motorInterface = _motorInterface;
         reset();
 
-        forwardPowerNeeded[LEFT] = STARTING_FORWARD_POWER_NEEDED_FOR_LEFT;
-        forwardPowerNeeded[RIGHT] = STARTING_FORWARD_POWER_NEEDED_FOR_RIGHT;
-        turnPowerNeeded[LEFT] = STARTING_TURN_POWER_NEEDED_FOR_LEFT;
-        turnPowerNeeded[RIGHT] = STARTING_TURN_POWER_NEEDED_FOR_RIGHT;
+        forwardPowerPerDistance[LEFT] = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT;
+        forwardPowerPerDistance[RIGHT] = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT;
+        turnPowerPerDistance[LEFT] = STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_LEFT;
+        turnPowerPerDistance[RIGHT] = STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT;
 
     }
 
@@ -463,6 +467,7 @@ public:
         double newDistanceFromGoal[MOTOR_COUNT];
         double progressMade[MOTOR_COUNT];
         double progressNeedToMake[MOTOR_COUNT];
+        int powerToGive[MOTOR_COUNT];
 
         double howMuchWeCareAboutXThisTime;
 
@@ -470,20 +475,20 @@ public:
         totalPower[LEFT] = 0;
         totalPower[RIGHT] = 0;
 
-        int* powerToGiveForThisSegment[MOTOR_COUNT];
+        double* powerPerDistanceForThisSegment[MOTOR_COUNT];
         int direction[MOTOR_COUNT];  // 1 or -1 depending on movementType
 
         if (movementType == FORWARD)
         {
-            powerToGiveForThisSegment[LEFT] = &forwardPowerNeeded[LEFT];
-            powerToGiveForThisSegment[RIGHT] = &forwardPowerNeeded[RIGHT];
+            powerPerDistanceForThisSegment[LEFT] = &forwardPowerPerDistance[LEFT];
+            powerPerDistanceForThisSegment[RIGHT] = &forwardPowerPerDistance[RIGHT];
             direction[LEFT] = 1;
             direction[RIGHT] = 1;
         }
         else  // turn
         {
-            powerToGiveForThisSegment[LEFT] = &turnPowerNeeded[LEFT];
-            powerToGiveForThisSegment[RIGHT] = &turnPowerNeeded[RIGHT];
+            powerPerDistanceForThisSegment[LEFT] = &turnPowerPerDistance[LEFT];
+            powerPerDistanceForThisSegment[RIGHT] = &turnPowerPerDistance[RIGHT];
             if (movementType == LEFT)
             {
                 direction[LEFT] = -1;
@@ -505,8 +510,8 @@ public:
             // look for the average power over the segments - excluding first and last because they are often anomalies
             if (travelSegmentsRemaining > 1 && travelSegmentsRemaining < (TRAVEL_SEGMENT_COUNT - 1))
             {
-                totalPower[LEFT] += *(powerToGiveForThisSegment[LEFT]);
-                totalPower[RIGHT] += *(powerToGiveForThisSegment[RIGHT]);
+                totalPower[LEFT] += *(powerPerDistanceForThisSegment[LEFT]);
+                totalPower[RIGHT] += *(powerPerDistanceForThisSegment[RIGHT]);
             }
 
             howMuchWeCareAboutXThisTime = howMuchToCareAboutX(movementType);
@@ -533,11 +538,17 @@ public:
             previousDistanceFromGoal[LEFT] = distanceFromGoal(movementType, LEFT, howMuchWeCareAboutXThisTime);
             previousDistanceFromGoal[RIGHT] = distanceFromGoal(movementType, RIGHT, howMuchWeCareAboutXThisTime);
 
+            // distance I need to go this segment
             progressNeedToMake[LEFT] = previousDistanceFromGoal[LEFT] / travelSegmentsRemaining;
             progressNeedToMake[RIGHT] = previousDistanceFromGoal[RIGHT] / travelSegmentsRemaining;
 
-            motorInterface->setMotorPower(LEFT, *(powerToGiveForThisSegment[LEFT]), direction[LEFT]);
-            motorInterface->setMotorPower(RIGHT, *(powerToGiveForThisSegment[RIGHT]), direction[RIGHT]);
+            powerToGive[LEFT] = motorSpeedLimit((int)round(progressNeedToMake[LEFT] *
+                                                           *(powerPerDistanceForThisSegment[LEFT])));
+            powerToGive[RIGHT] = motorSpeedLimit((int)round(progressNeedToMake[RIGHT] *
+                                                            *(powerPerDistanceForThisSegment[RIGHT])));
+
+            motorInterface->setMotorPower(LEFT, powerToGive[LEFT], direction[LEFT]);
+            motorInterface->setMotorPower(RIGHT, powerToGive[RIGHT], direction[RIGHT]);
 
             motorInterface->passTime(movementType);
             --travelSegmentsRemaining;
@@ -566,7 +577,7 @@ public:
                 progressMade[RIGHT] = previousDistanceFromGoal[RIGHT] - newDistanceFromGoal[RIGHT];
 
                 // calculate what I will need to do in the future
-                int proportionalCalculation[MOTOR_COUNT];  // what I should have done this last time
+                double proportionalCalculation[MOTOR_COUNT];  // what I should have done this last time
 
                 proportionalCalculation[LEFT] = calculateProportionalCalculation(progressMade[LEFT],
                                                                                  progressNeedToMake[LEFT],
@@ -574,6 +585,9 @@ public:
                 proportionalCalculation[RIGHT] = calculateProportionalCalculation(progressMade[RIGHT],
                                                                                   progressNeedToMake[RIGHT],
                                                                                   *(powerToGiveForThisSegment[RIGHT]));
+
+                *(powerPerDistanceForThisSegment[LEFT]) = proportionalCalculation[LEFT] / progressMade[LEFT];
+                *(powerPerDistanceForThisSegment[RIGHT]) = proportionalCalculation[RIGHT] / progressMade[RIGHT];
 
                 // now set new values to give next segment
                 *(powerToGiveForThisSegment[LEFT]) = proportionalCalculation[LEFT];
