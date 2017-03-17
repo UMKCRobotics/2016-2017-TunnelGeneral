@@ -579,8 +579,8 @@ public:
 #endif
         }
 
-        motorInterface->setMotorPower(LEFT, 0);
-        motorInterface->setMotorPower(RIGHT, 0);
+        motorInterface->setMotorPower(LEFT, 0, 1);
+        motorInterface->setMotorPower(RIGHT, 0, 1);
 
         // calculate average power
         double average[MOTOR_COUNT];
