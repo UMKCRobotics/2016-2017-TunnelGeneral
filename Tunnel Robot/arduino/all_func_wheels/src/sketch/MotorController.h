@@ -416,28 +416,18 @@ public:  // private
         return 0;
     }
 
-    int calculateProportionalCalculation(const double& progressMade,
-                                         const int& gaveForThisSegment)
+    /** power per distance that I found I make */
+    double proportionalPowerPerDistance(const double &progressMade,
+                                        const int &powerGaveForThisSegment,
+                                        const double &previousPowerPerDistance)
     {
         if (progressMade)  // > 0
         {
-            return motorSpeedLimit((int) round(progressNeededToMake *
-                                               gaveForThisSegment /
-                                               progressMade));
+            return powerGaveForThisSegment / progressMade;
         }
         else  // didn't move
         {
-            // did I need to move
-            if (progressNeededToMake > 20)
-            {
-                return MIN_MOTOR_POWER;
-            }
-            // else didn't need to move
-            {
-                // trying to move such a small distance (encoder units) isn't worth it
-                // (it will probably overshoot and go too far)
-                return 0;
-            }
+            return previousPowerPerDistance;
         }
     }
 
@@ -518,8 +508,8 @@ public:
 
 #ifdef SIM
             std::cout << "time left: " << travelSegmentsRemaining
-                      << " input left " << *(powerToGiveForThisSegment[LEFT])
-                      << " right " << *(powerToGiveForThisSegment[RIGHT]) << std::endl;
+                      << " input left " << *(powerPerDistanceForThisSegment[LEFT])
+                      << " right " << *(powerPerDistanceForThisSegment[RIGHT]) << std::endl;
             std::cout << "caring about x: " << howMuchWeCareAboutXThisTime << std::endl;
 #endif
             // TODO: disable this because serial communication can affect timing
@@ -529,9 +519,9 @@ public:
             Serial.print("time left ");
             Serial.print(travelSegmentsRemaining);
             Serial.print(" input left ");
-            Serial.print(*(powerToGiveForThisSegment[LEFT]));
+            Serial.print(*(powerPerDistanceForThisSegment[LEFT]));
             Serial.print(" right ");
-            Serial.println(*(powerToGiveForThisSegment[RIGHT]));
+            Serial.println(*(powerPerDistanceForThisSegment[RIGHT]));
              */
 #endif
 
@@ -576,27 +566,23 @@ public:
                 progressMade[LEFT] = previousDistanceFromGoal[LEFT] - newDistanceFromGoal[LEFT];
                 progressMade[RIGHT] = previousDistanceFromGoal[RIGHT] - newDistanceFromGoal[RIGHT];
 
-                // calculate what I will need to do in the future
-                double proportionalCalculation[MOTOR_COUNT];  // what I should have done this last time
+                // what power per distance did I have this time
+                double previousPowerPerDistance[MOTOR_COUNT];  // power per distance used this last time
 
-                proportionalCalculation[LEFT] = calculateProportionalCalculation(progressMade[LEFT],
-                                                                                 progressNeedToMake[LEFT],
-                                                                                 *(powerToGiveForThisSegment[LEFT]));
-                proportionalCalculation[RIGHT] = calculateProportionalCalculation(progressMade[RIGHT],
-                                                                                  progressNeedToMake[RIGHT],
-                                                                                  *(powerToGiveForThisSegment[RIGHT]));
+                previousPowerPerDistance[LEFT] = *(powerPerDistanceForThisSegment[LEFT]);
+                previousPowerPerDistance[RIGHT] = *(powerPerDistanceForThisSegment[RIGHT]);
 
-                *(powerPerDistanceForThisSegment[LEFT]) = proportionalCalculation[LEFT] / progressMade[LEFT];
-                *(powerPerDistanceForThisSegment[RIGHT]) = proportionalCalculation[RIGHT] / progressMade[RIGHT];
-
-                // now set new values to give next segment
-                *(powerToGiveForThisSegment[LEFT]) = proportionalCalculation[LEFT];
-                *(powerToGiveForThisSegment[RIGHT]) = proportionalCalculation[RIGHT];
+                *(powerPerDistanceForThisSegment[LEFT]) = proportionalPowerPerDistance(progressMade[LEFT],
+                                                                                       powerToGive[LEFT],
+                                                                                       *(powerPerDistanceForThisSegment[LEFT]));
+                *(powerPerDistanceForThisSegment[RIGHT]) = proportionalPowerPerDistance(progressMade[RIGHT],
+                                                                                        powerToGive[RIGHT],
+                                                                                        *(powerPerDistanceForThisSegment[RIGHT]));
                 // TODO: try different weighted averaging schemes
                 /*
-                *(powerToGiveForThisSegment[LEFT]) = motorSpeedLimit((int)round(proportionalCalculation[LEFT] * .7 +
+                *(powerToGiveForThisSegment[LEFT]) = motorSpeedLimit((int)round(previousPowerPerDistance[LEFT] * .7 +
                                                                                 *(powerToGiveForThisSegment[LEFT]) * .3));
-                *(powerToGiveForThisSegment[RIGHT]) = motorSpeedLimit((int)round(proportionalCalculation[RIGHT] * .7 +
+                *(powerToGiveForThisSegment[RIGHT]) = motorSpeedLimit((int)round(previousPowerPerDistance[RIGHT] * .7 +
                                                                                  *(powerToGiveForThisSegment[RIGHT]) * .3));
                 */
             }
