@@ -20,6 +20,8 @@ MotorController motorController(&motorInterface);
 volatile long lastLeftInterrupt;
 volatile long lastRightInterrupt;
 
+long startTime;
+long timeBeforeStop;
 
 void setup() {
   //start serial
@@ -32,26 +34,28 @@ void setup() {
   //send READY byte
   Serial.write('1');
 
-  long startTime = millis();
+  startTime = millis();
 
-  motorInterface.setMotorPower(LEFT, 150, 1);
-  motorInterface.setMotorPower(RIGHT, 150, 1);
+  motorInterface.setMotorPower(LEFT, 200, 1);
+  motorInterface.setMotorPower(RIGHT, 200, 1);
 
   delay(2000);
 
-  long timeBeforeStop = millis();
+  timeBeforeStop = millis();
 
   motorInterface.setMotorPower(LEFT, 0, 1);
     motorInterface.setMotorPower(RIGHT, 0, 1);
 }
 
+long lastPrintedLeft;
+long lastPrintedRight;
+
 void loop()
 {
-    long lastPrintedLeft;
-    long lastPrintedRight;
 
     if (lastLeftInterrupt != lastPrintedLeft || lastRightInterrupt != lastPrintedRight)
     {
+        Serial.println(timeBeforeStop);
         Serial.print(lastLeftInterrupt);
         Serial.print(' ');
         Serial.println(lastRightInterrupt);
@@ -180,7 +184,6 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
       //stop motor1
       if (duration1 >= value1) {
         analogWrite(RIGHT_MOTOR_PWM, 0);
-        digitalWrite(LED1,LOW);
         on1 = false;
       }
       //if motor should be running
@@ -201,7 +204,6 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
       //stop motor2
       if (duration2 >= value2) {
         analogWrite(LEFT_MOTOR_PWM, 0);
-        digitalWrite(LED2,LOW);
         on2 = false;
       }
       //if motor should be running
