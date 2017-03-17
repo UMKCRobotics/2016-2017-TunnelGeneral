@@ -39,6 +39,7 @@
 #define LEFT_MOTOR_PIN2 43
 #define LEFT_MOTOR_PWM 45
 
+#define MIN_MOTOR_POWER 90
 #define MAX_MOTOR_POWER 254
 
 // indexes for arrays
@@ -159,7 +160,7 @@ class MotorInterfaceBase
 {
 public:
     virtual const long readEncoder(const size_t& which) const = 0;
-    virtual void setMotorPower(const size_t& which, const int& howMuch) = 0;
+    virtual void setMotorPower(const size_t& which, const int& howMuch, const int& direction) = 0;
     virtual void passTime(const size_t& movementType, const int& amount=1) = 0;
     virtual const char* report() const = 0;
 };
@@ -229,9 +230,9 @@ public:
         return odometers[which];
     }
 
-    void setMotorPower(const size_t& which, const int& howMuch)
+    void setMotorPower(const size_t& which, const int& howMuch, const int& direction)
     {
-        changeDirection(which, howMuch >= 0);
+        changeDirection(which, direction > 0);
         analogWrite(pwm_pins[which], abs(howMuch));
     }
 
@@ -307,8 +308,7 @@ class MotorController : public ClassThatKeepsCoordinatesFromDistances
 public:  // private
 
     int forwardPowerNeeded[MOTOR_COUNT];  // the power needed to travel twelve inches / number of segments
-    int leftPowerNeeded[MOTOR_COUNT];
-    int rightPowerNeeded[MOTOR_COUNT];
+    int turnPowerNeeded[MOTOR_COUNT];
 
     // inherited
     // RobotCoordinates coordinates;  // relative from where I started this movement
@@ -338,6 +338,7 @@ public:  // private
 
     /**
      *  pythagorean theorem - distance from where we want wheel to end
+     *  if it has gone too far, it returns 0 (not negative)
      *
      *  whichMovement is LEFT, RIGHT, FORWARD
      *  whichWheel is LEFT, RIGHT
@@ -352,10 +353,17 @@ public:  // private
         {
             xDifference = (whichWheel * WIDTH) - coordinates.x[whichWheel];
             yDifference = TWELVE_INCH_DISTANCE - coordinates.y[whichWheel];
+            if (yDifference < 0)  // too far
+                return 0;
         }
         else  // LEFT or RIGHT
         {
             xDifference = WIDTH / 2 - coordinates.x[whichWheel];
+            if (xDifference < 0 && whichWheel == LEFT)  // too far
+                return 0;
+            if (xDifference > 0 && whichWheel == RIGHT)  // too far
+                return 0;
+
             if (whichMovement == LEFT)
             {
                 yDifference = (WIDTH * (whichWheel - 0.5)) - coordinates.y[whichWheel];
@@ -392,11 +400,41 @@ public:  // private
         {
             return MAX_MOTOR_POWER;
         }
-        // else not above max
-        if (speed < 0-MAX_MOTOR_POWER)
-            return 0-MAX_MOTOR_POWER;
-        // else between
-        return speed;
+        if (speed > MIN_MOTOR_POWER)
+        {
+            return speed;
+        }
+        if (speed > (MIN_MOTOR_POWER / 2))
+        {
+            return MIN_MOTOR_POWER;
+        }
+        return 0;
+    }
+
+    int calculateProportionalCalculation(const double& progressMade,
+                                         const double& progressNeededToMake,
+                                         const int& gaveForThisSegment)
+    {
+        if (progressMade)  // > 0
+        {
+            return motorSpeedLimit((int) round(progressNeededToMake *
+                                               gaveForThisSegment /
+                                               progressMade));
+        }
+        else  // didn't move
+        {
+            // did I need to move
+            if (progressNeededToMake > 20)
+            {
+                return MIN_MOTOR_POWER;
+            }
+            // else didn't need to move
+            {
+                // trying to move such a small distance (encoder units) isn't worth it
+                // (it will probably overshoot and go too far)
+                return 0;
+            }
+        }
     }
 
 public:
@@ -408,10 +446,8 @@ public:
 
         forwardPowerNeeded[LEFT] = STARTING_FORWARD_POWER_NEEDED_FOR_LEFT;
         forwardPowerNeeded[RIGHT] = STARTING_FORWARD_POWER_NEEDED_FOR_RIGHT;
-        leftPowerNeeded[LEFT] = 0 - STARTING_TURN_POWER_NEEDED_FOR_LEFT;
-        leftPowerNeeded[RIGHT] = STARTING_TURN_POWER_NEEDED_FOR_RIGHT;
-        rightPowerNeeded[LEFT] = STARTING_TURN_POWER_NEEDED_FOR_LEFT;
-        rightPowerNeeded[RIGHT] = 0 - STARTING_TURN_POWER_NEEDED_FOR_RIGHT;
+        turnPowerNeeded[LEFT] = STARTING_TURN_POWER_NEEDED_FOR_LEFT;
+        turnPowerNeeded[RIGHT] = STARTING_TURN_POWER_NEEDED_FOR_RIGHT;
 
     }
 
@@ -435,21 +471,29 @@ public:
         totalPower[RIGHT] = 0;
 
         int* powerToGiveForThisSegment[MOTOR_COUNT];
+        int direction[MOTOR_COUNT];  // 1 or -1 depending on movementType
 
-        switch (movementType)
+        if (movementType == FORWARD)
         {
-            case FORWARD:
-                powerToGiveForThisSegment[LEFT] = &forwardPowerNeeded[LEFT];
-                powerToGiveForThisSegment[RIGHT] = &forwardPowerNeeded[RIGHT];
-                break;
-            case LEFT:
-                powerToGiveForThisSegment[LEFT] = &leftPowerNeeded[LEFT];
-                powerToGiveForThisSegment[RIGHT] = &leftPowerNeeded[RIGHT];
-                break;
-            default:  // RIGHT
-                powerToGiveForThisSegment[LEFT] = &rightPowerNeeded[LEFT];
-                powerToGiveForThisSegment[RIGHT] = &rightPowerNeeded[RIGHT];
-                break;
+            powerToGiveForThisSegment[LEFT] = &forwardPowerNeeded[LEFT];
+            powerToGiveForThisSegment[RIGHT] = &forwardPowerNeeded[RIGHT];
+            direction[LEFT] = 1;
+            direction[RIGHT] = 1;
+        }
+        else  // turn
+        {
+            powerToGiveForThisSegment[LEFT] = &turnPowerNeeded[LEFT];
+            powerToGiveForThisSegment[RIGHT] = &turnPowerNeeded[RIGHT];
+            if (movementType == LEFT)
+            {
+                direction[LEFT] = -1;
+                direction[RIGHT] = 1;
+            }
+            else  // RIGHT
+            {
+                direction[LEFT] = 1;
+                direction[RIGHT] = -1;
+            }
         }
 
         while (travelSegmentsRemaining > 0)
@@ -488,8 +532,8 @@ public:
             progressNeedToMake[LEFT] = previousDistanceFromGoal[LEFT] / travelSegmentsRemaining;
             progressNeedToMake[RIGHT] = previousDistanceFromGoal[RIGHT] / travelSegmentsRemaining;
 
-            motorInterface->setMotorPower(LEFT, *(powerToGiveForThisSegment[LEFT]));
-            motorInterface->setMotorPower(RIGHT, *(powerToGiveForThisSegment[RIGHT]));
+            motorInterface->setMotorPower(LEFT, *(powerToGiveForThisSegment[LEFT]), direction[LEFT]);
+            motorInterface->setMotorPower(RIGHT, *(powerToGiveForThisSegment[RIGHT]), direction[RIGHT]);
 
             motorInterface->passTime(movementType);
             --travelSegmentsRemaining;
@@ -513,23 +557,20 @@ public:
                 progressMade[LEFT] = previousDistanceFromGoal[LEFT] - newDistanceFromGoal[LEFT];
                 progressMade[RIGHT] = previousDistanceFromGoal[RIGHT] - newDistanceFromGoal[RIGHT];
 
-                if (progressMade[LEFT])  // > 0
-                {
-                    *(powerToGiveForThisSegment[LEFT]) = motorSpeedLimit(
-                            (int) round(progressNeedToMake[LEFT] *
-                                        *(powerToGiveForThisSegment[LEFT]) /
-                                        progressMade[LEFT]));
-                }
-                // else don't change it
+                // calculate what I will need to do in the future
+                int proportionalCalculation[MOTOR_COUNT];  // what I should have done this last time
 
-                if (progressMade[RIGHT])  // > 0
-                {
-                    *(powerToGiveForThisSegment[RIGHT]) = motorSpeedLimit(
-                            (int) round(progressNeedToMake[RIGHT] *
-                                        *(powerToGiveForThisSegment[RIGHT]) /
-                                        progressMade[RIGHT]));
-                }
-                // else don't change it
+                proportionalCalculation[LEFT] = calculateProportionalCalculation(progressMade[LEFT],
+                                                                                 progressNeedToMake[LEFT],
+                                                                                 *(powerToGiveForThisSegment[LEFT]));
+                proportionalCalculation[RIGHT] = calculateProportionalCalculation(progressMade[RIGHT],
+                                                                                  progressNeedToMake[RIGHT],
+                                                                                  *(powerToGiveForThisSegment[RIGHT]));
+
+                // now set new values to give next segment
+                *(powerToGiveForThisSegment[LEFT]) = proportionalCalculation[LEFT];
+                *(powerToGiveForThisSegment[RIGHT]) = proportionalCalculation[RIGHT];
+
             }
 
 #ifdef SIM
