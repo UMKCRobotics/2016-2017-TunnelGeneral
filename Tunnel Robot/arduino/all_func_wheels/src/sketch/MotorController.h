@@ -59,7 +59,7 @@
 // TODO: these might be able to be tuned better
 // WIDTH tuned by making turns accurate 90 degrees
 // TWELVE_INCH_DISTANCE tuned by making forward accurate 12 inches
-#define WIDTH 1618  // distance from left wheel to right wheel - in units that the encoder gives me
+#define WIDTH 1617  // distance from left wheel to right wheel - in units that the encoder gives me
 #define TWELVE_INCH_DISTANCE 2427  // in units of the encoder
 
 #define TRAVEL_SEGMENT_COUNT 30  // the number of segments to break the travel into
@@ -568,8 +568,13 @@ public:
                                                                                   *(powerToGiveForThisSegment[RIGHT]));
 
                 // now set new values to give next segment
-                *(powerToGiveForThisSegment[LEFT]) = proportionalCalculation[LEFT];
-                *(powerToGiveForThisSegment[RIGHT]) = proportionalCalculation[RIGHT];
+                // *(powerToGiveForThisSegment[LEFT]) = proportionalCalculation[LEFT];
+                // *(powerToGiveForThisSegment[RIGHT]) = proportionalCalculation[RIGHT];
+                // TODO: try different weighted averaging schemes
+                *(powerToGiveForThisSegment[LEFT]) = motorSpeedLimit((int)round(proportionalCalculation[LEFT] * .7 +
+                                                                                *(powerToGiveForThisSegment[LEFT]) * .3));
+                *(powerToGiveForThisSegment[RIGHT]) = motorSpeedLimit((int)round(proportionalCalculation[RIGHT] * .7 +
+                                                                                 *(powerToGiveForThisSegment[RIGHT]) * .3));
 
             }
 
