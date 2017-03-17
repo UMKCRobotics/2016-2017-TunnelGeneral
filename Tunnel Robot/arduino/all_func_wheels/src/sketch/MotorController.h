@@ -496,6 +496,10 @@ public:
             }
         }
 
+        // get encoder readings before we start moving
+        previousEncoderReading[LEFT] = motorInterface->readEncoder(LEFT);
+        previousEncoderReading[RIGHT] = motorInterface->readEncoder(RIGHT);
+
         while (travelSegmentsRemaining > 0)
         {
             // look for the average power over the segments - excluding first and last because they are often anomalies
@@ -516,16 +520,15 @@ public:
             // TODO: disable this because serial communication can affect timing
             // TODO: don't remove if we haven't done a lot of testing without it
 #ifndef SIM
+            /*
             Serial.print("time left ");
             Serial.print(travelSegmentsRemaining);
             Serial.print(" input left ");
             Serial.print(*(powerToGiveForThisSegment[LEFT]));
             Serial.print(" right ");
             Serial.println(*(powerToGiveForThisSegment[RIGHT]));
+             */
 #endif
-
-            previousEncoderReading[LEFT] = motorInterface->readEncoder(LEFT);
-            previousEncoderReading[RIGHT] = motorInterface->readEncoder(RIGHT);
 
             previousDistanceFromGoal[LEFT] = distanceFromGoal(movementType, LEFT, howMuchWeCareAboutXThisTime);
             previousDistanceFromGoal[RIGHT] = distanceFromGoal(movementType, RIGHT, howMuchWeCareAboutXThisTime);
@@ -544,6 +547,10 @@ public:
 
             distancesTraveledThisTime[LEFT] = newEncoderReading[LEFT] - previousEncoderReading[LEFT];
             distancesTraveledThisTime[RIGHT] = newEncoderReading[RIGHT] - previousEncoderReading[RIGHT];
+
+            // next time's previousEncoderReading is this time's newEncoderReading
+            previousEncoderReading[LEFT] = newEncoderReading[LEFT];
+            previousEncoderReading[RIGHT] = newEncoderReading[RIGHT];
 
             global.save((size_t)travelSegmentsRemaining, distancesTraveledThisTime);
 
