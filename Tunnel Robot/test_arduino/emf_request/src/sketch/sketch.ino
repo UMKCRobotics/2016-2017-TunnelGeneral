@@ -1,4 +1,4 @@
-#define EMF1 A1
+#define EMF1 A0
 #define EMF2 A3
 //int EMF3 = A3;
 
@@ -42,6 +42,7 @@ String interpretCommand(String cmd) {
     resp = "d";
     resp += String(getEMFreading(EMF1));
   }
+  /*
   else if (cmd_char == '2') {
     resp = "d";
     resp += String(getEMFreading(EMF2));
@@ -49,6 +50,7 @@ String interpretCommand(String cmd) {
   else {
     resp = "n";
   }
+  */
   return resp;
 }
 
