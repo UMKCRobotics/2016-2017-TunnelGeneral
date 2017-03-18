@@ -52,28 +52,28 @@
 // TODO: these might be able to be tuned better
 // WIDTH tuned by making turns accurate 90 degrees
 // TWELVE_INCH_DISTANCE tuned by making forward accurate 12 inches
-#define WIDTH 1617  // distance from left wheel to right wheel - in units that the encoder gives me
+#define WIDTH 1440  // distance from left wheel to right wheel - in units that the encoder gives me
 #define TWELVE_INCH_DISTANCE 2427  // in units of the encoder
 
-#define TRAVEL_SEGMENT_COUNT 30  // the number of segments to break the travel into
+#define TRAVEL_SEGMENT_COUNT 10  // the number of segments to break the travel into
 
 #define FORWARD_TRAVEL_DURATION 3000  // milliseconds for one grid move
 const int FORWARD_SEGMENT_DURATION = FORWARD_TRAVEL_DURATION / TRAVEL_SEGMENT_COUNT;
 
-#define TURN_TRAVEL_DURATION 2000  // milliseconds to turn
+#define TURN_TRAVEL_DURATION 1500  // milliseconds to turn
 const int TURN_SEGMENT_DURATION = TURN_TRAVEL_DURATION / TRAVEL_SEGMENT_COUNT;
 
 // TODO: tune with average values in log
 // one motor consistently weaker than the other? make its number higher here
 // TODO: these should also be a function of duration - I'm tired of math
 const double STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT
-        = 150.0 / (TWELVE_INCH_DISTANCE / TRAVEL_SEGMENT_COUNT);
+        = 1.36;
 const double STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT
-        = 150.0 / (TWELVE_INCH_DISTANCE / TRAVEL_SEGMENT_COUNT);
+        = 1.36;
 const double STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_LEFT
-        = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT * 4 / 3;  // absolute values
+        = 1.8;  // absolute values
 const double STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT
-        = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT * 4 / 3;
+        = 1.8;
 
 struct RobotCoordinates
 {
@@ -471,6 +471,8 @@ public:
         {
             powerPerDistanceForThisMovement[LEFT] = &forwardPowerPerDistance[LEFT];
             powerPerDistanceForThisMovement[RIGHT] = &forwardPowerPerDistance[RIGHT];
+            *(powerPerDistanceForThisMovement[LEFT]) = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT;
+            *(powerPerDistanceForThisMovement[RIGHT]) = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT;
             direction[LEFT] = 1;
             direction[RIGHT] = 1;
         }
@@ -478,6 +480,8 @@ public:
         {
             powerPerDistanceForThisMovement[LEFT] = &turnPowerPerDistance[LEFT];
             powerPerDistanceForThisMovement[RIGHT] = &turnPowerPerDistance[RIGHT];
+            *(powerPerDistanceForThisMovement[LEFT]) = STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_LEFT;
+            *(powerPerDistanceForThisMovement[RIGHT]) = STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT;
             if (movementType == LEFT)
             {
                 direction[LEFT] = -1;
@@ -528,19 +532,19 @@ public:
             previousDistanceFromGoal[LEFT] = distanceFromGoal(movementType, LEFT, howMuchWeCareAboutXThisTime);
             previousDistanceFromGoal[RIGHT] = distanceFromGoal(movementType, RIGHT, howMuchWeCareAboutXThisTime);
 
-            Serial.print("I see distance from my goal ");
+            /*Serial.print("I see distance from my goal ");
             Serial.print(previousDistanceFromGoal[LEFT]);
             Serial.print(' ');
-            Serial.println(previousDistanceFromGoal[RIGHT]);
+            Serial.println(previousDistanceFromGoal[RIGHT]);*/
 
             // distance I need to go this segment
             progressNeedToMake[LEFT] = previousDistanceFromGoal[LEFT] / travelSegmentsRemaining;
             progressNeedToMake[RIGHT] = previousDistanceFromGoal[RIGHT] / travelSegmentsRemaining;
 
-            Serial.print("In this segment I want to go ");
+            /*Serial.print("In this segment I want to go ");
             Serial.print(progressNeedToMake[LEFT]);
             Serial.print(' ');
-            Serial.println(progressNeedToMake[RIGHT]);
+            Serial.println(progressNeedToMake[RIGHT]);*/
             
             powerToGive[LEFT] = motorSpeedLimit((int)round(progressNeedToMake[LEFT] *
                                                            *(powerPerDistanceForThisMovement[LEFT])));
@@ -564,10 +568,10 @@ public:
             distancesTraveledThisTime[LEFT] = newEncoderReading[LEFT] - previousEncoderReading[LEFT];
             distancesTraveledThisTime[RIGHT] = newEncoderReading[RIGHT] - previousEncoderReading[RIGHT];
 
-            Serial.print("This is the distance each wheel traveled ");
+            /*Serial.print("This is the distance each wheel traveled ");
             Serial.print(distancesTraveledThisTime[LEFT]);
             Serial.print(' ');
-            Serial.println(distancesTraveledThisTime[RIGHT]);
+            Serial.println(distancesTraveledThisTime[RIGHT]);*/
             
             // next time's previousEncoderReading is this time's newEncoderReading
             previousEncoderReading[LEFT] = newEncoderReading[LEFT];
