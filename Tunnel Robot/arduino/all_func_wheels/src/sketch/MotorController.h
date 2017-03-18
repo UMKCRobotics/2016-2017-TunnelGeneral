@@ -71,9 +71,9 @@ const double STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT
 const double STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT
         = 150.0 / (TWELVE_INCH_DISTANCE / TRAVEL_SEGMENT_COUNT);
 const double STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_LEFT
-        = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT * 3 / 4;  // absolute values
+        = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT * 4 / 3;  // absolute values
 const double STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT
-        = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT * 3 / 4;
+        = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT * 4 / 3;
 
 struct RobotCoordinates
 {
@@ -409,21 +409,20 @@ public:  // private
         {
             return speed;
         }
-        if (speed > (MIN_MOTOR_POWER / 2))
-        {
-            return MIN_MOTOR_POWER;
-        }
-        return 0;
+        return MIN_MOTOR_POWER;
     }
 
-    /** power per distance that I found I make */
+    /**
+     *  power per distance that I found I make
+     *  with exponential weighted average
+     */
     double proportionalPowerPerDistance(const double &progressMade,
                                         const int &powerGaveForThisSegment,
                                         const double &previousPowerPerDistance)
     {
         if (progressMade)  // > 0
         {
-            return powerGaveForThisSegment / progressMade;
+            return ((powerGaveForThisSegment / progressMade) + previousPowerPerDistance) / 2;
         }
         else  // didn't move
         {
@@ -566,25 +565,26 @@ public:
                 progressMade[LEFT] = previousDistanceFromGoal[LEFT] - newDistanceFromGoal[LEFT];
                 progressMade[RIGHT] = previousDistanceFromGoal[RIGHT] - newDistanceFromGoal[RIGHT];
 
-                // what power per distance did I have this time
+                /*
                 double previousPowerPerDistance[MOTOR_COUNT];  // power per distance used this last time
 
                 previousPowerPerDistance[LEFT] = *(powerPerDistanceForThisMovement[LEFT]);
                 previousPowerPerDistance[RIGHT] = *(powerPerDistanceForThisMovement[RIGHT]);
+                 */
 
-                *(powerPerDistanceForThisMovement[LEFT]) = proportionalPowerPerDistance(progressMade[LEFT],
-                                                                                       powerToGive[LEFT],
-                                                                                       *(powerPerDistanceForThisMovement[LEFT]));
-                *(powerPerDistanceForThisMovement[RIGHT]) = proportionalPowerPerDistance(progressMade[RIGHT],
-                                                                                        powerToGive[RIGHT],
-                                                                                        *(powerPerDistanceForThisMovement[RIGHT]));
+                // update power per distance with information gathered
+                if (travelSegmentsRemaining != TRAVEL_SEGMENT_COUNT - 1)  // not first time because motors take time to start
+                {
+                    *(powerPerDistanceForThisMovement[LEFT])
+                            = proportionalPowerPerDistance(progressMade[LEFT],
+                                                           powerToGive[LEFT],
+                                                           *(powerPerDistanceForThisMovement[LEFT]));
+                    *(powerPerDistanceForThisMovement[RIGHT])
+                            = proportionalPowerPerDistance(progressMade[RIGHT],
+                                                           powerToGive[RIGHT],
+                                                           *(powerPerDistanceForThisMovement[RIGHT]));
+                }
                 // TODO: try different weighted averaging schemes
-                /*
-                *(powerToGiveForThisSegment[LEFT]) = motorSpeedLimit((int)round(previousPowerPerDistance[LEFT] * .7 +
-                                                                                *(powerToGiveForThisSegment[LEFT]) * .3));
-                *(powerToGiveForThisSegment[RIGHT]) = motorSpeedLimit((int)round(previousPowerPerDistance[RIGHT] * .7 +
-                                                                                 *(powerToGiveForThisSegment[RIGHT]) * .3));
-                */
             }
 
 #ifdef SIM
