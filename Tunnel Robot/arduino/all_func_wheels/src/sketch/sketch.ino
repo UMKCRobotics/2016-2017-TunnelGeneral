@@ -29,35 +29,19 @@
 #define DATA 7     // serial pin
 #define LATCH 9   // register clock pin
 #define CLK 8     // serial clock pin
-//encoder pins (PINAx MUST be interrupts)
-//NOTE: MOTOR1 is RIGHT, MOTOR2 is LEFT
-#define RIGHT_ENCODER_INTERRUPT_PIN 2  // "pin A"
-#define RIGHT_ENCODER_DIGITAL_PIN 4  // "pin B"
-#define LEFT_ENCODER_INTERRUPT_PIN 3
-#define LEFT_ENCODER_DIGITAL_PIN 5
 //tapper pins
 #define TAPPER_ENCODER_INTERRUPT_PIN 20
 #define TAPPER_ENCODER_DIGITAL_PIN 26
-volatile byte rightEncoderIntPinLast;
-volatile byte leftEncoderIntPinLast;
 volatile byte tapperEncoderIntPinLast;
-volatile int rightEncoderOdometer;
-volatile int leftEncoderOdometer;
 volatile int tapperEncoderOdometer;
-volatile boolean rightEncoderDirection;
-volatile boolean leftEncoderDirection;
 volatile boolean tapperEncoderDirection;
-//motor control
-#define MOT1_PIN1 40
-#define MOT1_PIN2 42
-#define MOT1_PWM 44
-#define MOT2_PIN1 41
-#define MOT2_PIN2 43
-#define MOT2_PWM 45
 //tapper control
 #define MOT3_PIN1 50
 #define MOT3_PIN2 48
 #define MOT3_PWM 46
+
+/** movement motor pins are defined in MotorController.h */
+
 //motor modulus
 int motorMod = 0;
 
@@ -85,8 +69,10 @@ String command; //used to store command from serial
 String value; //used to store value from serial
 String response; //used to store response to main program
 
-// this not used yet - it has goForward that can be used
-MotorInterface motorInterface(&leftEncoderOdometer, &rightEncoderOdometer, MOT2_PWM, MOT1_PWM);
+void leftEncoderInterruptFunction();
+void rightEncoderInterruptFunction();
+
+MotorInterface motorInterface(leftEncoderInterruptFunction, rightEncoderInterruptFunction);
 MotorController motorController(&motorInterface);
 
 void ButtonStates(){
@@ -133,8 +119,10 @@ void setup() {
   //start serial1 to motor controller
   //Serial1.begin(115200);
   //initialize encoders/motors
-  EncoderInit();
-  MotorInit();
+  motorInterface.encoderInit();
+  motorInterface.motorInit();
+  tapperEncoderInit();
+  tapperMotorInit();
   ButtonInit();
   //SwitchInit();
   //Serial1.write("1f0\r");
@@ -142,15 +130,14 @@ void setup() {
   //Serial1.write("2f0\r");
   //send READY byte
   Serial.write('1');
-  
+
 }
 
-
-void loop() { 
+void loop() {
 
   command = "";
   value = "";
-  int addTo = 0; //0 for command, 1 for value
+  String* addTo = &command;  // which information we are reading from serial
   //ButtonStates();
   if(Serial.available()){
     while (Serial.available() > 0)
@@ -160,16 +147,11 @@ void loop() {
         break;
       }
       else if (readIn == '|') {
-        addTo = 1;
+        addTo = &value;  // value comes after the '|'
         continue;
       }
       //other stuff that is important
-      if (addTo == 0) {
-        command += readIn;
-      }
-      else if (addTo == 1) {
-        value += readIn;
-      }
+      (*addTo) += readIn;
     }
     //clear anything remaining in serial
     while (Serial.available() > 0) {
@@ -194,27 +176,30 @@ String interpretCommand(String command, String value) {
   if (command == "<") {
     returnString = "";
     responseString = responseHeader;
-    responseString += leftEncoderOdometer;
+    responseString += motorInterface.readEncoder(LEFT);
   }
   else if (command == ">") {
     returnString = "";
     responseString = responseHeader;
-    responseString += rightEncoderOdometer;
+    responseString += motorInterface.readEncoder(RIGHT);
   }
 
   //check if motor stuff
   else if (command == "f") {
-    returnString = goForward();
+    motorController.go(FORWARD);
+    returnString = "1";
     responseString = responseHeader;
     responseString += returnString;
   }
   else if (command == "l") {
-    returnString = turnLeft();
+    motorController.go(LEFT);
+    returnString = "1";
     responseString = responseHeader;
     responseString += returnString;
   }
   else if (command == "r") {
-    returnString = turnRight();
+    motorController.go(RIGHT);
+    returnString = "1";
     responseString = responseHeader;
     responseString += returnString;
   }
@@ -298,22 +283,12 @@ String interpretCommand(String command, String value) {
 }
 
 //START OF MOTOR STUFF
-void EncoderInit() {
-  pinMode(RIGHT_ENCODER_DIGITAL_PIN, INPUT);
-  pinMode(LEFT_ENCODER_DIGITAL_PIN, INPUT);
+void tapperEncoderInit() {
   pinMode(TAPPER_ENCODER_DIGITAL_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(RIGHT_ENCODER_INTERRUPT_PIN), rightEncoderInterruptFunction, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(LEFT_ENCODER_INTERRUPT_PIN), leftEncoderInterruptFunction, CHANGE);
   attachInterrupt(digitalPinToInterrupt(TAPPER_ENCODER_INTERRUPT_PIN), tapperEncoderInterruptFunction, CHANGE);
 }
 
-void MotorInit() {
-  pinMode(MOT1_PIN1,OUTPUT);
-  pinMode(MOT1_PIN2,OUTPUT);
-  pinMode(MOT1_PWM,OUTPUT);
-  pinMode(MOT2_PIN1,OUTPUT);
-  pinMode(MOT2_PIN2,OUTPUT);
-  pinMode(MOT2_PWM,OUTPUT);
+void tapperMotorInit() {
   pinMode(MOT3_PIN1,OUTPUT);
   pinMode(MOT3_PIN2,OUTPUT);
   pinMode(MOT3_PWM,OUTPUT);
@@ -325,57 +300,11 @@ void SwitchInit() {
 }
 
 void rightEncoderInterruptFunction() {
-  int Lstate = digitalRead(RIGHT_ENCODER_INTERRUPT_PIN);
-  if((rightEncoderIntPinLast == LOW) && Lstate == HIGH)
-  {
-    int val = digitalRead(RIGHT_ENCODER_DIGITAL_PIN);
-    if (val == LOW && rightEncoderDirection)
-    {
-      rightEncoderDirection = false;  // reverse
-    }
-    else if (val == HIGH && !rightEncoderDirection)
-    {
-      rightEncoderDirection = true;  // forward
-    }
-  }
-  rightEncoderIntPinLast = Lstate;
-  if (!rightEncoderDirection) rightEncoderOdometer++;
-  else rightEncoderOdometer--;
+  motorInterface.encoderInterrupt(RIGHT);
 }
 
 void leftEncoderInterruptFunction() {
-  // Serial.println("left encoder interrupt function called");
-  int Lstate = digitalRead(LEFT_ENCODER_INTERRUPT_PIN);
-  // Serial.print("read interrupt pin: ");
-  // Serial.println(Lstate);
-  if((leftEncoderIntPinLast == LOW) && Lstate == HIGH)
-  {
-    // Serial.println("last int pin read was low, now high");
-    int val = digitalRead(LEFT_ENCODER_DIGITAL_PIN);
-    // Serial.print("read digital pin: ");
-    // Serial.println(val);
-    if (val == LOW && leftEncoderDirection)
-    {
-      // Serial.println("just switched to reverse");
-      leftEncoderDirection = false;  // reverse
-    }
-    else if (val == HIGH && !leftEncoderDirection)
-    {
-      // Serial.println("just switch to forward");
-      leftEncoderDirection = true;  // forward
-    }
-  }
-  leftEncoderIntPinLast = Lstate;
-  if (!leftEncoderDirection)
-  {
-      // Serial.println("direction currently false (reverse?)");
-      leftEncoderOdometer++;
-  }
-  else
-  {
-      // Serial.println("direction currently true (forward?)");
-      leftEncoderOdometer--;
-  }
+  motorInterface.encoderInterrupt(LEFT);
 }
 
 void tapperEncoderInterruptFunction() {
@@ -395,27 +324,6 @@ void tapperEncoderInterruptFunction() {
   tapperEncoderIntPinLast = Lstate;
   if (!tapperEncoderDirection) tapperEncoderOdometer++;
   else tapperEncoderOdometer--;
-}
-
-
-void changeDirection(int pwm1, int pwm2) {
-  if (pwm1 >= 0) {
-    digitalWrite(MOT1_PIN1,HIGH);
-    digitalWrite(MOT1_PIN2,LOW);
-  }
-  else {
-    digitalWrite(MOT1_PIN1,LOW);
-    digitalWrite(MOT1_PIN2,HIGH);
-  }
-  //set direction for motor 2
-  if (pwm2 >= 0) {
-    digitalWrite(MOT2_PIN1,HIGH);
-    digitalWrite(MOT2_PIN2,LOW);
-  }
-  else {
-    digitalWrite(MOT2_PIN1,LOW);
-    digitalWrite(MOT2_PIN2,HIGH);
-  }
 }
 
 void setTapperDirection(int pwm3) {
@@ -447,7 +355,8 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
   
   //run motors
   //set direction for motor 1
-  changeDirection(pwm1,pwm2);
+  motorInterface.changeDirection(RIGHT, pwm1>=0);
+  motorInterface.changeDirection(LEFT, pwm2>=0);
   
   //if either motor should be running
   while (on1 || on2) {
@@ -455,14 +364,14 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
     if (on1) {
       //stop motor1
       if (duration1 >= value1) {
-        analogWrite(MOT1_PWM,0);
+        analogWrite(RIGHT_MOTOR_PWM, 0);
         digitalWrite(LED1,LOW);
         on1 = false;
       }
       //if motor should be running
       else if (duration1 <= value1) {
         //Serial.println(rightEncoderOdometer);
-        analogWrite(MOT1_PWM,150);
+        analogWrite(RIGHT_MOTOR_PWM, 150);
         //updates durration if need be
         //changes initial start condition
         if(goT1 == 0)
@@ -476,14 +385,14 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
     if (on2) {
       //stop motor2
       if (duration2 >= value2) {
-        analogWrite(MOT2_PWM,0);
+        analogWrite(LEFT_MOTOR_PWM, 0);
         digitalWrite(LED2,LOW);
         on2 = false;
       }
       //if motor should be running
       else if (duration2 <= value2) {
         //Serial.println(leftEncoderOdometer);
-        analogWrite(MOT2_PWM,150);
+        analogWrite(LEFT_MOTOR_PWM, 150);
         //updates durration if need be
         //changes initial start condition
         if(goT2 == 0)
@@ -495,8 +404,8 @@ int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
     }
   }
   //stop both motors now, promptly
-  analogWrite(MOT1_PWM,0);
-  analogWrite(MOT2_PWM,0);
+  analogWrite(RIGHT_MOTOR_PWM, 0);
+  analogWrite(LEFT_MOTOR_PWM, 0);
 
   return 1;
 }
@@ -535,59 +444,6 @@ int runTappingTill(int value3, int pwm3) {
   return 1;
 }
 
-int runCalibrationWithSwitches(int value1, int value2, int pwm1, int pwm2, int backCount) {
-  unsigned long lastGoCommand = millis();
-  rightEncoderOdometer = 0;
-  leftEncoderOdometer = 0;
-  bool on1 = true;
-  bool on2 = true;
-  int slowDiff = 400;
-  int slowPWM = 125;
-  int slowestPWM = 85;
-  //run motors
-  //set direction for motor 1
-  changeDirection(pwm1,pwm2);
-  //set PWM for both with as little latency in between
-  analogWrite(MOT1_PWM,abs(pwm1));
-  digitalWrite(LED1,HIGH);
-  analogWrite(MOT2_PWM,abs(pwm2));
-  digitalWrite(LED2,HIGH);
-  //do stuff while not done
-  while (on1 || on2) {
-    //if StopButton has been pressed, stop moving!
-    if (StopState == '1') {
-      digitalWrite(LED1,LOW);
-      digitalWrite(LED2,LOW);
-      break;
-    }
-    //get state of switches
-    int switch1 = digitalRead(SWITCH_FR);
-    int switch2 = digitalRead(SWITCH_FL);
-    //determine what to do with info
-    if (on1) {
-      if (switch1 == LOW) {
-        analogWrite(MOT1_PWM,0);
-        digitalWrite(LED1,LOW);
-        on1 = false;
-      }
-    }
-    if (on2) {
-      if (switch2 == LOW) {
-        analogWrite(MOT2_PWM,0);
-        digitalWrite(LED2,LOW);
-        on2 = false;
-      }
-    }
-  }
-  //stop both motors now, promptly
-  analogWrite(MOT1_PWM,0);
-  analogWrite(MOT2_PWM,0);
-  //now go backwards to be in center of block
-  runMotorsTill(backCount,backCount-25,-145,-145);
-
-  return 1;
-}
-
 int expMovingAvg(int newVal,int oldVal, double prefVal) {
   return int(newVal*prefVal + oldVal*(1.0-prefVal));
 }
@@ -619,8 +475,8 @@ int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
     }
     if (readingDiff < setPoint+tolerance && readingDiff > setPoint-tolerance) {
       countGood += 1;
-      analogWrite(MOT1_PWM,0);
-      analogWrite(MOT2_PWM,0);
+      analogWrite(RIGHT_MOTOR_PWM,0);
+      analogWrite(LEFT_MOTOR_PWM,0);
     }
     else {
       countGood = 0;
@@ -629,9 +485,10 @@ int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
       //change equation for actualPWM to be reasonable with pidVals
       actualPWM = min(minPWM + abs(pidVal),maxPWM);
       //change directions appropriately, and use actualPWM
-      changeDirection(pidVal,-pidVal);
-      analogWrite(MOT1_PWM,actualPWM);
-      analogWrite(MOT2_PWM,actualPWM);
+      motorInterface.changeDirection(RIGHT, pidVal >= 0);
+      motorInterface.changeDirection(LEFT, (0-pidVal) >= 0);
+      analogWrite(RIGHT_MOTOR_PWM,actualPWM);
+      analogWrite(LEFT_MOTOR_PWM,actualPWM);
     }
     //get new measurements now
     reading1 = expMovingAvg(analogRead(pin1),lastReading1,readingPref);
@@ -645,37 +502,24 @@ int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
     delay(10);
   }
   //stop both motors
-  analogWrite(MOT1_PWM,0);
-  analogWrite(MOT2_PWM,0);
+  analogWrite(RIGHT_MOTOR_PWM,0);
+  analogWrite(LEFT_MOTOR_PWM,0);
 
   return 1;
 }
 
-String goForward() {
-  Serial.print("before move left encoder odometer: ");
-  Serial.println(leftEncoderOdometer);
-  Serial.print("before move right encoder odometer: ");
-  Serial.println(rightEncoderOdometer);
+
+
+String goForwardOld() {
   //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
   int forwCount = 2512;
   int actualDur = runMotorsTill(forwCount,forwCount+20,251,255);
-  Serial.print("after move left encoder odometer: ");
-  Serial.println(leftEncoderOdometer);
-  Serial.print("after move right encoder odometer: ");
-  Serial.println(rightEncoderOdometer);
   return "1";
 }
 
 String performTap() {
   int encCount = 1725;
   int actualDur = runTappingTill(encCount,255);
-  return "1";
-}
-
-String calibrateWithSwitches() {
-  int calCount = 2000;
-  int backCount = 500;
-  int actualDur = runCalibrationWithSwitches(calCount-25,calCount+25,141,145,backCount);
   return "1";
 }
 
@@ -739,7 +583,7 @@ int getIRReading(int whichPin) {
 String getObstacleReport() {
   String report = "";
   //report format: right,front,left,back
-  const int threshold = 190;  // set this to something reasonable
+  const int threshold = 260;  // set this to something reasonable
   //check right
   Serial.print("IR_R1 giving ");
   Serial.print(getIRReading(IR_R1));
