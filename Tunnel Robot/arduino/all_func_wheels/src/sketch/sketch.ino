@@ -25,6 +25,8 @@
 
 //8x8 pin
 #define PINM 6
+#define MATRIX_READY_LIGHT_PIXEL 56
+
 //7 segment pins
 #define DATA 7     // serial pin
 #define LATCH 9   // register clock pin
@@ -664,22 +666,31 @@ void clearDigit() {
 }
 
 void setReadyLight() {
-  matrix.setPixelColor(56, 255, 255, 0);
-  matrix.show();
+    matrix.setPixelColor(MATRIX_READY_LIGHT_PIXEL, 255, 255, 0);  // TODO: confirm this color is yellow
+    matrix.show();
 }
 
 void setToOT(int index) {
-  matrix.setPixelColor(index, 255, 0, 0);
-  matrix.show();
+    if (index != MATRIX_READY_LIGHT_PIXEL)  // don't change the ready light
+    {
+        matrix.setPixelColor(index, 255, 0, 0);
+        matrix.show();
+    }
 }
 
 void setToDE(int index) {
-  matrix.setPixelColor(index, 0, 255, 255);
-  matrix.show();
+    if (index != MATRIX_READY_LIGHT_PIXEL)  // don't change the ready light
+    {
+        matrix.setPixelColor(index, 0, 255, 255);  // TODO: confirm this color is blue
+        matrix.show();
+    }
 }
 
 void setToEM(int index) {
-  matrix.setPixelColor(index, 0, 0, 0);
-  matrix.show();
+    if (index != MATRIX_READY_LIGHT_PIXEL)  // don't change the ready light
+    {
+        matrix.setPixelColor(index, 0, 0, 0);
+        matrix.show();
+    }
 }
 //END OF DISPLAY STUFF
