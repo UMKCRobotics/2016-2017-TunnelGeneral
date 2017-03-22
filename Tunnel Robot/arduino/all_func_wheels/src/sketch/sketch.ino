@@ -26,11 +26,19 @@
 //8x8 pin
 #define PINM 6
 #define MATRIX_READY_LIGHT_PIXEL 56
+//matrix setup
+Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PINM,
+                                               NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+                                               NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
+                                               NEO_GRB           + NEO_KHZ800);
 
 //7 segment pins
 #define DATA 7     // serial pin
 #define LATCH 9   // register clock pin
 #define CLK 8     // serial clock pin
+//digit representations
+int digits[10] = {190,6,218,206,102,236,252,134,254,238};
+
 //tapper pins
 #define TAPPER_ENCODER_INTERRUPT_PIN 20
 #define TAPPER_ENCODER_DIGITAL_PIN 26
@@ -44,28 +52,13 @@ volatile boolean tapperEncoderDirection;
 
 /** movement motor pins are defined in MotorController.h */
 
-//motor modulus
-int motorMod = 0;
-
-// just so we don't need to delete all the switch code
-#define SWITCH_FR 1
-#define SWITCH_FL 1
-
 //button pins
 #define GoPin 18 //Go button - INTERRUPT PIN
 #define StopPin 19 //Stop button - INTERRUPT PIN
 //button states
 volatile char GoState = '0';
 volatile char StopState = '0';  // should these be initialized in the setup function instead of here?
-//sensor thresholds
-int EMF_thresh = 45;
-//digit representations
-int digits[10] = {190,6,218,206,102,236,252,134,254,238};
-//matrix setup
-Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PINM,
-  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
-  NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
-  NEO_GRB           + NEO_KHZ800);
+
 //parsing inputs
 String command; //used to store command from serial
 String value; //used to store value from serial
@@ -77,6 +70,15 @@ void rightEncoderInterruptFunction();
 MotorInterface motorInterface(leftEncoderInterruptFunction, rightEncoderInterruptFunction);
 MotorController motorController(&motorInterface);
 
+void rightEncoderInterruptFunction() {
+    motorInterface.encoderInterrupt(RIGHT);
+}
+
+void leftEncoderInterruptFunction() {
+    motorInterface.encoderInterrupt(LEFT);
+}
+
+// not used
 void ButtonStates(){
   int button1 = digitalRead(GoPin);
   int button2 = digitalRead(StopPin);
@@ -87,6 +89,7 @@ void ButtonStates(){
     StopState = '0';
 }
 
+// interrupt functions
 void GoButtonFunc() {
   int buttonStateGo = digitalRead(GoPin);
   if (buttonStateGo == HIGH) {
@@ -239,6 +242,7 @@ String interpretCommand(String command, String value) {
       responseString += StopState;
     }
   }
+
   //check if 8x8 stuff
   else if (command == "R") {
     setReadyLight();
@@ -256,6 +260,7 @@ String interpretCommand(String command, String value) {
     setToEM(value.toInt());
     responseString = responseHeader;
   }
+
   //check if sensor stuff
   else if (command == "e") {
     responseString = responseHeader;
@@ -272,7 +277,7 @@ String interpretCommand(String command, String value) {
     }
     else if (value == "F") {
       responseString = responseHeader;
-      //lol good luck with that
+      // check for foam
     }
   }
 
@@ -281,10 +286,9 @@ String interpretCommand(String command, String value) {
     return "n";
   }
   return responseString;
-
 }
 
-//START OF MOTOR STUFF
+//START OF TAPPER MOTOR STUFF
 void tapperEncoderInit() {
   pinMode(TAPPER_ENCODER_DIGITAL_PIN, INPUT);
   attachInterrupt(digitalPinToInterrupt(TAPPER_ENCODER_INTERRUPT_PIN), tapperEncoderInterruptFunction, CHANGE);
@@ -294,19 +298,6 @@ void tapperMotorInit() {
   pinMode(MOT3_PIN1,OUTPUT);
   pinMode(MOT3_PIN2,OUTPUT);
   pinMode(MOT3_PWM,OUTPUT);
-}
-
-void SwitchInit() {
-  pinMode(SWITCH_FR,INPUT);
-  pinMode(SWITCH_FL,INPUT);
-}
-
-void rightEncoderInterruptFunction() {
-  motorInterface.encoderInterrupt(RIGHT);
-}
-
-void leftEncoderInterruptFunction() {
-  motorInterface.encoderInterrupt(LEFT);
 }
 
 void tapperEncoderInterruptFunction() {
@@ -339,80 +330,6 @@ void setTapperDirection(int pwm3) {
   }
 }
 
-//ACTUAL implementation for direct motor controller
-int runMotorsTill(int value1, int value2, int pwm1, int pwm2) {
-  //Serial.print("value1 = ");
-  //Serial.print(value1);
-  //Serial.print("value2 = ");
-  //Serial.print(value2);
-  //used for running time calculations
-  unsigned long goT1 = 0;
-  unsigned long goT2 = 0;
-  //amount of running time
-  int duration1 = 0;
-  int duration2 = 0;
-  //used to tell if motor should still be running
-  bool on1 = true;
-  bool on2 = true;
-  
-  //run motors
-  //set direction for motor 1
-  motorInterface.changeDirection(RIGHT, pwm1>=0);
-  motorInterface.changeDirection(LEFT, pwm2>=0);
-  
-  //if either motor should be running
-  while (on1 || on2) {
-    //if motor1 should be running
-    if (on1) {
-      //stop motor1
-      if (duration1 >= value1) {
-        analogWrite(RIGHT_MOTOR_PWM, 0);
-        digitalWrite(LED1,LOW);
-        on1 = false;
-      }
-      //if motor should be running
-      else if (duration1 <= value1) {
-        //Serial.println(rightEncoderOdometer);
-        analogWrite(RIGHT_MOTOR_PWM, 150);
-        //updates durration if need be
-        //changes initial start condition
-        if(goT1 == 0)
-          goT1 = millis();
-        else
-          duration1 += (int) millis() - goT1;
-          goT1 = millis();
-      }
-    }
-    //if motor2 should be running
-    if (on2) {
-      //stop motor2
-      if (duration2 >= value2) {
-        analogWrite(LEFT_MOTOR_PWM, 0);
-        digitalWrite(LED2,LOW);
-        on2 = false;
-      }
-      //if motor should be running
-      else if (duration2 <= value2) {
-        //Serial.println(leftEncoderOdometer);
-        analogWrite(LEFT_MOTOR_PWM, 150);
-        //updates durration if need be
-        //changes initial start condition
-        if(goT2 == 0)
-          goT2 = millis();
-        else
-            duration2 += (int) millis() - goT2;
-          goT2 = millis();
-      }
-    }
-  }
-  //stop both motors now, promptly
-  analogWrite(RIGHT_MOTOR_PWM, 0);
-  analogWrite(LEFT_MOTOR_PWM, 0);
-
-  return 1;
-}
-
-//ACTUAL implementation for tapping
 int runTappingTill(int value3, int pwm3) {
   tapperEncoderOdometer = 0;
   bool on3 = true;
@@ -510,15 +427,6 @@ int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
   return 1;
 }
 
-
-
-String goForwardOld() {
-  //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
-  int forwCount = 2512;
-  int actualDur = runMotorsTill(forwCount,forwCount+20,251,255);
-  return "1";
-}
-
 String performTap() {
   int encCount = 1725;
   int actualDur = runTappingTill(encCount,255);
@@ -546,28 +454,6 @@ String calibrateWithIR(String side) {
     return "BAD";
   return "1";
 }
-
-String goBackward() {
-  //int actualDur = runMotorsTill(1500,1500,"1f9\r","2f9\r");
-  int backCount = 2512;
-  int actualDur = runMotorsTill(backCount,backCount,-255,-255);
-  return "1";
-}
-
-//actually turns right
-String turnLeft() {
-  //int actualDur = runMotorsTill(1050,1050,"1f9\r","2r9\r");
-  int actualDur = runMotorsTill(1500,1500,255,-255);
-  return "1";
-}
-
-//actually turns left
-String turnRight() {
-  //int actualDur = runMotorsTill(1100,1100,"1r9\r","2f9\r");
-  int actualDur = runMotorsTill(1500,1500,-255,255);
-  return "1";
-}
-//END OF MOTOR STUFF
 
 //START OF SENSOR STUFF
 String getObstacleReport() {
