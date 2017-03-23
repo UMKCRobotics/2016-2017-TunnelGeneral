@@ -296,10 +296,12 @@ public:
         std::cout << coordinates.x[LEFT] << ' ' << coordinates.y[LEFT] << std::endl;
 #endif
 #ifndef SIM
+#ifdef VERBOSE
         Serial.print(coordinates.x[LEFT]);
         Serial.print(' ');
         Serial.println(coordinates.y[LEFT]);
-#endif
+#endif  // VERBOSE
+#endif  // not SIM
     }
 
     void save(const size_t& index, long distances[MOTOR_COUNT]) {
@@ -518,7 +520,7 @@ public:
             // TODO: disable this because serial communication can affect timing
             // TODO: don't remove if we haven't done a lot of testing without it
 #ifndef SIM
-            
+#ifdef VERBOSE
             Serial.print("time left ");
             Serial.println(travelSegmentsRemaining);
             /*
@@ -527,7 +529,8 @@ public:
             Serial.print(" right ");
             Serial.println(*(powerPerDistanceForThisMovement[RIGHT]));
              */
-#endif
+#endif  // VERBOSE
+#endif  // not SIM
 
             previousDistanceFromGoal[LEFT] = distanceFromGoal(movementType, LEFT, howMuchWeCareAboutXThisTime);
             previousDistanceFromGoal[RIGHT] = distanceFromGoal(movementType, RIGHT, howMuchWeCareAboutXThisTime);
@@ -551,10 +554,12 @@ public:
             powerToGive[RIGHT] = motorSpeedLimit((int)round(progressNeedToMake[RIGHT] *
                                                             *(powerPerDistanceForThisMovement[RIGHT])));
 
-            Serial.print("So I'm going to give the motor this much power ");
+#ifdef VERBOSE
+            Serial.print("giving the motors power: ");
             Serial.print(powerToGive[LEFT]);
             Serial.print(' ');
             Serial.println(powerToGive[RIGHT]);
+#endif
 
             motorInterface->setMotorPower(LEFT, powerToGive[LEFT], direction[LEFT]);
             motorInterface->setMotorPower(RIGHT, powerToGive[RIGHT], direction[RIGHT]);
@@ -630,325 +635,14 @@ public:
         std::cout << "average right power: " << average[RIGHT] << std::endl;
 #endif
 #ifndef SIM
+#ifdef VERBOSE
         Serial.print("average left power: ");
         Serial.println(average[LEFT]);
         Serial.print("average right power: ");
         Serial.println(average[RIGHT]);
-#endif
+#endif  // VERBOSE
+#endif  // not SIM
     }
 };
 
 #endif //ALL_FUNC_WHEELS_MOTORCONTROLLER_H
-
-/* log
- � � 0.00
-10.00 0.00
-time left 30
-I see distance from my goal 1143.36 1143.43
-In this segment I want to go 38.11 38.11
-So I'm going to give the motor this much power 90 90
-This is the distance each wheel traveled -3 1
-time left 29
-I see distance from my goal 1139.43 1142.15
-In this segment I want to go 39.29 39.38
-So I'm going to give the motor this much power 254 254
-This is the distance each wheel traveled -26 26
-time left 28
-I see distance from my goal 1106.81 1109.48
-In this segment I want to go 39.53 39.62
-So I'm going to give the motor this much power 254 254
-This is the distance each wheel traveled -71 73
-time left 27
-I see distance from my goal 1021.79 1021.99
-In this segment I want to go 37.84 37.85
-So I'm going to give the motor this much power 108 105
-This is the distance each wheel traveled -82 81
-time left 26
-I see distance from my goal 930.43 931.83
-In this segment I want to go 35.79 35.84
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled -60 56
-time left 25
-I see distance from my goal 870.92 876.74
-In this segment I want to go 34.84 35.07
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled -31 27
-time left 24
-I see distance from my goal 847.11 857.00
-In this segment I want to go 35.30 35.71
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled -6 5
-time left 23
-I see distance from my goal 851.11 861.74
-In this segment I want to go 37.00 37.47
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 22
-I see distance from my goal 861.36 871.70
-In this segment I want to go 39.15 39.62
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 21
-I see distance from my goal 871.49 881.54
-In this segment I want to go 41.50 41.98
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 20
-I see distance from my goal 881.50 891.28
-In this segment I want to go 44.08 44.56
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 19
-I see distance from my goal 891.40 900.91
-In this segment I want to go 46.92 47.42
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 18
-I see distance from my goal 901.19 910.44
-In this segment I want to go 50.07 50.58
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 17
-I see distance from my goal 910.88 919.87
-In this segment I want to go 53.58 54.11
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 16
-I see distance from my goal 920.46 929.20
-In this segment I want to go 57.53 58.08
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 15
-I see distance from my goal 929.95 938.45
-In this segment I want to go 62.00 62.56
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 14
-I see distance from my goal 939.34 947.60
-In this segment I want to go 67.10 67.69
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 13
-I see distance from my goal 948.64 956.66
-In this segment I want to go 72.97 73.59
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 12
-I see distance from my goal 957.84 965.64
-In this segment I want to go 79.82 80.47
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 11
-I see distance from my goal 966.96 974.54
-In this segment I want to go 87.91 88.59
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 10
-I see distance from my goal 976.00 983.36
-In this segment I want to go 97.60 98.34
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 9
-I see distance from my goal 984.95 992.09
-In this segment I want to go 109.44 110.23
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 8
-I see distance from my goal 993.82 1000.76
-In this segment I want to go 124.23 125.09
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 7
-I see distance from my goal 1002.61 1009.34
-In this segment I want to go 143.23 144.19
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 6
-I see distance from my goal 1011.33 1017.86
-In this segment I want to go 168.55 169.64
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 5
-I see distance from my goal 1019.97 1026.30
-In this segment I want to go 203.99 205.26
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 4
-I see distance from my goal 1028.54 1034.68
-In this segment I want to go 257.13 258.67
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 3
-I see distance from my goal 1037.03 1042.98
-In this segment I want to go 345.68 347.66
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 2
-I see distance from my goal 1045.46 1051.23
-In this segment I want to go 522.73 525.61
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 1
-I see distance from my goal 1053.82 1059.41
-In this segment I want to go 1053.82 1059.41
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-average left power: 0.36
-average right power: 0.36
-  11
-46.35 -273.75
-time left 30
-I see distance from my goal 1143.36 1143.43
-In this segment I want to go 38.11 38.11
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 29
-I see distance from my goal 1143.34 1143.45
-In this segment I want to go 39.43 39.43
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 28
-I see distance from my goal 1143.31 1143.47
-In this segment I want to go 40.83 40.84
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 27
-I see distance from my goal 1143.29 1143.49
-In this segment I want to go 42.34 42.35
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 26
-I see distance from my goal 1143.27 1143.51
-In this segment I want to go 43.97 43.98
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 25
-I see distance from my goal 1143.25 1143.53
-In this segment I want to go 45.73 45.74
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 24
-I see distance from my goal 1143.23 1143.55
-In this segment I want to go 47.63 47.65
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 23
-I see distance from my goal 1143.21 1143.58
-In this segment I want to go 49.70 49.72
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 22
-I see distance from my goal 1143.19 1143.60
-In this segment I want to go 51.96 51.98
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 21
-I see distance from my goal 1143.17 1143.62
-In this segment I want to go 54.44 54.46
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 20
-I see distance from my goal 1143.14 1143.64
-In this segment I want to go 57.16 57.18
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 19
-I see distance from my goal 1143.12 1143.66
-In this segment I want to go 60.16 60.19
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 18
-I see distance from my goal 1143.10 1143.68
-In this segment I want to go 63.51 63.54
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 17
-I see distance from my goal 1143.08 1143.70
-In this segment I want to go 67.24 67.28
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 16
-I see distance from my goal 1143.06 1143.72
-In this segment I want to go 71.44 71.48
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 15
-I see distance from my goal 1143.04 1143.75
-In this segment I want to go 76.20 76.25
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 14
-I see distance from my goal 1143.02 1143.77
-In this segment I want to go 81.64 81.70
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 13
-I see distance from my goal 1143.00 1143.79
-In this segment I want to go 87.92 87.98
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 12
-I see distance from my goal 1142.97 1143.81
-In this segment I want to go 95.25 95.32
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 11
-I see distance from my goal 1142.95 1143.83
-In this segment I want to go 103.90 103.98
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 10
-I see distance from my goal 1142.93 1143.85
-In this segment I want to go 114.29 114.39
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 9
-I see distance from my goal 1142.91 1143.87
-In this segment I want to go 126.99 127.10
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 8
-I see distance from my goal 1142.89 1143.89
-In this segment I want to go 142.86 142.99
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 7
-I see distance from my goal 1142.87 1143.92
-In this segment I want to go 163.27 163.42
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 6
-I see distance from my goal 1142.85 1143.94
-In this segment I want to go 190.47 190.66
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 5
-I see distance from my goal 1142.83 1143.96
-In this segment I want to go 228.57 228.79
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 4
-I see distance from my goal 1142.80 1143.98
-In this segment I want to go 285.70 285.99
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 3
-I see distance from my goal 1142.78 1144.00
-In this segment I want to go 380.93 381.33
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 2
-I see distance from my goal 1142.76 1144.02
-In this segment I want to go 571.38 572.01
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-time left 1
-I see distance from my goal 1142.74 1144.04
-In this segment I want to go 1142.74 1144.04
-So I'm going to give the motor this much power 0 0
-This is the distance each wheel traveled 0 0
-average left power: 0.00
-average right power: 0.00
-  11
-
- */

@@ -2,6 +2,10 @@
 #include "Adafruit_NeoMatrix.h"
 #include "Adafruit_NeoPixel.h"
 
+// lots of debug messages to serial
+// TODO: remove this, but only if we've done enough testing without it
+#define VERBOSE
+
 #include "PID.h"
 
 #include "MotorController.h"
@@ -9,6 +13,7 @@
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
 #endif
+
 //test LED pins
 #define LED1 22
 #define LED2 23
@@ -172,10 +177,19 @@ void loop() {
 
 
 String interpretCommand(String command, String value) {
-  
+#ifdef VERBOSE
+    Serial.print("interpreting command: ");
+    Serial.print(command);
+    if (value)  // not empty
+    {
+        Serial.print('|');
+        Serial.print(value);
+    }
+    Serial.print('\n');
+#endif
   String responseString = "n";  // what this function returns
   String returnString = "";     // holds the return value of the command function
-  const String responseHeader = "\t1";
+  const String responseHeader = "\t1";  // tab signals that debug messages are done (don't use tab in debug messages)
 
   // commands to read odometers
   if (command == "<") {
@@ -189,7 +203,7 @@ String interpretCommand(String command, String value) {
     responseString += motorInterface.readEncoder(RIGHT);
   }
 
-  //check if motor stuff
+  // motor stuff
   else if (command == "f") {
     motorController.go(FORWARD);
     returnString = "1";
@@ -208,7 +222,7 @@ String interpretCommand(String command, String value) {
     responseString = responseHeader;
     responseString += returnString;
   }
-  else if (command == "c") {
+  else if (command == "c") {  // calibrate
     if (value == "")
       returnString = "0";  // returnString = calibrateWithSwitches();
     else
@@ -223,7 +237,7 @@ String interpretCommand(String command, String value) {
     responseString += returnString;
   }
 
-  //check if 7 segment stuff
+  // 7 segment stuff
   else if (command == "N") {
     // do 7 segment stuff
     displayDigit(value.toInt());
@@ -231,7 +245,7 @@ String interpretCommand(String command, String value) {
     responseString += value;
   }
 
-  //check if button stuff
+  // buttons
   else if (command == "B") {
     if (value == "G") {
       responseString = responseHeader;
@@ -243,25 +257,26 @@ String interpretCommand(String command, String value) {
     }
   }
 
-  //check if 8x8 stuff
-  else if (command == "R") {
+  // 8x8
+  else if (command == "R") {  // ready light
     setReadyLight();
     responseString = responseHeader;
   }
-  else if (command == "T") {
+  else if (command == "T") {  // objective tunnel
     setToOT(value.toInt());
     responseString = responseHeader;
   }
-  else if (command == "D") {
+  else if (command == "D") {  // dead end tunnel
     setToDE(value.toInt());
     responseString = responseHeader;
   }
-  else if (command == "E") {
+  else if (command == "E") {  // nothing (turn light off)
     setToEM(value.toInt());
     responseString = responseHeader;
   }
 
-  //check if sensor stuff
+  // sensor stuff
+  // either "e" or "S|E" for wire sensing
   else if (command == "e") {
     responseString = responseHeader;
     responseString += String(readEMF());
@@ -533,6 +548,10 @@ void ButtonInit() {
   attachInterrupt(digitalPinToInterrupt(StopPin),StopButtonFunc, CHANGE);
 }
 
+/**
+ * 7 segment for displaying number on die
+ * @param dig the number to display
+ */
 void displayDigit(int dig) {
   for (int i = digits[dig]; i <= digits[dig]+1; i++) {
     digitalWrite(LATCH, HIGH);
