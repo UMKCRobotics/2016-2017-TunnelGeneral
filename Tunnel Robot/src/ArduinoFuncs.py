@@ -83,7 +83,7 @@ class ArduinoFuncs():
         self.ard.requestCommand(commandObj)
         return commandObj
 
-    # TO-DO: add value for which side of robot to use
+    # TO-DO: add value for which side of robot to use (isn't this what goCalibrateIR is?)
     def goCalibrate(self):
         commandObj = CommRequest('c')
         self.ard.requestCommand(commandObj)

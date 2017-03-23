@@ -216,8 +216,13 @@ class Robot:
         return commObject
     
     def goCalibrate(self):
-        #just an alias for goForward in this sim
+        # just an alias for goForward in this sim
         return self.goForward()
+
+    def goCalibrateIR(self, side):
+        to_return = CommRequest('c|' + side)
+        self.move_to_do = to_return
+        return to_return
         
 
     def goBackward(self):

@@ -276,12 +276,60 @@ class Robot:
             self.display_grid_in_console()
         print("just moved to " + str(self.position))
 
-    def calibrate(self):  # alias for going forward (for sim)
+    def calibrate(self):
+        # figure out what side we can calibrate on
+        can_calibrate_back = False
+        can_calibrate_left = False
+        can_calibrate_right = False
+
+        if self.position in BAD_CALIBRATION_COORDINATES:
+            pass  # leave them all false
+
+        elif self.facing == Direction.east:
+            if self.position.x == 0:
+                can_calibrate_back = True
+            if self.position.y == 0:
+                can_calibrate_right = True
+            elif self.position.y == GRID_HEIGHT - 1:
+                can_calibrate_left = True
+
+        elif self.facing == Direction.north:
+            if self.position.y == 0:
+                can_calibrate_back = True
+            if self.position.x == 0:
+                can_calibrate_left = True
+            elif self.position.x == GRID_WIDTH - 1:
+                can_calibrate_right = True
+
+        elif self.facing == Direction.west:
+            if self.position.x == GRID_WIDTH - 1:
+                can_calibrate_back = True
+            if self.position.y == 0:
+                can_calibrate_left = True
+            elif self.position.y == GRID_HEIGHT - 1:
+                can_calibrate_right = True
+
+        elif self.facing == Direction.south:
+            if self.position.y == GRID_HEIGHT - 1:
+                can_calibrate_back = True
+            if self.position.x == 0:
+                can_calibrate_right = True
+            elif self.position.x == GRID_WIDTH - 1:
+                can_calibrate_left = True
+
+        # now we know which sides we can calibrate on, so do it
         print("about to calibrate")
         if self.using_outside_grid:
-            pass  # TODO: calibrate
+            pass  # calibrate
         else:
-            self.wait_till_done(self.robot_interface.goForward())
+            # TODO: in a corner, which calibration works better, back? or side?
+            # do that one first (elif means only do one)
+            if can_calibrate_back:
+                self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
+            elif can_calibrate_left:
+                self.wait_till_done(self.robot_interface.goCalibrateIR("L"))
+            elif can_calibrate_right:
+                self.wait_till_done(self.robot_interface.goCalibrateIR("R"))
             Robot.sleep_wait()
         print("calibration done")
 
@@ -543,7 +591,9 @@ class Robot:
                 return False
 
             self.turn(direction)
+            self.calibrate()
             self.forward()
+            self.calibrate()
 
             if visit_and_explore_along_the_way:
                 # count if away from sides
