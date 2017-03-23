@@ -570,6 +570,8 @@ class Robot:
         # go there
         self.travel_these(directions, None, None, False)
 
+        # TODO: turn robot's back to field side and calibrate on it (to make sure we are fully in the starting square)
+
     @staticmethod
     def sleep_wait():
         time.sleep(Robot.SLEEP_TIME)
