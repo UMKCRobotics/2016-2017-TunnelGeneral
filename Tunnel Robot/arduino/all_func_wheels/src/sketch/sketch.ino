@@ -14,6 +14,8 @@
  #define PSTR // Make Arduino Due happy
 #endif
 
+typedef uint8_t pin;
+
 //test LED pins
 #define LED1 22
 #define LED2 23
@@ -382,6 +384,42 @@ int expMovingAvg(int newVal,int oldVal, double prefVal) {
   return int(newVal*prefVal + oldVal*(1.0-prefVal));
 }
 
+int getIRValue(pin whichPin)
+{
+    const int sampleCount = 200;
+
+    long total = 0;
+    for (int i = sampleCount; i > 0; --i)
+    {
+        total += analogRead(whichPin);
+    }
+
+    return (int)(total / sampleCount);
+}
+
+void sideCalibrationPivotIR(pin IRPinLeftOfWheel, pin IRPinRightOfWheel) {
+    int leftReading = getIRValue(IRPinLeftOfWheel);
+    int rightReading = getIRValue(IRPinRightOfWheel);
+
+    int difference = leftReading - rightReading;
+
+    while (abs(difference) > 5)
+    {
+        if (difference > 0)  // left ir sensor is closer to wall
+        {
+            motorController.smallPivot(RIGHT);
+        }
+        else  // difference negative, right closer to wall
+        {
+            motorController.smallPivot(LEFT);
+        }
+
+        leftReading = getIRValue(IRPinLeftOfWheel);
+        rightReading = getIRValue(IRPinRightOfWheel);
+        difference = leftReading - rightReading;
+    }
+}
+
 int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
   //1 is on the right, 2 is on the left, let's just roll with it, okay?
   int reading1 = analogRead(pin1);
@@ -452,12 +490,13 @@ String calibrateWithIR(String side) {
   //if L, use IR on left side
   int threshold = 5;
   if (side == "L")  
-    runCalibrationPivotIR(IR_L1,IR_L2,57,threshold);
+    sideCalibrationPivotIR(IR_L1, IR_L2);
   //if R, use IR on right side
   else if (side == "R")  
-    runCalibrationPivotIR(IR_R1,IR_R2,30,threshold);
+    sideCalibrationPivotIR(IR_R2, IR_R1);
   //if B, use IR on back side
-  else if (side == "B")  
+  else if (side == "B")
+    // TODO: write new back calibration
     runCalibrationPivotIR(IR_B1,IR_B2,0,threshold);
   /*
   //if F, use IR on front side (might not use)

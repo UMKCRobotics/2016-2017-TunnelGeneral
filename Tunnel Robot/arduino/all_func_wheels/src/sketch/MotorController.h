@@ -643,6 +643,23 @@ public:
 #endif  // VERBOSE
 #endif  // not SIM
     }
+
+    /**
+     * for side calibration
+     * @param direction LEFT or RIGHT
+     */
+    void smallPivot(const size_t& direction)
+    {
+        motorInterface->setMotorPower(direction, MAX_MOTOR_POWER, -1);
+        motorInterface->setMotorPower((direction + 1) % 2, MAX_MOTOR_POWER, 1);
+
+        delay(100);
+
+        motorInterface->setMotorPower(direction, 0, 1);
+        motorInterface->setMotorPower((direction + 1) % 2, 0, 1);
+
+        delay(150);  // give time to stop before doing anything else
+    }
 };
 
 #endif //ALL_FUNC_WHEELS_MOTORCONTROLLER_H
