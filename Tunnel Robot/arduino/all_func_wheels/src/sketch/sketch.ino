@@ -546,10 +546,10 @@ String calibrateWithIR(String side) {
   //if L, use IR on left side
   int threshold = 5;
   if (side == "L")  
-    sideCalibrationPivotIR(IR_L1, IR_L2);
+    sideCalibrationPivotIR(IR_L1, IR_L2, leftCalibrationOffset);
   //if R, use IR on right side
   else if (side == "R")  
-    sideCalibrationPivotIR(IR_R2, IR_R1);
+    sideCalibrationPivotIR(IR_R2, IR_R1, rightCalibrationOffset);
   //if B, use IR on back side
   else if (side == "B")
     // TODO: write new back calibration
