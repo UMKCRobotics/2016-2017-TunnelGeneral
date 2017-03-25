@@ -188,7 +188,7 @@ String interpretCommand(String command, String value) {
 #ifdef VERBOSE
     Serial.print("interpreting command: ");
     Serial.print(command);
-    if (value)  // not empty
+    if (value.length() > 0)  // not empty
     {
         Serial.print('|');
         Serial.print(value);
