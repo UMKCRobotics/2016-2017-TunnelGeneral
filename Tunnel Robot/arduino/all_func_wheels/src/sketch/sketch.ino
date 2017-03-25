@@ -146,8 +146,6 @@ void setup() {
   //delayMicroseconds(500);
   //Serial1.write("2f0\r");
 
-  getCalibrationValuesForIRSensors();
-
   //send READY byte
   Serial.write('1');
 
@@ -225,6 +223,21 @@ String interpretCommand(String command, String value) {
         responseString = responseHeader;
         responseString += String(motorController.global.coordinates.x[RIGHT]) + ' ' +
                           String(motorController.global.coordinates.y[RIGHT]);
+    }
+
+
+    // commands to read global coordinates
+    if (command == "[") {
+        getLeftCalibrationValuesForIRSensors();
+        returnString = "1";
+        responseString = responseHeader;
+        responseString += returnString;
+    }
+    else if (command == "]") {
+        getRightCalibrationValuesForIRSensors();
+        returnString = "1";
+        responseString = responseHeader;
+        responseString += returnString;
     }
 
   // motor stuff
@@ -426,10 +439,20 @@ int getDifferenceBetweenIRs(pin IRPinLeftOfWheel, pin IRPinRightOfWheel, int dif
     return leftReading - rightReading + differenceOffsetForThisSide;
 }
 
-void getCalibrationValuesForIRSensors()
+void getLeftCalibrationValuesForIRSensors()
 {
     leftCalibrationOffset = 0 - getDifferenceBetweenIRs(IR_L1, IR_L2, 0);
+
+    Serial.print("left IR sensors difference offset set to: ");
+    Serial.println(leftCalibrationOffset);
+}
+
+void getRightCalibrationValuesForIRSensors()
+{
     rightCalibrationOffset = 0 - getDifferenceBetweenIRs(IR_R2, IR_R1, 0);
+
+    Serial.print("right IR sensors difference offset set to: ");
+    Serial.println(rightCalibrationOffset);
 }
 
 void sideCalibrationPivotIR(pin IRPinLeftOfWheel, pin IRPinRightOfWheel, int differenceOffsetForThisSide)

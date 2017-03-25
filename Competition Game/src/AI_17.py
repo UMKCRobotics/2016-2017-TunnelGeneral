@@ -518,6 +518,12 @@ class Robot:
                 time.sleep(0.25)
             """
 
+        # beginning calibration
+        self.wait_till_done(self.robot_interface.beginningRightCalibration())
+        self.turn(Direction.north)
+        self.wait_till_done(self.robot_interface.beginningLeftCalibration())
+
+        # ready to go
         keep_going = True
         self.away_from_sides_count = 0
         dfs_stack = deque()
