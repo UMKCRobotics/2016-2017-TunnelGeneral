@@ -30,6 +30,11 @@ typedef uint8_t pin;
 #define IR_R2 A10
 #define IR_F1 A8
 
+// what to add to the difference between the two IR sensors on each side for straight to be zero
+int leftCalibrationOffset;
+int rightCalibrationOffset;
+
+
 //8x8 pin
 #define PINM 6
 #define MATRIX_READY_LIGHT_PIXEL 56
@@ -140,6 +145,9 @@ void setup() {
   //Serial1.write("1f0\r");
   //delayMicroseconds(500);
   //Serial1.write("2f0\r");
+
+  getCalibrationValuesForIRSensors();
+
   //send READY byte
   Serial.write('1');
 
@@ -209,14 +217,14 @@ String interpretCommand(String command, String value) {
     if (command == "{") {
         returnString = "";
         responseString = responseHeader;
-        responseString += motorController.global.coordinates.x[LEFT] + ' ' +
-                          motorController.global.coordinates.y[LEFT];
+        responseString += String(motorController.global.coordinates.x[LEFT]) + ' ' +
+                          String(motorController.global.coordinates.y[LEFT]);
     }
     else if (command == "}") {
         returnString = "";
         responseString = responseHeader;
-        responseString += motorController.global.coordinates.x[RIGHT] + ' ' +
-                          motorController.global.coordinates.y[RIGHT];
+        responseString += String(motorController.global.coordinates.x[RIGHT]) + ' ' +
+                          String(motorController.global.coordinates.y[RIGHT]);
     }
 
   // motor stuff
@@ -400,7 +408,7 @@ int expMovingAvg(int newVal,int oldVal, double prefVal) {
 
 int getIRValue(pin whichPin)
 {
-    const int sampleCount = 200;
+    const int sampleCount = 300;
 
     long total = 0;
     for (int i = sampleCount; i > 0; --i)
@@ -411,13 +419,28 @@ int getIRValue(pin whichPin)
     return (int)(total / sampleCount);
 }
 
-void sideCalibrationPivotIR(pin IRPinLeftOfWheel, pin IRPinRightOfWheel) {
+int getDifferenceBetweenIRs(pin IRPinLeftOfWheel, pin IRPinRightOfWheel, int differenceOffsetForThisSide)
+{
     int leftReading = getIRValue(IRPinLeftOfWheel);
     int rightReading = getIRValue(IRPinRightOfWheel);
+    return leftReading - rightReading + differenceOffsetForThisSide;
+}
 
-    int difference = leftReading - rightReading;
+void getCalibrationValuesForIRSensors()
+{
+    leftCalibrationOffset = 0 - getDifferenceBetweenIRs(IR_L1, IR_L2, 0);
+    rightCalibrationOffset = 0 - getDifferenceBetweenIRs(IR_R2, IR_R1, 0);
+}
 
-    while (abs(difference) > 5)
+void sideCalibrationPivotIR(pin IRPinLeftOfWheel, pin IRPinRightOfWheel, int differenceOffsetForThisSide)
+{
+    const int threshold = 3;
+
+    int difference;
+
+    while (abs(difference = getDifferenceBetweenIRs(IRPinLeftOfWheel,
+                                                    IRPinRightOfWheel,
+                                                    differenceOffsetForThisSide)) > threshold)
     {
         if (difference > 0)  // left ir sensor is closer to wall
         {
@@ -427,14 +450,10 @@ void sideCalibrationPivotIR(pin IRPinLeftOfWheel, pin IRPinRightOfWheel) {
         {
             motorController.smallPivot(LEFT);
         }
-
-        leftReading = getIRValue(IRPinLeftOfWheel);
-        rightReading = getIRValue(IRPinRightOfWheel);
-        difference = leftReading - rightReading;
     }
 }
 
-int runCalibrationPivotIR(int pin1, int pin2, int setPoint, int tolerance) {
+int runCalibrationPivotIR(pin pin1, pin pin2, int setPoint, int tolerance) {
   //1 is on the right, 2 is on the left, let's just roll with it, okay?
   int reading1 = analogRead(pin1);
   int reading2 = analogRead(pin2);
