@@ -205,6 +205,20 @@ String interpretCommand(String command, String value) {
     responseString += motorInterface.readEncoder(RIGHT);
   }
 
+    // commands to read global coordinates
+    if (command == "{") {
+        returnString = "";
+        responseString = responseHeader;
+        responseString += motorController.global.coordinates.x[LEFT] + ' ' +
+                          motorController.global.coordinates.y[LEFT];
+    }
+    else if (command == "}") {
+        returnString = "";
+        responseString = responseHeader;
+        responseString += motorController.global.coordinates.x[RIGHT] + ' ' +
+                          motorController.global.coordinates.y[RIGHT];
+    }
+
   // motor stuff
   else if (command == "f") {
     motorController.go(FORWARD);
