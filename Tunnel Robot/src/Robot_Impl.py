@@ -47,6 +47,14 @@ class Robot_Impl():
         self.MAP.rotateClockwise()
         return self.arduinofuncs.moveRight()
 
+    def beginningLeftCalibration(self):
+        # arduino find right sensors values for straight
+        return self.arduinofuncs.beginningLeftCalibration()
+
+    def beginningRightCalibration(self):
+        # arduino find right sensors values for straight
+        return self.arduinofuncs.beginningRightCalibration()
+
     def goCalibrate(self):
         # use perimeter to fix possible rotation/translation errors
         return self.arduinofuncs.goCalibrate()
