@@ -660,6 +660,27 @@ public:
 
         delay(150);  // give time to stop before doing anything else
     }
+
+    /**
+     * nudge one wheel in a certain direction
+     * @param whichWheel LEFT or RIGHT
+     * @param direction 1 or -1
+     */
+    void nudge(int leftDirection, int rightDirection)
+    {
+        int leftPower = MAX_MOTOR_POWER * abs(leftDirection);
+        int rightPower = MAX_MOTOR_POWER * abs(rightDirection);
+
+        motorInterface->setMotorPower(LEFT, leftPower, leftDirection);
+        motorInterface->setMotorPower(RIGHT, rightPower, rightDirection);
+
+        delay(100);
+
+        motorInterface->setMotorPower(LEFT, 0, 1);
+        motorInterface->setMotorPower(RIGHT, 0, 1);
+
+        delay(150);
+    }
 };
 
 #endif //ALL_FUNC_WHEELS_MOTORCONTROLLER_H

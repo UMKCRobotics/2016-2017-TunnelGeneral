@@ -24,8 +24,8 @@ typedef uint8_t pin;
 //IR PINS
 #define IR_L1 A14
 #define IR_L2 A13
-#define IR_B1 A11
-#define IR_B2 A12
+#define IR_BR A11
+#define IR_BL A12
 #define IR_R1 A9
 #define IR_R2 A10
 #define IR_F1 A8
@@ -33,7 +33,8 @@ typedef uint8_t pin;
 // what to add to the difference between the two IR sensors on each side for straight to be zero
 int leftCalibrationOffset;
 int rightCalibrationOffset;
-
+int backLeftCalibrated;
+int backRightCalibrated;
 
 //8x8 pin
 #define PINM 6
@@ -226,7 +227,7 @@ String interpretCommand(String command, String value) {
     }
 
 
-    // commands to read global coordinates
+    // commands to calibrate sensors
     if (command == "[") {
         getLeftCalibrationValuesForIRSensors();
         returnString = "1";
@@ -238,6 +239,10 @@ String interpretCommand(String command, String value) {
         returnString = "1";
         responseString = responseHeader;
         responseString += returnString;
+    }
+    else if (command == "v") {
+      backCalibrationIR();
+      responseString = responseHeader + "1";
     }
 
   // motor stuff
@@ -476,6 +481,78 @@ void sideCalibrationPivotIR(pin IRPinLeftOfWheel, pin IRPinRightOfWheel, int dif
     }
 }
 
+/**
+ *  find the sensor values for the good distance from the wood
+ */
+void calibrateBackSensors()
+{
+    backLeftCalibrated = getIRValue(IR_BL);
+    backRightCalibrated = getIRValue(IR_BR);
+}
+
+void backCalibrationIR()
+{
+    const int threshold = 3;
+
+    int leftReading = getIRValue(IR_BL);
+    int rightReading = getIRValue(IR_BR);
+
+    boolean finished = false;
+    boolean leftGood;
+    boolean rightGood;
+
+    int needToMoveLeft;
+    int needToMoveRight;
+
+    while (! finished)
+    {
+        if (leftReading - threshold > backLeftCalibrated)
+        {
+            // left back wheel too close
+            needToMoveLeft = 1;
+            leftGood = false;
+        }
+        else if (leftReading + threshold < backLeftCalibrated)
+        {
+            // left back wheel too far
+            needToMoveLeft = -1;
+            leftGood = false;
+        }
+        else
+        {
+            // within threshold
+            needToMoveLeft = 0;
+            leftGood = true;
+        }
+
+      if (rightReading - threshold > backRightCalibrated)
+      {
+        // right back wheel too close
+        needToMoveRight = 1;
+        rightGood = false;
+      }
+      else if (rightReading + threshold < backRightCalibrated)
+      {
+        // right back wheel too far
+        needToMoveRight = -1;
+        rightGood = false;
+      }
+      else
+      {
+        // within threshold
+        needToMoveRight = 0;
+        rightGood = true;
+      }
+
+      motorController.nudge(needToMoveLeft, needToMoveRight);
+      
+      if (rightGood && leftGood)
+      {
+        finished = true;
+      }
+    }
+}
+
 int runCalibrationPivotIR(pin pin1, pin pin2, int setPoint, int tolerance) {
   //1 is on the right, 2 is on the left, let's just roll with it, okay?
   int reading1 = analogRead(pin1);
@@ -553,7 +630,7 @@ String calibrateWithIR(String side) {
   //if B, use IR on back side
   else if (side == "B")
     // TODO: write new back calibration
-    runCalibrationPivotIR(IR_B1,IR_B2,0,threshold);
+    backCalibrationIR();
   /*
   //if F, use IR on front side (might not use)
   else if (side == "F")  
@@ -574,7 +651,7 @@ String getObstacleReport() {
   const size_t irCount = 7;
 
     long totals[irCount] = {0, 0, 0, 0, 0, 0, 0};  // number of IR sensors
-    uint8_t pins[irCount] = {IR_R1, IR_R2, IR_F1, IR_L1, IR_L2, IR_B1, IR_B2};
+    uint8_t pins[irCount] = {IR_R1, IR_R2, IR_F1, IR_L1, IR_L2, IR_BR, IR_BL};
 
     for (int i = sampleCount; i > 0; --i)
     {

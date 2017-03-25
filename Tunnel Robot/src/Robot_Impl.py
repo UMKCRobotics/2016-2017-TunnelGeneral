@@ -55,6 +55,9 @@ class Robot_Impl():
         # arduino find right sensors values for straight
         return self.arduinofuncs.beginningRightCalibration()
 
+    def beginningBackCalibration(self):
+        return self.arduinofuncs.beginningBackCalibration()
+
     def goCalibrate(self):
         # use perimeter to fix possible rotation/translation errors
         return self.arduinofuncs.goCalibrate()

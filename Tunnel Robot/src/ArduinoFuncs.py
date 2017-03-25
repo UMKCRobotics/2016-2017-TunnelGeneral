@@ -93,6 +93,11 @@ class ArduinoFuncs():
         self.ard.requestCommand(commandObj)
         return commandObj
 
+    def beginningBackCalibration(self):
+        commandObj = CommRequest('v')
+        self.ard.requestCommand(commandObj)
+        return commandObj
+
     # TO-DO: add value for which side of robot to use (isn't this what goCalibrateIR is?)
     def goCalibrate(self):
         commandObj = CommRequest('c')
