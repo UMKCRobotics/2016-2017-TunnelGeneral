@@ -241,7 +241,7 @@ String interpretCommand(String command, String value) {
         responseString += returnString;
     }
     else if (command == "v") {
-      backCalibrationIR();
+      calibrateBackSensors();
       responseString = responseHeader + "1";
     }
 
@@ -488,6 +488,11 @@ void calibrateBackSensors()
 {
     backLeftCalibrated = getIRValue(IR_BL);
     backRightCalibrated = getIRValue(IR_BR);
+
+    Serial.print("back calibration values: ");
+    Serial.print(backLeftCalibrated);
+    Serial.print(' ');
+    Serial.println(backRightCalibrated);
 }
 
 void backCalibrationIR()
@@ -545,7 +550,7 @@ void backCalibrationIR()
       }
 
       motorController.nudge(needToMoveLeft, needToMoveRight);
-      
+
       if (rightGood && leftGood)
       {
         finished = true;
