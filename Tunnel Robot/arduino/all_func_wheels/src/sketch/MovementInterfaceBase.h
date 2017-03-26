@@ -48,28 +48,10 @@ public:
 
     virtual void go(const size_t& movementType) = 0;
 
-
     /**
-     * for side calibration
-     * @param direction LEFT or RIGHT
-     */
-    void smallPivot(const size_t& direction)
-    {
-        motorInterface->setMotorPower(direction, MAX_MOTOR_POWER, -1);
-        motorInterface->setMotorPower((direction + 1) % 2, MAX_MOTOR_POWER, 1);
-
-        delay(100);
-
-        motorInterface->setMotorPower(direction, 0, 1);
-        motorInterface->setMotorPower((direction + 1) % 2, 0, 1);
-
-        delay(150);  // give time to stop before doing anything else
-    }
-
-    /**
-     * nudge one wheel in a certain direction
-     * @param whichWheel LEFT or RIGHT
-     * @param direction 1 or 0 or -1
+     * nudge wheels in specified directions
+     * @param leftDirection 1 or 0 or -1
+     * @param rightDirection 1 or 0 or -1
      */
     void nudge(int leftDirection, int rightDirection)
     {
@@ -84,7 +66,23 @@ public:
         motorInterface->setMotorPower(LEFT, 0, 1);
         motorInterface->setMotorPower(RIGHT, 0, 1);
 
-        delay(150);
+        delay(150);  // give time to stop before doing anything else
+    }
+
+    /**
+     * for side calibration
+     * @param direction LEFT or RIGHT
+     */
+    void smallPivot(const size_t& direction)
+    {
+        if (direction == LEFT)
+        {
+            nudge(-1, 1);
+        }
+        else  // RIGHT
+        {
+            nudge(1, -1);
+        }
     }
 };
 
