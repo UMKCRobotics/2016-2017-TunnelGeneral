@@ -33,7 +33,9 @@ typedef uint8_t pin;
 
 // what to add to the difference between the two IR sensors on each side for straight to be zero
 int leftCalibrationOffset;
+int goodDistanceForLeft;
 int rightCalibrationOffset;
+int goodDistanceForRight;
 int backLeftCalibrated;
 int backRightCalibrated;
 
@@ -452,6 +454,11 @@ void getLeftCalibrationValuesForIRSensors()
 
     Serial.print("left IR sensors difference offset set to: ");
     Serial.println(leftCalibrationOffset);
+
+    goodDistanceForRight = (getIRValue(IR_L1) + getIRValue(IR_L2)) / 2;
+
+    Serial.print("good distance for left set to ");
+    Serial.println(goodDistanceForLeft);
 }
 
 void getRightCalibrationValuesForIRSensors()
@@ -460,11 +467,19 @@ void getRightCalibrationValuesForIRSensors()
 
     Serial.print("right IR sensors difference offset set to: ");
     Serial.println(rightCalibrationOffset);
+
+    goodDistanceForRight = (getIRValue(IR_R1) + getIRValue(IR_R2)) / 2;
+
+    Serial.print("good distance for right set to ");
+    Serial.println(goodDistanceForRight);
 }
 
-void sideCalibrationPivotIR(pin IRPinLeftOfWheel, pin IRPinRightOfWheel, int differenceOffsetForThisSide)
+bool sideCalibrationPivotIR(pin IRPinLeftOfWheel,
+                            pin IRPinRightOfWheel,
+                            int differenceOffsetForThisSide,
+                            int goodDistanceForThisSide)
 {
-    const int threshold = 3;
+    const int threshold = 4;
 
     int difference;
 
@@ -481,6 +496,13 @@ void sideCalibrationPivotIR(pin IRPinLeftOfWheel, pin IRPinRightOfWheel, int dif
             movementInterface.smallPivot(LEFT);
         }
     }
+
+    // if too close or too far away,
+    // we need to send a message back to pi to tell it that we need to fix distance from side
+    const int distanceThreshold = 20;
+
+    int distance = (getIRValue(IRPinLeftOfWheel) + getIRValue(IRPinRightOfWheel)) / 2;
+    return (abs(distance - goodDistanceForThisSide) < distanceThreshold);
 }
 
 /**
@@ -648,26 +670,26 @@ String performTap() {
 }
 
 String calibrateWithIR(String side) {
-  //if L, use IR on left side
-  int threshold = 5;
-  if (side == "L")  
-    sideCalibrationPivotIR(IR_L1, IR_L2, leftCalibrationOffset);
-  //if R, use IR on right side
-  else if (side == "R")  
-    sideCalibrationPivotIR(IR_R2, IR_R1, rightCalibrationOffset);
-  //if B, use IR on back side
-  else if (side == "B")
-    // TODO: write new back calibration
-    backCalibrationIR();
-  /*
-  //if F, use IR on front side (might not use)
-  else if (side == "F")  
-    runCalibrationPivotIR(IR_F1,IR_F2,0,threshold);
-  */
-  //signal if bad side received
-  else
-    return "BAD";
-  return "1";
+    //if L, use IR on left side
+    int threshold = 5;
+    if (side == "L")
+        return (int)sideCalibrationPivotIR(IR_L1, IR_L2, leftCalibrationOffset, goodDistanceForLeft);
+    //if R, use IR on right side
+    else if (side == "R")
+        return (int)sideCalibrationPivotIR(IR_R2, IR_R1, rightCalibrationOffset, goodDistanceForRight);
+    //if B, use IR on back side
+    else if (side == "B") {
+        backCalibrationIR();
+        return "1";
+    }
+    /*
+    //if F, use IR on front side (might not use)
+    else if (side == "F")
+        runCalibrationPivotIR(IR_F1,IR_F2,0,threshold);
+    */
+    //signal if bad side received
+    else
+        return "BAD";
 }
 
 //START OF SENSOR STUFF
