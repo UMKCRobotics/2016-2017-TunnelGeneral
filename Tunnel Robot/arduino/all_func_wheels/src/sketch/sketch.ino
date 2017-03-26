@@ -8,7 +8,7 @@
 
 #include "PID.h"
 
-#include "MotorController.h"
+#include "MovementInterface.h"
 
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
@@ -81,7 +81,7 @@ void leftEncoderInterruptFunction();
 void rightEncoderInterruptFunction();
 
 MotorInterface motorInterface(leftEncoderInterruptFunction, rightEncoderInterruptFunction);
-MotorController motorController(&motorInterface);
+MovementInterface movementInterface(&motorInterface);
 
 void rightEncoderInterruptFunction() {
     motorInterface.encoderInterrupt(RIGHT);
@@ -216,14 +216,14 @@ String interpretCommand(String command, String value) {
     if (command == "{") {
         returnString = "";
         responseString = responseHeader;
-        responseString += String(motorController.global.coordinates.x[LEFT]) + ' ' +
-                          String(motorController.global.coordinates.y[LEFT]);
+        responseString += String(movementInterface.global.coordinates.x[LEFT]) + ' ' +
+                          String(movementInterface.global.coordinates.y[LEFT]);
     }
     else if (command == "}") {
         returnString = "";
         responseString = responseHeader;
-        responseString += String(motorController.global.coordinates.x[RIGHT]) + ' ' +
-                          String(motorController.global.coordinates.y[RIGHT]);
+        responseString += String(movementInterface.global.coordinates.x[RIGHT]) + ' ' +
+                          String(movementInterface.global.coordinates.y[RIGHT]);
     }
 
 
@@ -247,19 +247,19 @@ String interpretCommand(String command, String value) {
 
   // motor stuff
   else if (command == "f") {
-    motorController.go(FORWARD);
+    movementInterface.go(FORWARD);
     returnString = "1";
     responseString = responseHeader;
     responseString += returnString;
   }
   else if (command == "l") {
-    motorController.go(LEFT);
+    movementInterface.go(LEFT);
     returnString = "1";
     responseString = responseHeader;
     responseString += returnString;
   }
   else if (command == "r") {
-    motorController.go(RIGHT);
+    movementInterface.go(RIGHT);
     returnString = "1";
     responseString = responseHeader;
     responseString += returnString;
@@ -472,11 +472,11 @@ void sideCalibrationPivotIR(pin IRPinLeftOfWheel, pin IRPinRightOfWheel, int dif
     {
         if (difference > 0)  // left ir sensor is closer to wall
         {
-            motorController.smallPivot(RIGHT);
+            movementInterface.smallPivot(RIGHT);
         }
         else  // difference negative, right closer to wall
         {
-            motorController.smallPivot(LEFT);
+            movementInterface.smallPivot(LEFT);
         }
     }
 }
@@ -549,7 +549,7 @@ void backCalibrationIR()
         rightGood = true;
       }
 
-      motorController.nudge(needToMoveLeft, needToMoveRight);
+      movementInterface.nudge(needToMoveLeft, needToMoveRight);
 
       if (rightGood && leftGood)
       {

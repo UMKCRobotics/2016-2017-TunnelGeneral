@@ -310,7 +310,7 @@ public:
     }
 };
 
-class MotorController : public ClassThatKeepsCoordinatesFromDistances
+class MovementInterface : public ClassThatKeepsCoordinatesFromDistances
 {
 public:  // private
 
@@ -434,7 +434,7 @@ public:  // private
 
 public:
     // constructor
-    MotorController(MotorInterfaceBase* _motorInterface)
+    MovementInterface(MotorInterfaceBase* _motorInterface)
     {
         motorInterface = _motorInterface;
         reset();
