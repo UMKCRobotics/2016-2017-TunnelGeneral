@@ -328,10 +328,18 @@ class Robot:
                 self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
             elif can_calibrate_left:
                 good_distance = self.wait_till_done(self.robot_interface.goCalibrateIR("L"))
-                print("good_distance", good_distance, type(good_distance))
+                if good_distance == '0':
+                    self.wait_till_done(self.robot_interface.rotateClockwise())
+                    self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
+                    self.wait_till_done(self.robot_interface.rotateCounterClockwise())
+                    self.wait_till_done(self.robot_interface.goCalibrateIR("L"))
             elif can_calibrate_right:
                 good_distance = self.wait_till_done(self.robot_interface.goCalibrateIR("R"))
-                print("good_distance", good_distance, type(good_distance))
+                if good_distance == '0':
+                    self.wait_till_done(self.robot_interface.rotateCounterClockwise())
+                    self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
+                    self.wait_till_done(self.robot_interface.rotateClockwise())
+                    self.wait_till_done(self.robot_interface.goCalibrateIR("R"))
             Robot.sleep_wait()
         print("calibration done")
 
