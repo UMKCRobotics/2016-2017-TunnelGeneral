@@ -69,7 +69,7 @@ public:
     /**
      * nudge one wheel in a certain direction
      * @param whichWheel LEFT or RIGHT
-     * @param direction 1 or -1
+     * @param direction 1 or 0 or -1
      */
     void nudge(int leftDirection, int rightDirection)
     {
