@@ -513,6 +513,11 @@ void backCalibrationIR()
 
     while (! finished)
     {
+        Serial.print("found left back at ");
+        Serial.print(leftReading);
+        Serial.print(" when we want ");
+        Serial.println(backLeftCalibrated);
+
         if (leftReading - threshold > backLeftCalibrated)
         {
             // left back wheel too close
@@ -531,6 +536,15 @@ void backCalibrationIR()
             needToMoveLeft = 0;
             leftGood = true;
         }
+
+        Serial.print("needToMoveLeft ");
+        Serial.println(needToMoveLeft);
+
+
+        Serial.print("found right back at ");
+        Serial.print(rightReading);
+        Serial.print(" when we want ");
+        Serial.println(backRightCalibrated);
 
       if (rightReading - threshold > backRightCalibrated)
       {
@@ -551,6 +565,9 @@ void backCalibrationIR()
         rightGood = true;
       }
 
+        Serial.print("needToMoveRight ");
+        Serial.println(needToMoveRight);
+
       movementInterface.nudge(needToMoveLeft, needToMoveRight);
 
       if (rightGood && leftGood)
@@ -560,6 +577,7 @@ void backCalibrationIR()
     }
 }
 
+// not used
 int runCalibrationPivotIR(pin pin1, pin pin2, int setPoint, int tolerance) {
   //1 is on the right, 2 is on the left, let's just roll with it, okay?
   int reading1 = analogRead(pin1);
