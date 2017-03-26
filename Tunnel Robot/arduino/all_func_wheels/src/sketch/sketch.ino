@@ -479,7 +479,7 @@ bool sideCalibrationPivotIR(pin IRPinLeftOfWheel,
                             int differenceOffsetForThisSide,
                             int goodDistanceForThisSide)
 {
-    const int threshold = 4;
+    const int threshold = 5;
 
     int difference;
 
@@ -499,7 +499,7 @@ bool sideCalibrationPivotIR(pin IRPinLeftOfWheel,
 
     // if too close or too far away,
     // we need to send a message back to pi to tell it that we need to fix distance from side
-    const int distanceThreshold = 20;
+    const int distanceThreshold = 30;
 
     int distance = (getIRValue(IRPinLeftOfWheel) + getIRValue(IRPinRightOfWheel)) / 2;
     return (abs(distance - goodDistanceForThisSide) < distanceThreshold);
@@ -522,6 +522,7 @@ void calibrateBackSensors()
 void backCalibrationIR()
 {
     const int threshold = 3;
+    const int bigNudgeThreshold = 20;
 
     int leftReading = getIRValue(IR_BL);
     int rightReading = getIRValue(IR_BR);
@@ -543,13 +544,13 @@ void backCalibrationIR()
         if (leftReading - threshold > backLeftCalibrated)
         {
             // left back wheel too close
-            needToMoveLeft = 1;
+            needToMoveLeft = 1 + (leftReading - backLeftCalibrated > bigNudgeThreshold);
             leftGood = false;
         }
         else if (leftReading + threshold < backLeftCalibrated)
         {
             // left back wheel too far
-            needToMoveLeft = -1;
+            needToMoveLeft = -1 - (backLeftCalibrated - leftReading > bigNudgeThreshold);
             leftGood = false;
         }
         else
@@ -571,13 +572,13 @@ void backCalibrationIR()
         if (rightReading - threshold > backRightCalibrated)
         {
             // right back wheel too close
-            needToMoveRight = 1;
+            needToMoveRight = 1 + (rightReading - backRightCalibrated > bigNudgeThreshold);
             rightGood = false;
         }
         else if (rightReading + threshold < backRightCalibrated)
         {
             // right back wheel too far
-            needToMoveRight = -1;
+            needToMoveRight = -1 - (backRightCalibrated - rightReading > bigNudgeThreshold);
             rightGood = false;
         }
         else
@@ -671,7 +672,6 @@ String performTap() {
 
 String calibrateWithIR(String side) {
     //if L, use IR on left side
-    int threshold = 5;
     if (side == "L")
         return String((int)sideCalibrationPivotIR(IR_L1, IR_L2, leftCalibrationOffset, goodDistanceForLeft));
     //if R, use IR on right side

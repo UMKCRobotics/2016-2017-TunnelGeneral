@@ -51,7 +51,9 @@ public:
     /**
      * nudge wheels in specified directions
      * @param leftDirection 1 or 0 or -1
+     * 2 or -2 is big nudge
      * @param rightDirection 1 or 0 or -1
+     * 2 or -2 is big nudge
      */
     void nudge(int leftDirection, int rightDirection)
     {
