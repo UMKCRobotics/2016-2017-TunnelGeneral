@@ -546,34 +546,37 @@ void backCalibrationIR()
         Serial.print(" when we want ");
         Serial.println(backRightCalibrated);
 
-      if (rightReading - threshold > backRightCalibrated)
-      {
-        // right back wheel too close
-        needToMoveRight = 1;
-        rightGood = false;
-      }
-      else if (rightReading + threshold < backRightCalibrated)
-      {
-        // right back wheel too far
-        needToMoveRight = -1;
-        rightGood = false;
-      }
-      else
-      {
-        // within threshold
-        needToMoveRight = 0;
-        rightGood = true;
-      }
+        if (rightReading - threshold > backRightCalibrated)
+        {
+            // right back wheel too close
+            needToMoveRight = 1;
+            rightGood = false;
+        }
+        else if (rightReading + threshold < backRightCalibrated)
+        {
+            // right back wheel too far
+            needToMoveRight = -1;
+            rightGood = false;
+        }
+        else
+        {
+            // within threshold
+            needToMoveRight = 0;
+            rightGood = true;
+        }
 
         Serial.print("needToMoveRight ");
         Serial.println(needToMoveRight);
 
-      movementInterface.nudge(needToMoveLeft, needToMoveRight);
+        movementInterface.nudge(needToMoveLeft, needToMoveRight);
 
-      if (rightGood && leftGood)
-      {
-        finished = true;
-      }
+        if (rightGood && leftGood)
+        {
+            finished = true;
+        }
+
+        leftReading = getIRValue(IR_BL);
+        rightReading = getIRValue(IR_BR);
     }
 }
 
