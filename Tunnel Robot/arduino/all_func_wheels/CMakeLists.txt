@@ -130,6 +130,10 @@ set(SOURCE_FILES
         lib/PID/PID.h
         src/sketch/PID.h
         src/sketch/sketch.ino
-        src/sketch/MotorController.h)
+        src/sketch/MovementInterface.h
+        src/sketch/MotorInterface.h
+        src/sketch/MotorInterfaceBase.h
+        src/sketch/ClassThatKeepsCoordinatesFromDistances.h
+        src/sketch/OurRobotSpecs.h)
 
 add_executable(all_func_wheels ${SOURCE_FILES})

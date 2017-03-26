@@ -1,10 +1,13 @@
 #include <iostream>
-#include <string>
 #include <sstream>
 #include <cmath>
 
 #define SIM
-#include "MotorController.h"
+
+#define MAX_MOTOR_POWER 254
+#define MIN_MOTOR_POWER 90
+
+#include "MovementInterface.h"
 
 #include "PIDnoTime.h"
 
@@ -140,7 +143,7 @@ void testInterfaceSim()
 void testController()
 {
     MotorInterfaceSim motorInterfaceSim;
-    MotorController motorController(&motorInterfaceSim);
+    MovementInterface motorController(&motorInterfaceSim);
 
     motorController.go(RIGHT);
 }
