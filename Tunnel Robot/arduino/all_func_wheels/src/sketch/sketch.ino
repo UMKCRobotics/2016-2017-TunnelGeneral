@@ -673,10 +673,10 @@ String calibrateWithIR(String side) {
     //if L, use IR on left side
     int threshold = 5;
     if (side == "L")
-        return (int)sideCalibrationPivotIR(IR_L1, IR_L2, leftCalibrationOffset, goodDistanceForLeft);
+        return String((int)sideCalibrationPivotIR(IR_L1, IR_L2, leftCalibrationOffset, goodDistanceForLeft));
     //if R, use IR on right side
     else if (side == "R")
-        return (int)sideCalibrationPivotIR(IR_R2, IR_R1, rightCalibrationOffset, goodDistanceForRight);
+        return String((int)sideCalibrationPivotIR(IR_R2, IR_R1, rightCalibrationOffset, goodDistanceForRight));
     //if B, use IR on back side
     else if (side == "B") {
         backCalibrationIR();
