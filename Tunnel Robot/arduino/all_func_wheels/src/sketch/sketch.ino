@@ -25,8 +25,8 @@ typedef uint8_t pin;
 //IR PINS
 #define IR_L1 A14
 #define IR_L2 A13
-#define IR_BR A11
-#define IR_BL A12
+#define IR_BR A12
+#define IR_BL A11
 #define IR_R1 A9
 #define IR_R2 A10
 #define IR_F1 A8

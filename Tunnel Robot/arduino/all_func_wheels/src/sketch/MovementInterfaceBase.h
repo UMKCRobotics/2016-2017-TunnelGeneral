@@ -55,18 +55,18 @@ public:
      */
     void nudge(int leftDirection, int rightDirection)
     {
-        int leftPower = MAX_MOTOR_POWER * abs(leftDirection);
-        int rightPower = MAX_MOTOR_POWER * abs(rightDirection);
+        int leftPower = MAX_MOTOR_POWER * abs(leftDirection) / 2;
+        int rightPower = MAX_MOTOR_POWER * abs(rightDirection) / 2;
 
         motorInterface->setMotorPower(LEFT, leftPower, leftDirection);
         motorInterface->setMotorPower(RIGHT, rightPower, rightDirection);
 
-        delay(100);
+        delay(70);
 
         motorInterface->setMotorPower(LEFT, 0, 1);
         motorInterface->setMotorPower(RIGHT, 0, 1);
 
-        delay(150);  // give time to stop before doing anything else
+        delay(200);  // give time to stop before doing anything else
     }
 
     /**
