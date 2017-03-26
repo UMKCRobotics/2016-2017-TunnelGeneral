@@ -9,6 +9,7 @@
 #include "PID.h"
 
 #include "MovementInterface.h"
+// #include "MovementInterfaceMasterSlave.h"
 
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
@@ -63,7 +64,7 @@ volatile boolean tapperEncoderDirection;
 #define MOT3_PIN2 48
 #define MOT3_PWM 46
 
-/** movement motor pins are defined in MotorController.h */
+/** movement motor pins are defined in MotorInterface.h */
 
 //button pins
 #define GoPin 18 //Go button - INTERRUPT PIN
@@ -82,6 +83,7 @@ void rightEncoderInterruptFunction();
 
 MotorInterface motorInterface(leftEncoderInterruptFunction, rightEncoderInterruptFunction);
 MovementInterface movementInterface(&motorInterface);
+// MovementInterfaceMasterSlave movementInterface(&motorInterface);
 
 void rightEncoderInterruptFunction() {
     motorInterface.encoderInterrupt(RIGHT);

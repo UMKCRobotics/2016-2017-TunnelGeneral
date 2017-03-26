@@ -134,6 +134,6 @@ set(SOURCE_FILES
         src/sketch/MotorInterface.h
         src/sketch/MotorInterfaceBase.h
         src/sketch/ClassThatKeepsCoordinatesFromDistances.h
-        src/sketch/OurRobotSpecs.h)
+        src/sketch/OurRobotSpecs.h src/sketch/MovementInterfaceMasterSlave.h src/sketch/MovementInterfaceBase.h)
 
 add_executable(all_func_wheels ${SOURCE_FILES})

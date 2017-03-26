@@ -1,38 +1,11 @@
-// interface for moving our robot
-// (more abstract than MotorInterface)
+// movement interface using cartesian geometry strategy
 
 #ifndef ALL_FUNC_WHEELS_MOTORCONTROLLER_H
 #define ALL_FUNC_WHEELS_MOTORCONTROLLER_H
 
-#ifdef SIM
-    #include <iostream>
-    #include <cmath>      // sin cos atan2 sqrt
-    #include <cstddef>    // uint8_t
-    #include <cstdlib>    // abs
-    #include <algorithm>  // min
+#include "MovementInterfaceBase.h"
 
-    #define cos std::cos
-    #define sin std::sin
-    #define atan2 std::atan2
-    #define MIN std::min
-
-#endif
-
-#ifndef SIM
-    #include "Arduino.h"
-    #include <math.h>
-
-    #define MIN min
-
-#endif
-
-#include "MotorInterfaceBase.h"
 #include "ClassThatKeepsCoordinatesFromDistances.h"
-#ifndef SIM
-    #include "MotorInterface.h"
-#endif
-
-#define FORWARD 2
 
 #define TRAVEL_SEGMENT_COUNT 10  // the number of segments to break the travel into
 
@@ -68,16 +41,11 @@ public:
             distances[RIGHT] = distancesRight[i];
             calculateNewCoordinates(distances);
         }
-#ifdef SIM
-        std::cout << coordinates.x[LEFT] << ' ' << coordinates.y[LEFT] << std::endl;
-#endif
-#ifndef SIM
 #ifdef VERBOSE
         Serial.print(coordinates.x[LEFT]);
         Serial.print(' ');
         Serial.println(coordinates.y[LEFT]);
 #endif  // VERBOSE
-#endif  // not SIM
     }
 
     void save(const size_t& index, long distances[MOTOR_COUNT]) {
@@ -86,7 +54,7 @@ public:
     }
 };
 
-class MovementInterface : public ClassThatKeepsCoordinatesFromDistances
+class MovementInterface : public MovementInterfaceBase, public ClassThatKeepsCoordinatesFromDistances
 {
 public:  // private
 
@@ -99,9 +67,6 @@ public:  // private
     GlobalCoordinates global;  // for the whole grid, doesn't reset with each move
 
     int travelSegmentsRemaining;  // counts down
-
-    MotorInterfaceBase* motorInterface;
-    double startEncoderValues[MOTOR_COUNT];
 
     /** reset everything for a new movement */
     void reset()
@@ -192,19 +157,6 @@ public:  // private
         return 1.6667 * travelSegmentsRemaining / TRAVEL_SEGMENT_COUNT;
     }
 
-    int motorSpeedLimit(const int& speed)
-    {
-        if (speed > MAX_MOTOR_POWER)
-        {
-            return MAX_MOTOR_POWER;
-        }
-        if (speed > MIN_MOTOR_POWER)
-        {
-            return speed;
-        }
-        return MIN_MOTOR_POWER;
-    }
-
     /**
      *  power per distance that I found I make
      *  with exponential weighted average
@@ -225,16 +177,12 @@ public:  // private
 
 public:
     // constructor
-    MovementInterface(MotorInterfaceBase* _motorInterface)
+    MovementInterface(MotorInterfaceBase* _motorInterface) : MovementInterfaceBase(_motorInterface)
     {
-        motorInterface = _motorInterface;
-        reset();
-
         forwardPowerPerDistance[LEFT] = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT;
         forwardPowerPerDistance[RIGHT] = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT;
         turnPowerPerDistance[LEFT] = STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_LEFT;
         turnPowerPerDistance[RIGHT] = STARTING_TURN_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT;
-
     }
 
     /** movementType is FORWARD, LEFT, RIGHT */
@@ -302,15 +250,8 @@ public:
 
             howMuchWeCareAboutXThisTime = howMuchToCareAboutX(movementType);
 
-#ifdef SIM
-            std::cout << "time left: " << travelSegmentsRemaining
-                      << " input left " << *(powerPerDistanceForThisMovement[LEFT])
-                      << " right " << *(powerPerDistanceForThisMovement[RIGHT]) << std::endl;
-            std::cout << "caring about x: " << howMuchWeCareAboutXThisTime << std::endl;
-#endif
             // TODO: disable this because serial communication can affect timing
             // TODO: don't remove if we haven't done a lot of testing without it
-#ifndef SIM
 #ifdef VERBOSE
             Serial.print("time left ");
             Serial.println(travelSegmentsRemaining);
@@ -321,7 +262,6 @@ public:
             Serial.println(*(powerPerDistanceForThisMovement[RIGHT]));
              */
 #endif  // VERBOSE
-#endif  // not SIM
 
             previousDistanceFromGoal[LEFT] = distanceFromGoal(movementType, LEFT, howMuchWeCareAboutXThisTime);
             previousDistanceFromGoal[RIGHT] = distanceFromGoal(movementType, RIGHT, howMuchWeCareAboutXThisTime);
@@ -408,10 +348,6 @@ public:
                 // TODO: try different weighted averaging schemes
             }
 
-#ifdef SIM
-            std::cout << motorInterface->report() << std::endl;
-
-#endif
         }
 
         motorInterface->setMotorPower(LEFT, 0, 1);
@@ -421,56 +357,12 @@ public:
         double average[MOTOR_COUNT];
         average[LEFT] = (double)(totalPower[LEFT]) / (TRAVEL_SEGMENT_COUNT - 2);  // minus first and last
         average[RIGHT] = (double)(totalPower[RIGHT]) / (TRAVEL_SEGMENT_COUNT - 2);
-#ifdef SIM
-        std::cout << "average left power: " << average[LEFT] << std::endl;
-        std::cout << "average right power: " << average[RIGHT] << std::endl;
-#endif
-#ifndef SIM
 #ifdef VERBOSE
         Serial.print("average left power: ");
         Serial.println(average[LEFT]);
         Serial.print("average right power: ");
         Serial.println(average[RIGHT]);
 #endif  // VERBOSE
-#endif  // not SIM
-    }
-
-    /**
-     * for side calibration
-     * @param direction LEFT or RIGHT
-     */
-    void smallPivot(const size_t& direction)
-    {
-        motorInterface->setMotorPower(direction, MAX_MOTOR_POWER, -1);
-        motorInterface->setMotorPower((direction + 1) % 2, MAX_MOTOR_POWER, 1);
-
-        delay(100);
-
-        motorInterface->setMotorPower(direction, 0, 1);
-        motorInterface->setMotorPower((direction + 1) % 2, 0, 1);
-
-        delay(150);  // give time to stop before doing anything else
-    }
-
-    /**
-     * nudge one wheel in a certain direction
-     * @param whichWheel LEFT or RIGHT
-     * @param direction 1 or -1
-     */
-    void nudge(int leftDirection, int rightDirection)
-    {
-        int leftPower = MAX_MOTOR_POWER * abs(leftDirection);
-        int rightPower = MAX_MOTOR_POWER * abs(rightDirection);
-
-        motorInterface->setMotorPower(LEFT, leftPower, leftDirection);
-        motorInterface->setMotorPower(RIGHT, rightPower, rightDirection);
-
-        delay(100);
-
-        motorInterface->setMotorPower(LEFT, 0, 1);
-        motorInterface->setMotorPower(RIGHT, 0, 1);
-
-        delay(150);
     }
 };
 
