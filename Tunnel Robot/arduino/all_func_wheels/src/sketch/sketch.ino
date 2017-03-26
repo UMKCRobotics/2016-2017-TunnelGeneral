@@ -8,8 +8,8 @@
 
 #include "PID.h"
 
-#include "MovementInterface.h"
-// #include "MovementInterfaceMasterSlave.h"
+// #include "MovementInterface.h"
+#include "MovementInterfaceMasterSlave.h"
 
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
@@ -83,7 +83,6 @@ void rightEncoderInterruptFunction();
 
 MotorInterface motorInterface(leftEncoderInterruptFunction, rightEncoderInterruptFunction);
 MovementInterface movementInterface(&motorInterface);
-// MovementInterfaceMasterSlave movementInterface(&motorInterface);
 
 void rightEncoderInterruptFunction() {
     motorInterface.encoderInterrupt(RIGHT);
@@ -214,6 +213,7 @@ String interpretCommand(String command, String value) {
     responseString += motorInterface.readEncoder(RIGHT);
   }
 
+/*
     // commands to read global coordinates
     if (command == "{") {
         returnString = "";
@@ -227,7 +227,7 @@ String interpretCommand(String command, String value) {
         responseString += String(movementInterface.global.coordinates.x[RIGHT]) + ' ' +
                           String(movementInterface.global.coordinates.y[RIGHT]);
     }
-
+*/
 
     // commands to calibrate sensors
     if (command == "[") {

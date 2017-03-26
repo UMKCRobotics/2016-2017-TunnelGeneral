@@ -77,7 +77,7 @@ public:
         while (distanceTraveled[MASTER] < targetDistance)
         {
             // slower at start and end
-            distanceTraveledRatio = distanceTraveled[MASTER] / targetDistance;
+            distanceTraveledRatio = (float)distanceTraveled[MASTER] / targetDistance;
             if (distanceTraveledRatio > 1)
                 distanceTraveledRatio = 1;
             // The range that we want to use for the master motor power is
@@ -88,9 +88,16 @@ public:
             // will give us a smooth curve to move through that range.
             powerToGive[MASTER] = motorSpeedLimit(round(MIN_MOTOR_POWER + motorPowerRange / 8.0 +
                                                         motorPowerRange * (-4 * distanceTraveledRatio * distanceTraveledRatio +
-                                                                           4 * distanceTraveledRatio) * 3 / 4));
+                                                                           4 * distanceTraveledRatio) * 3 / 4.0));
             powerToGive[SLAVE] = motorSpeedLimit(round(powerToGive[MASTER] * slaveToMasterRatio));
 
+            /*
+            Serial.print("giving this power: ");
+            Serial.print(powerToGive[LEFT]);
+            Serial.print(' ');
+            Serial.println(powerToGive[RIGHT]);
+            */
+            
             motorInterface->setMotorPower(LEFT, powerToGive[LEFT], direction[LEFT]);
             motorInterface->setMotorPower(RIGHT, powerToGive[RIGHT], direction[RIGHT]);
 
@@ -100,14 +107,28 @@ public:
             distanceTraveled[LEFT] = (currentEncoderReading[LEFT] - startEncoderValues[LEFT]) * direction[LEFT];
             distanceTraveled[RIGHT] = (currentEncoderReading[RIGHT] - startEncoderValues[RIGHT]) * direction[RIGHT];
 
-            /*Serial.print("the distance each wheel traveled ");
+            /*
+            Serial.print("the distance each wheel traveled ");
             Serial.print(distanceTraveled[LEFT]);
             Serial.print(' ');
-            Serial.println(distanceTraveled[RIGHT]);*/
+            Serial.println(distanceTraveled[RIGHT]);
+            */
 
             // update slave master ratio
-            slaveToMasterRatio = WEIGHT_FOR_PREVIOUS_STMR * slaveToMasterRatio +
-                                 (1-WEIGHT_FOR_PREVIOUS_STMR) * slaveToMasterRatio * distanceTraveled[MASTER] / distanceTraveled[SLAVE];
+            if (distanceTraveled[SLAVE] > 10)
+                slaveToMasterRatio = WEIGHT_FOR_PREVIOUS_STMR * slaveToMasterRatio +
+                                     (1-WEIGHT_FOR_PREVIOUS_STMR) * slaveToMasterRatio * distanceTraveled[MASTER] / distanceTraveled[SLAVE];
+
+           
+            // limit stmr to where it will stay in motor power limits
+            slaveToMasterRatio = min(slaveToMasterRatio, MAX_MOTOR_POWER / (MAX_MOTOR_POWER - (motorPowerRange)/8.0));
+            
+            slaveToMasterRatio = max(slaveToMasterRatio, MIN_MOTOR_POWER / (MIN_MOTOR_POWER + (motorPowerRange)/8.0));
+
+            /*
+            Serial.print("after max stmr set to: ");
+            Serial.println(slaveToMasterRatio, 6);
+            */
         }
 
         // reached target distance
