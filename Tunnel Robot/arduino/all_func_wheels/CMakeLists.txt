@@ -139,6 +139,7 @@ set(SOURCE_FILES
         src/sketch/MovementInterfaceBase.h
         src/sketch/Calibrator.h
         src/sketch/MiscDefinitions.h
-        src/sketch/IRPins.h)
+        src/sketch/IRPins.h
+        src/sketch/Buttons.h)
 
 add_executable(all_func_wheels ${SOURCE_FILES})

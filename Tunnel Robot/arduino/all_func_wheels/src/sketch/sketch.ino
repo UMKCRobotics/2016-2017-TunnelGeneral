@@ -11,6 +11,7 @@
 // #include "MovementInterface.h"
 #include "MovementInterfaceMasterSlave.h"
 #include "Calibrator.h"
+#include "Buttons.h"
 
 #ifndef PSTR
 #define PSTR // Make Arduino Due happy
@@ -24,6 +25,10 @@
 #define EMF1 A0
 
 /** IR pins are defined in IRPins.h */
+
+/** movement motor pins are defined in MotorInterface.h */
+
+/** button pins are defined in Buttons.h */
 
 //8x8 pin
 #define PINM 6
@@ -41,55 +46,45 @@ Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PINM,
 //digit representations
 int digits[10] = {190, 6, 218, 206, 102, 236, 252, 134, 254, 238};
 
-
-/** movement motor pins are defined in MotorInterface.h */
-
-//button pins
-#define GoPin 18 //Go button - INTERRUPT PIN
-#define StopPin 19 //Stop button - INTERRUPT PIN
-//button states
-volatile char GoState = '0';
-volatile char StopState = '0';  // should these be initialized in the setup function instead of here?
-
 //parsing inputs
 String command; //used to store command from serial
 String value; //used to store value from serial
 String response; //used to store response to main program
 
+// motor interface
 void leftEncoderInterruptFunction();
-
 void rightEncoderInterruptFunction();
 
 MotorInterface motorInterface(leftEncoderInterruptFunction, rightEncoderInterruptFunction);
-MovementInterface movementInterface(&motorInterface);
 
 void rightEncoderInterruptFunction() {
     motorInterface.encoderInterrupt(RIGHT);
 }
-
 void leftEncoderInterruptFunction() {
     motorInterface.encoderInterrupt(LEFT);
 }
 
+// movement interface
+MovementInterface movementInterface(&motorInterface);
+// TODO: send buttons to movement interface to stop moving if stop pressed
+
+// calibrator
 Calibrator calibrator(&movementInterface);
+// TODO: send buttons here too
 
-// button interrupt functions
-void GoButtonFunc() {
-        GoState = '1';
+// buttons
+void goInterruptFunction();
+void stopInterruptFunction();
+
+Buttons buttons(goInterruptFunction, stopInterruptFunction);
+
+void goInterruptFunction() {
+    buttons.goInterrupt();
+}
+void stopInterruptFunction() {
+    buttons.stopInterrupt();
 }
 
-void StopButtonFunc() {
-        StopState = '1';
-        Serial.println("STOP PRESSED");
-}
-
-void ButtonInit() {
-    Serial.println("initializing buttons");
-    pinMode(GoPin, INPUT);
-    pinMode(StopPin, INPUT);
-    attachInterrupt(digitalPinToInterrupt(GoPin), GoButtonFunc, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(StopPin), StopButtonFunc, CHANGE);
-}
 
 void setup() {
     //initialize led pins
@@ -114,8 +109,7 @@ void setup() {
     //initialize encoders/motors
     motorInterface.encoderInit();
     motorInterface.motorInit();
-    ButtonInit();
-    //SwitchInit();
+    buttons.init();
     //Serial1.write("1f0\r");
     //delayMicroseconds(500);
     //Serial1.write("2f0\r");
@@ -126,7 +120,7 @@ void setup() {
 }
 
 void loop() {
-    if (StopState != 1) {
+    if (buttons.getStopState() != '1') {
         command = "";
         value = "";
         String *addTo = &command;  // which information we are reading from serial
@@ -255,10 +249,10 @@ String interpretCommand(String command, String value) {
     else if (command == "B") {
         if (value == "G") {
             responseString = responseHeader;
-            responseString += GoState;
+            responseString += buttons.getGoState();
         } else if (value == "S") {
             responseString = responseHeader;
-            responseString += StopState;
+            responseString += buttons.getStopState();
         }
     }
 
