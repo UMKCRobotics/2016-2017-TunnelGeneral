@@ -81,6 +81,7 @@ void GoButtonFunc() {
 
 void StopButtonFunc() {
         StopState = '1';
+        Serial.println("STOP PRESSED");
 }
 
 void setup() {
