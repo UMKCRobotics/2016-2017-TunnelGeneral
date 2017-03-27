@@ -73,8 +73,7 @@ void leftEncoderInterruptFunction() {
 
 Calibrator calibrator(&movementInterface);
 
-
-// interrupt functions
+// button interrupt functions
 void GoButtonFunc() {
         GoState = '1';
 }
@@ -82,6 +81,14 @@ void GoButtonFunc() {
 void StopButtonFunc() {
         StopState = '1';
         Serial.println("STOP PRESSED");
+}
+
+void ButtonInit() {
+    Serial.println("initializing buttons");
+    pinMode(GoPin, INPUT);
+    pinMode(StopPin, INPUT);
+    attachInterrupt(digitalPinToInterrupt(GoPin), GoButtonFunc, HIGH);
+    attachInterrupt(digitalPinToInterrupt(StopPin), StopButtonFunc, HIGH);
 }
 
 void setup() {
@@ -364,14 +371,6 @@ int getEMFreading(int port) {
 
 
 //START OF DISPLAY STUFF
-void ButtonInit() {
-    Serial.println("initializing buttons");
-    pinMode(GoPin, INPUT);
-    pinMode(StopPin, INPUT);
-    attachInterrupt(digitalPinToInterrupt(GoPin), GoButtonFunc, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(StopPin), StopButtonFunc, CHANGE);
-}
-
 /**
  * 7 segment for displaying number on die
  * @param dig the number to display
