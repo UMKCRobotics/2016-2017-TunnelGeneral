@@ -594,7 +594,12 @@ class Robot:
         # go there
         self.travel_these(directions, None, None, False)
 
-        # TODO: turn robot's back to field side and calibrate on it (to make sure we are fully in the starting square)
+        # turn robot's back to field side and calibrate on it (to make sure we are fully in the starting square)
+        if self.facing == Direction.south:
+            self.turn(Direction.east)
+        elif self.facing == Direction.west:
+            self.turn(Direction.north)
+        self.calibrate()
 
     @staticmethod
     def sleep_wait():
