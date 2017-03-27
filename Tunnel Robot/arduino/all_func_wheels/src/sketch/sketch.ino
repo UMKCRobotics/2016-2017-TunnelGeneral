@@ -107,8 +107,6 @@ void setup() {
     //initialize encoders/motors
     motorInterface.encoderInit();
     motorInterface.motorInit();
-    tapperEncoderInit();
-    tapperMotorInit();
     ButtonInit();
     //SwitchInit();
     //Serial1.write("1f0\r");
@@ -150,7 +148,7 @@ void loop() {
     }
     else{
         Serial.println("STOPPED");
-        delat(20);
+        delay(20);
     }
 }
 
@@ -234,11 +232,6 @@ String interpretCommand(String command, String value) {
             returnString = "0";  // returnString = calibrateWithSwitches();
         else
             returnString = calibrator.calibrateWithIR(value);
-        responseString = responseHeader;
-        responseString += returnString;
-    } else if (command == "A") {
-        //perform tap
-        returnString = performTap();
         responseString = responseHeader;
         responseString += returnString;
     }
@@ -372,6 +365,7 @@ int getEMFreading(int port) {
 
 //START OF DISPLAY STUFF
 void ButtonInit() {
+    Serial.println("initializing buttons");
     pinMode(GoPin, INPUT);
     pinMode(StopPin, INPUT);
     attachInterrupt(digitalPinToInterrupt(GoPin), GoButtonFunc, CHANGE);
