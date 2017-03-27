@@ -87,8 +87,8 @@ void ButtonInit() {
     Serial.println("initializing buttons");
     pinMode(GoPin, INPUT);
     pinMode(StopPin, INPUT);
-    attachInterrupt(digitalPinToInterrupt(GoPin), GoButtonFunc, HIGH);
-    attachInterrupt(digitalPinToInterrupt(StopPin), StopButtonFunc, HIGH);
+    attachInterrupt(digitalPinToInterrupt(GoPin), GoButtonFunc, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(StopPin), StopButtonFunc, CHANGE);
 }
 
 void setup() {
