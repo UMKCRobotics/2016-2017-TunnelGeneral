@@ -282,6 +282,8 @@ class Robot:
         can_calibrate_left = False
         can_calibrate_right = False
 
+        direction_to_put_back_on_wood = None  # the robot needs to face so it can calibrate on back
+
         if self.position in BAD_CALIBRATION_COORDINATES:
             pass  # leave them all false
 
@@ -290,32 +292,40 @@ class Robot:
                 can_calibrate_back = True
             if self.position.y == 0:
                 can_calibrate_right = True
+                direction_to_put_back_on_wood = Direction.north
             elif self.position.y == GRID_HEIGHT - 1:
                 can_calibrate_left = True
+                direction_to_put_back_on_wood = Direction.south
 
         elif self.facing == Direction.north:
             if self.position.y == 0:
                 can_calibrate_back = True
             if self.position.x == 0:
                 can_calibrate_left = True
+                direction_to_put_back_on_wood = Direction.east
             elif self.position.x == GRID_WIDTH - 1:
                 can_calibrate_right = True
+                direction_to_put_back_on_wood = Direction.west
 
         elif self.facing == Direction.west:
             if self.position.x == GRID_WIDTH - 1:
                 can_calibrate_back = True
             if self.position.y == 0:
                 can_calibrate_left = True
+                direction_to_put_back_on_wood = Direction.north
             elif self.position.y == GRID_HEIGHT - 1:
                 can_calibrate_right = True
+                direction_to_put_back_on_wood = Direction.south
 
         elif self.facing == Direction.south:
             if self.position.y == GRID_HEIGHT - 1:
                 can_calibrate_back = True
             if self.position.x == 0:
                 can_calibrate_right = True
+                direction_to_put_back_on_wood = Direction.east
             elif self.position.x == GRID_WIDTH - 1:
                 can_calibrate_left = True
+                direction_to_put_back_on_wood = Direction.west
 
         # now we know which sides we can calibrate on, so do it
         print("about to calibrate")
@@ -329,17 +339,13 @@ class Robot:
             elif can_calibrate_left:
                 good_distance = self.wait_till_done(self.robot_interface.goCalibrateIR("L"))
                 if good_distance == '0':
-                    self.wait_till_done(self.robot_interface.rotateClockwise())
+                    self.turn(direction_to_put_back_on_wood)
                     self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
-                    self.wait_till_done(self.robot_interface.rotateCounterClockwise())
-                    self.wait_till_done(self.robot_interface.goCalibrateIR("L"))
             elif can_calibrate_right:
                 good_distance = self.wait_till_done(self.robot_interface.goCalibrateIR("R"))
                 if good_distance == '0':
-                    self.wait_till_done(self.robot_interface.rotateCounterClockwise())
+                    self.turn(direction_to_put_back_on_wood)
                     self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
-                    self.wait_till_done(self.robot_interface.rotateClockwise())
-                    self.wait_till_done(self.robot_interface.goCalibrateIR("R"))
             Robot.sleep_wait()
         print("calibration done")
 
