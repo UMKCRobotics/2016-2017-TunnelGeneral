@@ -10,34 +10,20 @@
 
 // #include "MovementInterface.h"
 #include "MovementInterfaceMasterSlave.h"
+#include "Calibrator.h"
 
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
 #endif
 
-typedef uint8_t pin;
 
 //test LED pins
 #define LED1 22
 #define LED2 23
 //EMF PINS
 #define EMF1 A0
-//IR PINS
-#define IR_L1 A14
-#define IR_L2 A13
-#define IR_BR A12
-#define IR_BL A11
-#define IR_R1 A9
-#define IR_R2 A10
-#define IR_F1 A8
 
-// what to add to the difference between the two IR sensors on each side for straight to be zero
-int leftCalibrationOffset;
-int goodDistanceForLeft;
-int rightCalibrationOffset;
-int goodDistanceForRight;
-int backLeftCalibrated;
-int backRightCalibrated;
+/** IR pins are defined in IRPins.h */
 
 //8x8 pin
 #define PINM 6
@@ -93,6 +79,8 @@ void rightEncoderInterruptFunction() {
 void leftEncoderInterruptFunction() {
     motorInterface.encoderInterrupt(LEFT);
 }
+
+Calibrator calibrator(&movementInterface);
 
 // not used
 void ButtonStates(){
@@ -233,20 +221,20 @@ String interpretCommand(String command, String value) {
 
     // commands to calibrate sensors
     if (command == "[") {
-        getLeftCalibrationValuesForIRSensors();
+        calibrator.getLeftCalibrationValuesForIRSensors();
         returnString = "1";
         responseString = responseHeader;
         responseString += returnString;
     }
     else if (command == "]") {
-        getRightCalibrationValuesForIRSensors();
+        calibrator.getRightCalibrationValuesForIRSensors();
         returnString = "1";
         responseString = responseHeader;
         responseString += returnString;
     }
     else if (command == "v") {
-      calibrateBackSensors();
-      responseString = responseHeader + "1";
+        calibrator.calibrateBackSensors();
+        responseString = responseHeader + "1";
     }
 
   // motor stuff
@@ -272,7 +260,7 @@ String interpretCommand(String command, String value) {
     if (value == "")
       returnString = "0";  // returnString = calibrateWithSwitches();
     else
-      returnString = calibrateWithIR(value);
+      returnString = calibrator.calibrateWithIR(value);
     responseString = responseHeader;
     responseString += returnString;
   }
@@ -428,181 +416,6 @@ int expMovingAvg(int newVal,int oldVal, double prefVal) {
   return int(newVal*prefVal + oldVal*(1.0-prefVal));
 }
 
-int getIRValue(pin whichPin)
-{
-    const int sampleCount = 300;
-
-    long total = 0;
-    for (int i = sampleCount; i > 0; --i)
-    {
-        total += analogRead(whichPin);
-    }
-
-    return (int)(total / sampleCount);
-}
-
-int getDifferenceBetweenIRs(pin IRPinLeftOfWheel, pin IRPinRightOfWheel, int differenceOffsetForThisSide)
-{
-    int leftReading = getIRValue(IRPinLeftOfWheel);
-    int rightReading = getIRValue(IRPinRightOfWheel);
-    return leftReading - rightReading + differenceOffsetForThisSide;
-}
-
-void getLeftCalibrationValuesForIRSensors()
-{
-    leftCalibrationOffset = 0 - getDifferenceBetweenIRs(IR_L1, IR_L2, 0);
-
-    Serial.print("left IR sensors difference offset set to: ");
-    Serial.println(leftCalibrationOffset);
-
-    goodDistanceForRight = (getIRValue(IR_L1) + getIRValue(IR_L2)) / 2;
-
-    Serial.print("good distance for left set to ");
-    Serial.println(goodDistanceForLeft);
-}
-
-void getRightCalibrationValuesForIRSensors()
-{
-    rightCalibrationOffset = 0 - getDifferenceBetweenIRs(IR_R2, IR_R1, 0);
-
-    Serial.print("right IR sensors difference offset set to: ");
-    Serial.println(rightCalibrationOffset);
-
-    goodDistanceForRight = (getIRValue(IR_R1) + getIRValue(IR_R2)) / 2;
-
-    Serial.print("good distance for right set to ");
-    Serial.println(goodDistanceForRight);
-}
-
-bool sideCalibrationPivotIR(pin IRPinLeftOfWheel,
-                            pin IRPinRightOfWheel,
-                            int differenceOffsetForThisSide,
-                            int goodDistanceForThisSide)
-{
-    const int threshold = 5;
-
-    int difference;
-
-    while (abs(difference = getDifferenceBetweenIRs(IRPinLeftOfWheel,
-                                                    IRPinRightOfWheel,
-                                                    differenceOffsetForThisSide)) > threshold)
-    {
-        if (difference > 0)  // left ir sensor is closer to wall
-        {
-            movementInterface.smallPivot(RIGHT);
-        }
-        else  // difference negative, right closer to wall
-        {
-            movementInterface.smallPivot(LEFT);
-        }
-    }
-
-    // if too close or too far away,
-    // we need to send a message back to pi to tell it that we need to fix distance from side
-    const int distanceThreshold = 30;
-
-    int distance = (getIRValue(IRPinLeftOfWheel) + getIRValue(IRPinRightOfWheel)) / 2;
-    return (abs(distance - goodDistanceForThisSide) < distanceThreshold);
-}
-
-/**
- *  find the sensor values for the good distance from the wood
- */
-void calibrateBackSensors()
-{
-    backLeftCalibrated = getIRValue(IR_BL);
-    backRightCalibrated = getIRValue(IR_BR);
-
-    Serial.print("back calibration values: ");
-    Serial.print(backLeftCalibrated);
-    Serial.print(' ');
-    Serial.println(backRightCalibrated);
-}
-
-void backCalibrationIR()
-{
-    const int threshold = 3;
-    const int bigNudgeThreshold = 20;
-
-    int leftReading = getIRValue(IR_BL);
-    int rightReading = getIRValue(IR_BR);
-
-    boolean finished = false;
-    boolean leftGood;
-    boolean rightGood;
-
-    int needToMoveLeft;
-    int needToMoveRight;
-
-    while (! finished)
-    {
-        Serial.print("found left back at ");
-        Serial.print(leftReading);
-        Serial.print(" when we want ");
-        Serial.println(backLeftCalibrated);
-
-        if (leftReading - threshold > backLeftCalibrated)
-        {
-            // left back wheel too close
-            needToMoveLeft = 1 + (leftReading - backLeftCalibrated > bigNudgeThreshold);
-            leftGood = false;
-        }
-        else if (leftReading + threshold < backLeftCalibrated)
-        {
-            // left back wheel too far
-            needToMoveLeft = -1 - (backLeftCalibrated - leftReading > bigNudgeThreshold);
-            leftGood = false;
-        }
-        else
-        {
-            // within threshold
-            needToMoveLeft = 0;
-            leftGood = true;
-        }
-
-        Serial.print("needToMoveLeft ");
-        Serial.println(needToMoveLeft);
-
-
-        Serial.print("found right back at ");
-        Serial.print(rightReading);
-        Serial.print(" when we want ");
-        Serial.println(backRightCalibrated);
-
-        if (rightReading - threshold > backRightCalibrated)
-        {
-            // right back wheel too close
-            needToMoveRight = 1 + (rightReading - backRightCalibrated > bigNudgeThreshold);
-            rightGood = false;
-        }
-        else if (rightReading + threshold < backRightCalibrated)
-        {
-            // right back wheel too far
-            needToMoveRight = -1 - (backRightCalibrated - rightReading > bigNudgeThreshold);
-            rightGood = false;
-        }
-        else
-        {
-            // within threshold
-            needToMoveRight = 0;
-            rightGood = true;
-        }
-
-        Serial.print("needToMoveRight ");
-        Serial.println(needToMoveRight);
-
-        movementInterface.nudge(needToMoveLeft, needToMoveRight);
-
-        if (rightGood && leftGood)
-        {
-            finished = true;
-        }
-
-        leftReading = getIRValue(IR_BL);
-        rightReading = getIRValue(IR_BR);
-    }
-}
-
 // not used
 int runCalibrationPivotIR(pin pin1, pin pin2, int setPoint, int tolerance) {
   //1 is on the right, 2 is on the left, let's just roll with it, okay?
@@ -668,28 +481,6 @@ String performTap() {
   int encCount = 1725;
   int actualDur = runTappingTill(encCount,255);
   return "1";
-}
-
-String calibrateWithIR(String side) {
-    //if L, use IR on left side
-    if (side == "L")
-        return String((int)sideCalibrationPivotIR(IR_L1, IR_L2, leftCalibrationOffset, goodDistanceForLeft));
-    //if R, use IR on right side
-    else if (side == "R")
-        return String((int)sideCalibrationPivotIR(IR_R2, IR_R1, rightCalibrationOffset, goodDistanceForRight));
-    //if B, use IR on back side
-    else if (side == "B") {
-        backCalibrationIR();
-        return "1";
-    }
-    /*
-    //if F, use IR on front side (might not use)
-    else if (side == "F")
-        runCalibrationPivotIR(IR_F1,IR_F2,0,threshold);
-    */
-    //signal if bad side received
-    else
-        return "BAD";
 }
 
 //START OF SENSOR STUFF
