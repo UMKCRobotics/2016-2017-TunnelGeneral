@@ -173,7 +173,7 @@ public:
         Serial.print("left IR sensors difference offset set to: ");
         Serial.println(leftCalibrationOffset);
 
-        goodDistanceForRight = (getIRValue(IR_L1) + getIRValue(IR_L2)) / 2;
+        goodDistanceForLeft = (getIRValue(IR_L1) + getIRValue(IR_L2)) / 2;
 
         Serial.print("good distance for left set to ");
         Serial.println(goodDistanceForLeft);
