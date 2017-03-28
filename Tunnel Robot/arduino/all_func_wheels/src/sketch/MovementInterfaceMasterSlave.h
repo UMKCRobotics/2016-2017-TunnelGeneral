@@ -4,6 +4,8 @@
 #define ALL_FUNC_WHEELS_MOVEMENTINTERFACEMASTERSLAVE_H
 
 #include "MovementInterfaceBase.h"
+
+#define MASTER_SLAVE_STRATEGY  // used in OurRobotSpecs.h
 #include "OurRobotSpecs.h"
 
 #define MASTER LEFT

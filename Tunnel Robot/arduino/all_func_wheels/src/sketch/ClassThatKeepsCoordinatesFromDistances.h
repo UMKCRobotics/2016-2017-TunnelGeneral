@@ -1,8 +1,11 @@
+// keep cartesian coordinates using geometry
 
 #ifndef ALL_FUNC_WHEELS_CLASSTHATKEEPSCOORDINATESFROMDISTANCES_H
 #define ALL_FUNC_WHEELS_CLASSTHATKEEPSCOORDINATESFROMDISTANCES_H
 
 #include "MotorInterfaceBase.h"
+
+#define CARTESIAN_STRATEGY  // used in OurRobotSpecs.h
 #include "OurRobotSpecs.h"
 
 struct RobotCoordinates

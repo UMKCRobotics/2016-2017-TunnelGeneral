@@ -8,7 +8,7 @@
 
 #include "PID.h"
 
-// #include "MovementInterface.h"  // old strategy
+// #include "MovementInterface.h"  // old cartesian strategy
 #include "MovementInterfaceMasterSlave.h"
 #include "Calibrator.h"
 #include "Buttons.h"
