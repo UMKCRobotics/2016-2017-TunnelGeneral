@@ -21,7 +21,6 @@ class Calibrator
 {
 public:  // private
     MovementInterfaceBase* movementInterface;
-    Buttons* buttons;
 
     // what to add to the difference between the two IR sensors on each side for straight to be zero
     int leftCalibrationOffset;
@@ -64,7 +63,7 @@ public:  // private
         while (abs(difference = getDifferenceBetweenIRs(IRPinLeftOfWheel,
                                                         IRPinRightOfWheel,
                                                         differenceOffsetForThisSide)) > SIDE_PIVOT_THRESHOLD
-               && buttons->getStopState() == '0')
+               && Buttons::getStopState() == '0')
         {
             if (difference > 0)  // left ir sensor is closer to wall
             {
@@ -166,10 +165,9 @@ public:  // private
     }
 
 public:
-    Calibrator(MovementInterfaceBase* _movementInterface, Buttons* _buttons)
+    Calibrator(MovementInterfaceBase* _movementInterface)
     {
         movementInterface = _movementInterface;
-        buttons = _buttons;
     }
 
     void getLeftCalibrationValuesForIRSensors()

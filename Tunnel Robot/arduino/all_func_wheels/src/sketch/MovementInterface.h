@@ -177,8 +177,8 @@ public:  // private
 
 public:
     // constructor
-    MovementInterface(MotorInterfaceBase* _motorInterface, Buttons* _buttons)
-            : MovementInterfaceBase(_motorInterface, _buttons)
+    MovementInterface(MotorInterfaceBase* _motorInterface)
+            : MovementInterfaceBase(_motorInterface)
     {
         forwardPowerPerDistance[LEFT] = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT;
         forwardPowerPerDistance[RIGHT] = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT;
