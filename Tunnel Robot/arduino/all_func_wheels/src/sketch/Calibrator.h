@@ -12,9 +12,9 @@
 #define SAMPLE_COUNT 300  // the number of sensor samples to average together
 
 #define BACK_CALIBRATION_THRESHOLD 3
-#define THRESHOLD_FOR_BIG_NUDGE 20
+#define THRESHOLD_FOR_BIG_NUDGE 30
 
-#define SIDE_PIVOT_THRESHOLD 6
+#define SIDE_PIVOT_THRESHOLD 7
 #define THRESHOLD_FOR_SIDE_DISTANCE 100
 
 class Calibrator
@@ -58,6 +58,7 @@ public:  // private
                                 int differenceOffsetForThisSide,
                                 int goodDistanceForThisSide)
     {
+        // TODO: bigger nudge for pivot
         int difference;
 
         while (abs(difference = getDifferenceBetweenIRs(IRPinLeftOfWheel,

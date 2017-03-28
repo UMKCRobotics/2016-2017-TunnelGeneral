@@ -524,6 +524,11 @@ class Robot:
         """ visit all possible grid spaces
             go back to sides, when away for a long time """
 
+        # TODO: POST (power on self test)
+        # right and back IR somewhere around 180
+        # front and left IR somewhere around 20
+        # (not 500 to 600)
+
         # perform if running a bot
         if not self.using_outside_grid:
             # light up yellow READY light on 8x8 (A7)

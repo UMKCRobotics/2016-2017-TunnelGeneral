@@ -46,7 +46,7 @@ public:
 
         threshold = ((((values[0] + values[1] + values[5] + values[6]) / 4)
                       + ((values[2] + values[3] + values[4]) / 3))
-                     / 2);
+                     / 3);  // TODO: magic number 3 to try to err on the side of false positives
 
 #ifdef VERBOSE
         Serial.print("obstacle threshold set to ");
