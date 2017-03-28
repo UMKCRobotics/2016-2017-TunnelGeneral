@@ -163,7 +163,8 @@ String interpretCommand(String command, String value) {
     }
     Serial.print('\n');
 #endif
-    String responseString = "n";  // what this function returns
+    String responseString = "\tn";  // what this function returns
+    // tab to signal end of debug messages, n signals invalid command
     String returnString = "";     // holds the return value of the command function
     const String responseHeader = "\t1";  // tab signals that debug messages are done (don't use tab in debug messages)
 
@@ -292,7 +293,7 @@ String interpretCommand(String command, String value) {
 
     //check if any BADs were obtained
     if (returnString == "BAD") {
-        return "n";
+        return "\tn";
     }
     return responseString;
 }
