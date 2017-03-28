@@ -51,7 +51,7 @@ class SerialComm:
             self.serial.write(commReq.request + '\n')
 
             # wait for a response to change state of command Request
-            
+
             # tab char is a signal that the debug messages are over and then comes response
             debug_messages = ""
             # when we get a tab char we move out of debug messages
@@ -60,6 +60,8 @@ class SerialComm:
                 while (not debug_messages.endswith('\t')) and (not debug_messages.endswith('\n')):
                     debug_messages += self.serial.read()
                 print("debug messages received: " + debug_messages)
+                if not debug_messages.endswith('\t'):
+                    debug_messages = ""
 
             # now the actual response for the command
             serin = ""
