@@ -4,7 +4,7 @@
 #define ALL_FUNC_WHEELS_MOTORCONTROLLER_H
 
 #include "MovementInterfaceBase.h"
-
+#include "Buttons.h"
 #include "ClassThatKeepsCoordinatesFromDistances.h"
 
 #define TRAVEL_SEGMENT_COUNT 10  // the number of segments to break the travel into
@@ -177,7 +177,8 @@ public:  // private
 
 public:
     // constructor
-    MovementInterface(MotorInterfaceBase* _motorInterface) : MovementInterfaceBase(_motorInterface)
+    MovementInterface(MotorInterfaceBase* _motorInterface, Buttons* _buttons)
+            : MovementInterfaceBase(_motorInterface, _buttons)
     {
         forwardPowerPerDistance[LEFT] = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_LEFT;
         forwardPowerPerDistance[RIGHT] = STARTING_FORWARD_POWER_PER_DISTANCE_NEEDED_FOR_RIGHT;
@@ -239,7 +240,7 @@ public:
         previousEncoderReading[LEFT] = motorInterface->readEncoder(LEFT);
         previousEncoderReading[RIGHT] = motorInterface->readEncoder(RIGHT);
 
-        while (travelSegmentsRemaining > 0)
+        while (travelSegmentsRemaining > 0 && buttons->getStopState() == '0')
         {
             // look for the average power over the segments - excluding first and last because they are often anomalies
             if (travelSegmentsRemaining > 1 && travelSegmentsRemaining < (TRAVEL_SEGMENT_COUNT - 1))
