@@ -8,7 +8,7 @@
 
 #include "PID.h"
 
-// #include "MovementInterface.h"
+// #include "MovementInterface.h"  // old strategy
 #include "MovementInterfaceMasterSlave.h"
 #include "Calibrator.h"
 #include "Buttons.h"
@@ -52,6 +52,19 @@ String command; //used to store command from serial
 String value; //used to store value from serial
 String response; //used to store response to main program
 
+// buttons
+void goInterruptFunction();
+void stopInterruptFunction();
+
+Buttons buttons(goInterruptFunction, stopInterruptFunction);
+
+void goInterruptFunction() {
+    buttons.goInterrupt();
+}
+void stopInterruptFunction() {
+    buttons.stopInterrupt();
+}
+
 // motor interface
 void leftEncoderInterruptFunction();
 void rightEncoderInterruptFunction();
@@ -66,25 +79,10 @@ void leftEncoderInterruptFunction() {
 }
 
 // movement interface
-MovementInterface movementInterface(&motorInterface);
-// TODO: send buttons to movement interface to stop moving if stop pressed
+MovementInterface movementInterface(&motorInterface, &buttons);
 
 // calibrator
-Calibrator calibrator(&movementInterface);
-// TODO: send buttons here too
-
-// buttons
-void goInterruptFunction();
-void stopInterruptFunction();
-
-Buttons buttons(goInterruptFunction, stopInterruptFunction);
-
-void goInterruptFunction() {
-    buttons.goInterrupt();
-}
-void stopInterruptFunction() {
-    buttons.stopInterrupt();
-}
+Calibrator calibrator(&movementInterface, &buttons);
 
 // obstacle finder
 ObstacleFinder obstacleFinder;
@@ -93,9 +91,6 @@ void setup() {
     //initialize led pins
     pinMode(LED1, OUTPUT);
     pinMode(LED2, OUTPUT);
-    //initialize buttons
-    pinMode(GoPin, INPUT); //setting pins for green button
-    pinMode(StopPin, INPUT); //setting pins for red button
     //initialize matrix
     matrix.begin();
     matrix.setBrightness(20);

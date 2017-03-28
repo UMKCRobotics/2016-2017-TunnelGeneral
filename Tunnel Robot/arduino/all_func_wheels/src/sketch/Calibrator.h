@@ -7,6 +7,7 @@
 #include "MiscDefinitions.h"
 #include "IRPins.h"
 #include "MovementInterfaceBase.h"
+#include "Buttons.h"
 
 #define SAMPLE_COUNT 300  // the number of sensor samples to average together
 
@@ -20,6 +21,7 @@ class Calibrator
 {
 public:  // private
     MovementInterfaceBase* movementInterface;
+    Buttons* buttons;
 
     // what to add to the difference between the two IR sensors on each side for straight to be zero
     int leftCalibrationOffset;
@@ -60,7 +62,8 @@ public:  // private
 
         while (abs(difference = getDifferenceBetweenIRs(IRPinLeftOfWheel,
                                                         IRPinRightOfWheel,
-                                                        differenceOffsetForThisSide)) > SIDE_PIVOT_THRESHOLD)
+                                                        differenceOffsetForThisSide)) > SIDE_PIVOT_THRESHOLD
+               && buttons->getStopState() == '0')
         {
             if (difference > 0)  // left ir sensor is closer to wall
             {
@@ -150,7 +153,8 @@ public:  // private
 
             movementInterface->nudge(needToMoveLeft, needToMoveRight);
 
-            if (rightGood && leftGood)
+            // TODO: test stop button stops calibration loop
+            if ((rightGood && leftGood) || buttons->getStopState() == '1')
             {
                 finished = true;
             }
@@ -161,9 +165,10 @@ public:  // private
     }
 
 public:
-    Calibrator(MovementInterfaceBase* _movementInterface)
+    Calibrator(MovementInterfaceBase* _movementInterface, Buttons* _buttons)
     {
         movementInterface = _movementInterface;
+        buttons = _buttons;
     }
 
     void getLeftCalibrationValuesForIRSensors()

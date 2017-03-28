@@ -9,14 +9,17 @@
 
 #include "MotorInterfaceBase.h"
 #include "MotorInterface.h"
+#include "Buttons.h"
 
 #define FORWARD 2
 
 class MovementInterfaceBase
 {
-public:  // private
+public:  // protected
 
     MotorInterfaceBase* motorInterface;
+    Buttons* buttons;
+
     long startEncoderValues[MOTOR_COUNT];
 
     /** reset everything for a new movement */
@@ -26,7 +29,7 @@ public:  // private
         startEncoderValues[RIGHT] = motorInterface->readEncoder(RIGHT);
     }
 
-    int motorSpeedLimit(const int& speed)
+    int motorSpeedLimit(const long& speed)
     {
         if (speed > MAX_MOTOR_POWER)
         {
@@ -34,15 +37,16 @@ public:  // private
         }
         if (speed > MIN_MOTOR_POWER)
         {
-            return speed;
+            return (int)speed;
         }
         return MIN_MOTOR_POWER;
     }
 
 public:
-    MovementInterfaceBase(MotorInterfaceBase* _motorInterface)
+    MovementInterfaceBase(MotorInterfaceBase* _motorInterface, Buttons* _buttons)
     {
         motorInterface = _motorInterface;
+        buttons = _buttons;
         reset();
     }
 

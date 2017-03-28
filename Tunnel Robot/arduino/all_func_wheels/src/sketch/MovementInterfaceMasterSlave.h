@@ -20,7 +20,8 @@ public:  // private
 
 public:
     // constructor
-    MovementInterface(MotorInterfaceBase* _motorInterface) : MovementInterfaceBase(_motorInterface)
+    MovementInterface(MotorInterfaceBase* _motorInterface, Buttons* _buttons)
+            : MovementInterfaceBase(_motorInterface, _buttons)
     {
         slaveToMasterRatio = STARTING_SLAVE_TO_MASTER_RATIO;
     }
@@ -74,7 +75,7 @@ public:
         distanceTraveled[LEFT] = 0;
         distanceTraveled[RIGHT] = 0;
 
-        while (distanceTraveled[MASTER] < targetDistance)
+        while (distanceTraveled[MASTER] < targetDistance  && buttons->getStopState() == '0')
         {
             // slower at start and end
             distanceTraveledRatio = (float)distanceTraveled[MASTER] / targetDistance;
