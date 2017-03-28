@@ -11,8 +11,13 @@
 class Buttons
 {
 public:  // private
+    static const int SEPARATE_INTERRUPT_CALLS = 100;
+    
     volatile char goState;
     volatile char stopState;
+
+    long lastInterruptCallTimeGo;
+    long lastInterruptCallTimeStop;
 
     void (*goInterruptPointer)();
     void (*stopInterruptPointer)();
@@ -28,16 +33,26 @@ public:
         stopState = '0';
         pinMode(GoPin, INPUT);
         pinMode(StopPin, INPUT);
-        attachInterrupt(digitalPinToInterrupt(GoPin), *goInterruptPointer, CHANGE);
-        attachInterrupt(digitalPinToInterrupt(StopPin), *stopInterruptPointer, CHANGE);
+        attachInterrupt(digitalPinToInterrupt(GoPin), *goInterruptPointer, RISING);
+        attachInterrupt(digitalPinToInterrupt(StopPin), *stopInterruptPointer, RISING);
     }
 
     void goInterrupt() {
-        goState = '1';
+        long time = millis();
+
+        if (time - lastInterruptCallTimeGo > SEPARATE_INTERRUPT_CALLS)
+            goState = '1';
+
+        lastInterruptCallTimeGo = time;
     }
 
     void stopInterrupt() {
-        // stopState = '1';  // TODO: uncomment when we have a reliable button attached
+        long time = millis();
+
+        if (time - lastInterruptCallTimeStop > SEPARATE_INTERRUPT_CALLS)
+            stopState = '1';
+
+        lastInterruptCallTimeStop = time;
     }
 
     char getGoState() const {

@@ -1,3 +1,5 @@
+#include "Arduino.h"
+
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
 #endif
