@@ -53,17 +53,7 @@ String value; //used to store value from serial
 String response; //used to store response to main program
 
 // buttons
-void goInterruptFunction();
-void stopInterruptFunction();
-
-Buttons buttons(goInterruptFunction, stopInterruptFunction);
-
-void goInterruptFunction() {
-    buttons.goInterrupt();
-}
-void stopInterruptFunction() {
-    buttons.stopInterrupt();
-}
+// Buttons class is static
 
 // motor interface
 void leftEncoderInterruptFunction();
@@ -79,10 +69,10 @@ void leftEncoderInterruptFunction() {
 }
 
 // movement interface
-MovementInterface movementInterface(&motorInterface, &buttons);
+MovementInterface movementInterface(&motorInterface);
 
 // calibrator
-Calibrator calibrator(&movementInterface, &buttons);
+Calibrator calibrator(&movementInterface);
 
 // obstacle finder
 ObstacleFinder obstacleFinder;
@@ -107,7 +97,7 @@ void setup() {
     //initialize encoders/motors
     motorInterface.encoderInit();
     motorInterface.motorInit();
-    buttons.init();
+    Buttons::init();
     //Serial1.write("1f0\r");
     //delayMicroseconds(500);
     //Serial1.write("2f0\r");
@@ -118,7 +108,7 @@ void setup() {
 }
 
 void loop() {
-    if (buttons.getStopState() != '1') {
+    if (Buttons::getStopState() != '1') {
         command = "";
         value = "";
         String *addTo = &command;  // which information we are reading from serial
@@ -247,18 +237,18 @@ String interpretCommand(String command, String value) {
         responseString += value;
     }
 
-        // buttons
+    // buttons
     else if (command == "B") {
         if (value == "G") {
             responseString = responseHeader;
-            responseString += buttons.getGoState();
+            responseString += Buttons::getGoState();
         } else if (value == "S") {
             responseString = responseHeader;
-            responseString += buttons.getStopState();
+            responseString += Buttons::getStopState();
         }
     }
 
-        // 8x8
+    // 8x8
     else if (command == "R") {  // ready light
         setReadyLight();
         responseString = responseHeader;

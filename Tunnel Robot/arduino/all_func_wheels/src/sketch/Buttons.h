@@ -1,4 +1,5 @@
 // stop and go buttons
+// static class, no instance
 
 #ifndef ALL_FUNC_WHEELS_BUTTONS_H
 #define ALL_FUNC_WHEELS_BUTTONS_H
@@ -12,32 +13,27 @@ class Buttons
 {
 public:  // private
     static const int SEPARATE_INTERRUPT_CALLS = 100;
-    
-    volatile char goState;
-    volatile char stopState;
 
-    long lastInterruptCallTimeGo;
-    long lastInterruptCallTimeStop;
+    static volatile char goState;
+    static volatile char stopState;
 
-    void (*goInterruptPointer)();
-    void (*stopInterruptPointer)();
+    static long lastInterruptCallTimeGo;
+    static long lastInterruptCallTimeStop;
 
 public:
-    Buttons(void (*_goInterrupt)(), void (*_stopInterrupt)()) {
-        goInterruptPointer = _goInterrupt;
-        stopInterruptPointer = _stopInterrupt;
-    }
-
-    void init() {
+    static void init() {
         goState = '0';
         stopState = '0';
         pinMode(GoPin, INPUT);
         pinMode(StopPin, INPUT);
-        attachInterrupt(digitalPinToInterrupt(GoPin), *goInterruptPointer, RISING);
-        attachInterrupt(digitalPinToInterrupt(StopPin), *stopInterruptPointer, RISING);
+        attachInterrupt(digitalPinToInterrupt(GoPin), goInterrupt, RISING);
+        attachInterrupt(digitalPinToInterrupt(StopPin), stopInterrupt, RISING);
+
+        attachInterrupt(digitalPinToInterrupt(GoPin), goDown, FALLING);
+        attachInterrupt(digitalPinToInterrupt(StopPin), stopDown, FALLING);
     }
 
-    void goInterrupt() {
+    static void goInterrupt() {
         long time = millis();
 
         if (time - lastInterruptCallTimeGo > SEPARATE_INTERRUPT_CALLS)
@@ -46,7 +42,7 @@ public:
         lastInterruptCallTimeGo = time;
     }
 
-    void stopInterrupt() {
+    static void stopInterrupt() {
         long time = millis();
 
         if (time - lastInterruptCallTimeStop > SEPARATE_INTERRUPT_CALLS)
@@ -55,12 +51,20 @@ public:
         lastInterruptCallTimeStop = time;
     }
 
-    char getGoState() const {
+    static char getGoState() const {
         return goState;
     }
 
-    char getStopState() const {
+    static char getStopState() const {
         return stopState;
+    }
+
+    static void goDown() {
+        Serial.println("go down");
+    }
+
+    static void stopDown() {
+        Serial.println("stop down");
     }
 };
 
