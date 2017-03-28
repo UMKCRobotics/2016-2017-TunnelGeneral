@@ -563,9 +563,6 @@ class Robot:
                 print(directions)
                 # go there
                 keep_going = self.travel_these(directions, coord_at_top, dfs_stack)
-                print("ai_17 about to call calibrate")
-                self.calibrate()  # TODO: put this at every edge
-                print("ai_17 just called calibrate")
             # put adjacent unvisited nodes in stack and visit them
             coord_at_top = dfs_stack[-1]
             # order: south north west east, to touch walls often and fill holes early

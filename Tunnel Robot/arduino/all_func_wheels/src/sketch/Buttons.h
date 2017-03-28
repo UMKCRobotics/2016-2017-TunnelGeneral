@@ -14,13 +14,13 @@ public:  // private
     volatile char goState;
     volatile char stopState;
 
-    void (*goInterrupt)();
-    void (*stopInterrupt)();
+    void (*goInterruptPointer)();
+    void (*stopInterruptPointer)();
 
 public:
     Buttons(void (*_goInterrupt)(), void (*_stopInterrupt)()) {
-        goInterrupt = _goInterrupt;
-        stopInterrupt = _stopInterrupt;
+        goInterruptPointer = _goInterrupt;
+        stopInterruptPointer = _stopInterrupt;
     }
 
     void init() {
@@ -28,8 +28,8 @@ public:
         stopState = '0';
         pinMode(GoPin, INPUT);
         pinMode(StopPin, INPUT);
-        attachInterrupt(digitalPinToInterrupt(GoPin), *goInterrupt, CHANGE);
-        attachInterrupt(digitalPinToInterrupt(StopPin), *stopInterrupt, CHANGE);
+        attachInterrupt(digitalPinToInterrupt(GoPin), *goInterruptPointer, CHANGE);
+        attachInterrupt(digitalPinToInterrupt(StopPin), *stopInterruptPointer, CHANGE);
     }
 
     void goInterrupt() {
