@@ -40,11 +40,11 @@ public:
         // stopState = '1';  // TODO: uncomment when we have a reliable button attached
     }
 
-    const char& getGoState() {
+    char getGoState() const {
         return goState;
     }
 
-    const char& getStopState() {
+    char getStopState() const {
         return stopState;
     }
 };
