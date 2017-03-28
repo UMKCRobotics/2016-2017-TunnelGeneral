@@ -128,10 +128,16 @@ public:
             
             slaveToMasterRatio = max(slaveToMasterRatio, MIN_MOTOR_POWER / (MIN_MOTOR_POWER + (motorPowerRange)/8.0));
 
+#ifdef VERBOSE
             /*
             Serial.print("after max stmr set to: ");
             Serial.println(slaveToMasterRatio, 6);
             */
+            Serial.print("distanceTraveled ");
+            Serial.print(distanceTraveled[MASTER]);
+            Serial.print(" and target ");
+            Serial.println(targetDistance);
+#endif  // VERBOSE
         }
 
         // reached target distance

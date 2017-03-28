@@ -49,13 +49,19 @@ class SerialComm:
         while tries < self.maxTries:
             print("try #" + str(tries+1) + " - about to send to serial: " + commReq.request)
             self.serial.write(commReq.request + '\n')
+
             # wait for a response to change state of command Request
+            
             # tab char is a signal that the debug messages are over and then comes response
             debug_messages = ""
+            # when we get a tab char we move out of debug messages
             while not debug_messages.endswith('\t'):
-                debug_messages += self.serial.read()
-            debug_messages = debug_messages[:-1]  # remove the tab char
-            print("debug messages received: " + debug_messages)
+                # when we get a newline or a tab, we stop reading to print
+                while (not debug_messages.endswith('\t')) and (not debug_messages.endswith('\n')):
+                    debug_messages += self.serial.read()
+                print("debug messages received: " + debug_messages)
+
+            # now the actual response for the command
             serin = ""
             while not serin.endswith('\n'):
                 serin += self.serial.read()
