@@ -535,6 +535,7 @@ class Robot:
             """
 
         # beginning calibration
+        self.wait_till_done(self.robot_interface.beginningObstacleThresholdCalibration())
         self.wait_till_done(self.robot_interface.beginningRightCalibration())
         self.wait_till_done(self.robot_interface.beginningBackCalibration())
         self.turn(Direction.north)

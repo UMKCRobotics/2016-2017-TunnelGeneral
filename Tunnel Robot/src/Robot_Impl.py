@@ -58,6 +58,9 @@ class Robot_Impl():
     def beginningBackCalibration(self):
         return self.arduinofuncs.beginningBackCalibration()
 
+    def beginningObstacleThresholdCalibration(self):
+        return self.arduinofuncs.beginningObstacleThresholdCalibration()
+
     def goCalibrate(self):
         # use perimeter to fix possible rotation/translation errors
         return self.arduinofuncs.goCalibrate()
