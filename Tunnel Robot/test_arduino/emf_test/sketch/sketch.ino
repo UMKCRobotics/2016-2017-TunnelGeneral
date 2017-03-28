@@ -21,71 +21,11 @@ void setup() {
 }
 
 void loop() {
-  getEMFreading(EMF1);
+  getEMFReading();
   Serial.write('\n');
 }
 
-// command interpreter
-void loopcommand() { 
 
-  command = "";
-  value = "";
-  int addTo = 0; //0 for command, 1 for value
-  //ButtonStates();
-  if(Serial.available()){
-    while (Serial.available() > 0)
-    {
-      char readIn = (char)Serial.read();
-      if (readIn == '\n') {
-        break;
-      }
-      else if (readIn == '|') {
-        addTo = 1;
-        continue;
-      }
-      //other stuff that is important
-      if (addTo == 0) {
-        command += readIn;
-      }
-      else if (addTo == 1) {
-        value += readIn;
-      }
-    }
-    //clear anything remaining in serial
-    while (Serial.available() > 0) {
-      Serial.read();
-    }
-    response = interpretCommand(command,value);
-    Serial.println(response); //sends response with \n at the end
-  }
-  //small delay
-  delay(20);
-
-}
-
-
-String interpretCommand(String command, String value) {
-  
-  String responseString = "n";  // what this function returns
-  String returnString = "";     // holds the return value of the command function
-  if (command == "e") {
-    responseString = "1";
-    responseString += String(getEMFReading());
-  }
-  else if (command == "S") {
-    if (value == "E") {
-      responseString = "1";
-      responseString += String(getEMFReading());
-    }
-  }
-
-  //check if any BADs were obtained
-  if (returnString == "BAD") {
-    return "n";
-  }
-  return responseString;
-
-}
 //START OF SENSOR STUFF
 void sensorReport(String name, int number) {
   char tbs[16];
@@ -117,7 +57,7 @@ String getEMFReading() {
   //report format: right,front,left,back
   int threshold = 190; //set this to something reasonable
   //check right
-  sensorReport("emf1", r1);
+  sensorReport("emf1", emf1);
   return report;
 }
 
