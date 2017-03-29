@@ -10,6 +10,12 @@
 
 class Buttons
 {
+public:
+    // indexes
+    static const size_t GO = 0;
+    static const size_t STOP = 1;
+    static const size_t BUTTON_COUNT = 2;
+  
 public:  // private
     static const int MIN_TIME_PRESS = 250;
     static const int MAX_TIME_PRESS = 1001;
@@ -21,11 +27,6 @@ public:  // private
     void (*interruptPointer[BUTTON_COUNT])();
 
 public:
-    // indexes
-    static const size_t GO = 0;
-    static const size_t STOP = 1;
-    static const size_t BUTTON_COUNT = 2;
-
     Buttons(void (*_goInterrupt)(), void (*_stopInterrupt)()) {
         interruptPointer[GO] = _goInterrupt;
         interruptPointer[STOP] = _stopInterrupt;
@@ -45,7 +46,7 @@ public:
 
         if (time - lastInterruptCallTime[whichButton] > MIN_TIME_PRESS &&
             time - lastInterruptCallTime[whichButton] < MAX_TIME_PRESS)
-            state[whichButton] = '1';
+            state[whichButton] = '0';  // TODO: disabled - change back to '1'
 
         lastInterruptCallTime[whichButton] = time;
     }
