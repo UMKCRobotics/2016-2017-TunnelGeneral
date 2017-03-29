@@ -443,7 +443,9 @@ class Robot:
                     if self.gridData.get(x, y).get_obstacle_here() == Knowledge.yes:
                         sys.stdout.write("X" + " ")
                     else:
-                        if self.gridData.get(x, y).visited:
+                        if self.gridData.get(x, y).wireHere == Knowledge.yes:
+                            sys.stdout.write("Z" + " ")
+                        elif self.gridData.get(x, y).visited:
                             sys.stdout.write("@" + " ")
                         else:  # not visited
                             sys.stdout.write("O" + " ")
@@ -677,6 +679,8 @@ class Robot:
         analyze readings to find where wire and tunnel are
         :return:
         """
+        print("starting to analyze readings")
+
         # find thresholds
         # > threshold is yes
         # <= threshold is no (not >)
@@ -704,6 +708,8 @@ class Robot:
         while not found_good_threshold:
             wire_threshold = list_of_wire_thresholds[wire_index]
             tunnel_threshold = list_of_tunnel_thresholds[tunnel_index]
+
+            print("trying threshold %d" % wire_threshold)
 
             reset_data = []
             # if this threshold fails reset these spaces to these values
@@ -738,6 +744,9 @@ class Robot:
                                                                                    reset_data)
                 if cont:
                     continue
+
+            print("here's the wire with that threshold")
+            print(self.display_grid_in_console)
 
             # figure out wire(OT) under obstacles
             edge_coordinates_with_wire = []
@@ -815,6 +824,7 @@ class Robot:
                     continue
             found_good_threshold = True
 
+        print("sending information to display now")
         # send information to 8x8 display
         for row in range(GRID_HEIGHT):
             for col in range(GRID_WIDTH):
