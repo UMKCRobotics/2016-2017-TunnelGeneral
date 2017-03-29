@@ -78,16 +78,17 @@ public:
     /**
      * for side calibration
      * @param direction LEFT or RIGHT
+     * @param size 1 or 2 - small or big
      */
-    void smallPivot(const size_t& direction)
+    void smallPivot(const size_t& direction, const int& size)
     {
         if (direction == LEFT)
         {
-            nudge(-1, 1);
+            nudge(0-size, size);
         }
         else  // RIGHT
         {
-            nudge(1, -1);
+            nudge(size, 0-size);
         }
     }
 };

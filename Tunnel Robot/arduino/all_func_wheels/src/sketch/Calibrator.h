@@ -18,6 +18,7 @@ public:  // private
     static const int THRESHOLD_FOR_BIG_NUDGE = 30;
 
     static const int SIDE_PIVOT_THRESHOLD = 8;
+    static const int THRESHOLD_FOR_BIG_PIVOT = 50;
     static const int THRESHOLD_FOR_SIDE_DISTANCE = 100;
 
     static const double LEFT_CORRECT_MULTIPLIER = 0.2;
@@ -63,7 +64,6 @@ public:  // private
                                 int differenceOffsetForThisSide,
                                 int goodDistanceForThisSide)
     {
-        // TODO: bigger nudge for pivot
         int difference;
 
         while (abs(difference = getDifferenceBetweenIRs(IRPinLeftOfWheel,
@@ -71,13 +71,24 @@ public:  // private
                                                         differenceOffsetForThisSide)) > SIDE_PIVOT_THRESHOLD
                && buttons->getStopState() == '0')
         {
-            if (difference > 0)  // left ir sensor is closer to wall
+            // difference positive means left ir sensor is closer to wall
+            // negative means right is closer to wall
+
+            if (difference > THRESHOLD_FOR_BIG_PIVOT)
             {
-                movementInterface->smallPivot(RIGHT);
+                movementInterface->smallPivot(RIGHT, 2);
             }
-            else  // difference negative, right closer to wall
+            else if (difference < 0-THRESHOLD_FOR_BIG_PIVOT)
             {
-                movementInterface->smallPivot(LEFT);
+                movementInterface->smallPivot(LEFT, 2);
+            }
+            else if (difference > 0)  // (and less than big threshold
+            {
+                movementInterface->smallPivot(RIGHT, 1);
+            }
+            else  // difference negative, and greater than negative big threshold
+            {
+                movementInterface->smallPivot(LEFT, 1);
             }
         }
 
@@ -159,7 +170,7 @@ public:  // private
 
             movementInterface->nudge(needToMoveLeft, needToMoveRight);
 
-            // TODO: test stop button stops calibration loop
+            // stop button stops calibration loop
             if ((rightGood && leftGood) || buttons->getStopState() == '1')
             {
                 finished = true;
@@ -183,8 +194,10 @@ public:  // private
         // wait for motors to stop moving
         delay(200);
 
-        // TODO: change values of back calibration
-        int amountToChange = round(LEFT_CORRECT_MULTIPLIER * (leftDistanceAfterOneForward - goodDistanceForLeft) / 2.0);
+        // change values of back calibration
+        int amountToChange = (int)round(LEFT_CORRECT_MULTIPLIER *
+                                        (leftDistanceAfterOneForward - goodDistanceForLeft) /
+                                        2.0);
         backLeftCalibrated -= amountToChange;
         backRightCalibrated += amountToChange;
 
