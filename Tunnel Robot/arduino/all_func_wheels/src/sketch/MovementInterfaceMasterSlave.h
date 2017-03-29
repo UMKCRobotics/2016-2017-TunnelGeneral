@@ -94,12 +94,12 @@ public:
                                                                            4 * distanceTraveledRatio) * 3 / 4.0));
             powerToGive[SLAVE] = motorSpeedLimit(round(powerToGive[MASTER] * slaveToMasterRatio));
 
-            /*
+#ifdef VERBOSE
             Serial.print("giving this power: ");
             Serial.print(powerToGive[LEFT]);
             Serial.print(' ');
             Serial.println(powerToGive[RIGHT]);
-            */
+#endif  // VERBOSE
             
             motorInterface->setMotorPower(LEFT, powerToGive[LEFT], direction[LEFT]);
             motorInterface->setMotorPower(RIGHT, powerToGive[RIGHT], direction[RIGHT]);
@@ -110,12 +110,12 @@ public:
             distanceTraveled[LEFT] = (currentEncoderReading[LEFT] - startEncoderValues[LEFT]) * direction[LEFT];
             distanceTraveled[RIGHT] = (currentEncoderReading[RIGHT] - startEncoderValues[RIGHT]) * direction[RIGHT];
 
-            /*
+#ifdef VERBOSE
             Serial.print("the distance each wheel traveled ");
             Serial.print(distanceTraveled[LEFT]);
             Serial.print(' ');
             Serial.println(distanceTraveled[RIGHT]);
-            */
+#endif  // VERBOSE
 
             // update slave master ratio
             if (distanceTraveled[SLAVE] > 10)
