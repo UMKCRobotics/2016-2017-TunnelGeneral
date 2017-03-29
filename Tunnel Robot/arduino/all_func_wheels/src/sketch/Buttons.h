@@ -4,6 +4,7 @@
 #define ALL_FUNC_WHEELS_BUTTONS_H
 
 #include "Arduino.h"
+#include "MiscDefinitions.h"
 
 #define GoPin 18  // Go button - INTERRUPT PIN
 #define StopPin 19  // Stop button - INTERRUPT PIN
@@ -15,6 +16,8 @@ public:
     static const size_t GO = 0;
     static const size_t STOP = 1;
     static const size_t BUTTON_COUNT = 2;
+
+    static const pin pins[BUTTON_COUNT] = {GoPin, StopPin};
   
 public:  // private
     static const int MIN_TIME_PRESS = 250;
@@ -35,22 +38,29 @@ public:
     void init() {
         state[GO] = '0';
         state[STOP] = '0';
-        pinMode(GoPin, INPUT);
-        pinMode(StopPin, INPUT);
-        digitalWrite(GoPin, HIGH);
-        digitalWrite(StopPin, HIGH);
-        attachInterrupt(digitalPinToInterrupt(GoPin), *(interruptPointer[GO]), CHANGE);
-        attachInterrupt(digitalPinToInterrupt(StopPin), *(interruptPointer[STOP]), CHANGE);
+        pinMode(pins[GO], INPUT);
+        pinMode(pins[STOP], INPUT);
+        attachInterrupt(digitalPinToInterrupt(pins[GO]), *(interruptPointer[GO]), CHANGE);
+        attachInterrupt(digitalPinToInterrupt(pins[STOP]), *(interruptPointer[STOP]), CHANGE);
     }
 
     void interrupt(const size_t& whichButton) {
         long time = millis();
 
-        if (time - lastInterruptCallTime[whichButton] > MIN_TIME_PRESS &&
-            time - lastInterruptCallTime[whichButton] < MAX_TIME_PRESS)
-            state[whichButton] = '1';
+        int pinRead = digitalRead(pins[whichButton]);
 
-        lastInterruptCallTime[whichButton] = time;
+        if (pinRead == LOW)
+        {
+            lastInterruptCallTime[whichButton] = time;
+        }
+        else if (pinRead == HIGH)
+        {
+            if (time - lastInterruptCallTime[whichButton] > MIN_TIME_PRESS &&
+                time - lastInterruptCallTime[whichButton] < MAX_TIME_PRESS)
+            {
+                state[whichButton] = '1';
+            }
+        }
     }
 
     char getGoState() const {
