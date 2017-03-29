@@ -37,6 +37,8 @@ public:
         state[STOP] = '0';
         pinMode(GoPin, INPUT);
         pinMode(StopPin, INPUT);
+        digitalWrite(GoPin, HIGH);
+        digitalWrite(StopPin, HIGH);
         attachInterrupt(digitalPinToInterrupt(GoPin), *(interruptPointer[GO]), CHANGE);
         attachInterrupt(digitalPinToInterrupt(StopPin), *(interruptPointer[STOP]), CHANGE);
     }
@@ -46,7 +48,7 @@ public:
 
         if (time - lastInterruptCallTime[whichButton] > MIN_TIME_PRESS &&
             time - lastInterruptCallTime[whichButton] < MAX_TIME_PRESS)
-            state[whichButton] = '0';  // TODO: disabled - change back to '1'
+            state[whichButton] = '1';
 
         lastInterruptCallTime[whichButton] = time;
     }
