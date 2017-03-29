@@ -20,6 +20,8 @@ public:  // private
     static const int SIDE_PIVOT_THRESHOLD = 8;
     static const int THRESHOLD_FOR_SIDE_DISTANCE = 100;
 
+    static const double LEFT_CORRECT_MULTIPLIER = 0.1;
+
     MovementInterfaceBase* movementInterface;
     Buttons* buttons;
 
@@ -30,6 +32,9 @@ public:  // private
     // how far the sides should be from the wood
     int goodDistanceForLeft;
     int goodDistanceForRight;
+
+    // used to correct calibration in first few moves
+    int leftDistanceAfterOneForward;
 
     // how far each of the back sensors should be from the wood
     int backLeftCalibrated;
@@ -165,6 +170,38 @@ public:  // private
         }
     }
 
+    void leftToCorrectBack() {
+        leftDistanceAfterOneForward = (getIRValue(IR_L1) + getIRValue(IR_L2)) / 2;
+
+        // normal left calibration
+        calibrateWithIR("L");
+        // wait for motors to stop moving
+        delay(200);
+
+        // TODO: change values of back calibration
+        backLeftCalibrated = backLeftCalibrated;
+        backRightCalibrated = backRightCalibrated;
+
+        leftDistanceAfterOneForward = (getIRValue(IR_L1) + getIRValue(IR_L2)) / 2;
+    }
+
+    void leftToCorrectLeft() {
+        int leftDistanceAfterTwoForwards = (getIRValue(IR_L1) + getIRValue(IR_L2)) / 2;
+
+        Serial.print("left calibration offset changed from ");
+        Serial.print(leftCalibrationOffset);
+        Serial.print(" to ");
+
+        leftCalibrationOffset -= round(LEFT_CORRECT_MULTIPLIER *
+                                       (leftDistanceAfterTwoForwards -
+                                        leftDistanceAfterOneForward));
+
+        Serial.println(leftCalibrationOffset);
+
+        // normal left calibration (with new changed value)
+        calibrateWithIR("L");
+    }
+
 public:
     Calibrator(MovementInterfaceBase* _movementInterface, Buttons* _buttons)
     {
@@ -222,6 +259,14 @@ public:
             //if B, use IR on back side
         else if (side == "B") {
             backCalibrationIR();
+            return "1";
+        }
+        else if (side == "l") {
+            leftToCorrectLeft();
+            return "1";
+        }
+        else if (side == "b") {
+            leftToCorrectBack();
             return "1";
         }
         /*

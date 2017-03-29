@@ -257,6 +257,9 @@ class Robot:
 
         self.away_from_sides_count = 0
 
+        # this is to correct calibration after seeing how forwards have been influenced by calibration
+        self.forward_count = 0
+
     @staticmethod
     def wait_till_done(resp):
         intermediate_delay = 0.01
@@ -275,6 +278,8 @@ class Robot:
             self.sleep_wait()
             self.display_grid_in_console()
         print("just moved to " + str(self.position))
+
+        self.forward_count += 1
 
     def calibrate(self):
         # figure out what side we can calibrate on
@@ -337,10 +342,22 @@ class Robot:
             if can_calibrate_back:
                 self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
             elif can_calibrate_left:
-                good_distance = self.wait_till_done(self.robot_interface.goCalibrateIR("L"))
-                if good_distance == '0':
-                    self.turn(direction_to_put_back_on_wood)
-                    self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
+                # see if this is one of the special left calibrations where we can adjust the calibration
+                if self.forward_count > 2:  # not one of the special ones
+                    good_distance = self.wait_till_done(self.robot_interface.goCalibrateIR("L"))
+                    if good_distance == '0':
+                        self.turn(direction_to_put_back_on_wood)
+                        self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
+                elif self.forward_count == 2:
+                    # left calibration to correct left calibration
+                    good_distance = self.wait_till_done(self.robot_interface.goCalibrateIR("l"))
+                    if good_distance == '0':
+                        self.turn(direction_to_put_back_on_wood)
+                        self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
+                elif self.forward_count == 1:
+                    # left calibration to correct back calibration
+                    self.wait_till_done(self.robot_interface.goCalibrateIR("b"))
+
             elif can_calibrate_right:
                 good_distance = self.wait_till_done(self.robot_interface.goCalibrateIR("R"))
                 if good_distance == '0':
