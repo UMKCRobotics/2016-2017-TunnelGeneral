@@ -20,7 +20,7 @@ public:  // private
     static const int SIDE_PIVOT_THRESHOLD = 8;
     static const int THRESHOLD_FOR_SIDE_DISTANCE = 100;
 
-    static const double LEFT_CORRECT_MULTIPLIER = 0.1;
+    static const double LEFT_CORRECT_MULTIPLIER = 0.2;
 
     MovementInterfaceBase* movementInterface;
     Buttons* buttons;
@@ -173,14 +173,20 @@ public:  // private
     void leftToCorrectBack() {
         leftDistanceAfterOneForward = (getIRValue(IR_L1) + getIRValue(IR_L2)) / 2;
 
+        Serial.print("good left was set to ");
+        Serial.println(goodDistanceForLeft);
+        Serial.print(" and after back calibration and forward, left distance ");
+        Serial.println(leftDistanceAfterOneForward);
+        
         // normal left calibration
         calibrateWithIR("L");
         // wait for motors to stop moving
         delay(200);
 
         // TODO: change values of back calibration
-        backLeftCalibrated = backLeftCalibrated;
-        backRightCalibrated = backRightCalibrated;
+        int amountToChange = round(LEFT_CORRECT_MULTIPLIER * (leftDistanceAfterOneForward - goodDistanceForLeft) / 2.0);
+        backLeftCalibrated -= amountToChange;
+        backRightCalibrated += amountToChange;
 
         leftDistanceAfterOneForward = (getIRValue(IR_L1) + getIRValue(IR_L2)) / 2;
     }
@@ -192,7 +198,7 @@ public:  // private
         Serial.print(leftCalibrationOffset);
         Serial.print(" to ");
 
-        leftCalibrationOffset -= round(LEFT_CORRECT_MULTIPLIER *
+        leftCalibrationOffset += round(LEFT_CORRECT_MULTIPLIER *
                                        (leftDistanceAfterTwoForwards -
                                         leftDistanceAfterOneForward));
 
