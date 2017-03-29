@@ -437,16 +437,17 @@ class Robot:
         raw_input()
 
     def see_obstacle(self, direction):
-        # TODO: replace this with readings from sensors
         if self.using_outside_grid:
             coord_looking = self.position + COORDINATE_CHANGE[direction]
             return self.outside_grid.data[coord_looking.x * GRID_HEIGHT + coord_looking.y].obstacle_here
-        else:  # simulation
+        else:  # robot interface
             # which sensor
             # 0 right, 1 front, 2 left, 3 back
             which_sensor = (((direction - self.facing) % 4) + 1) % 4  # do we need the middle mod 4?
-            return int(self.wait_till_done(self.robot_interface.readSensor(1))[which_sensor])
-            # TODO: serial comm error makes ValueError in int
+            try:
+                return int(self.wait_till_done(self.robot_interface.readSensor(1))[which_sensor])
+            except ValueError:
+                return 1  # if serial comm error, just say that there is an obstacle
 
     def visit(self):
         print("visiting: " + str(self.position))
