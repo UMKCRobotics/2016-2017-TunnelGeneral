@@ -11,56 +11,51 @@
 class Buttons
 {
 public:  // private
-    static const int SEPARATE_INTERRUPT_CALLS = 100;
-    
-    volatile char goState;
-    volatile char stopState;
+    static const int MIN_TIME_PRESS = 250;
+    static const int MAX_TIME_PRESS = 1001;
 
-    long lastInterruptCallTimeGo;
-    long lastInterruptCallTimeStop;
+    volatile char state[BUTTON_COUNT];
 
-    void (*goInterruptPointer)();
-    void (*stopInterruptPointer)();
+    long lastInterruptCallTime[BUTTON_COUNT];
+
+    void (*interruptPointer[BUTTON_COUNT])();
 
 public:
+    // indexes
+    static const size_t GO = 0;
+    static const size_t STOP = 1;
+    static const size_t BUTTON_COUNT = 2;
+
     Buttons(void (*_goInterrupt)(), void (*_stopInterrupt)()) {
-        goInterruptPointer = _goInterrupt;
-        stopInterruptPointer = _stopInterrupt;
+        interruptPointer[GO] = _goInterrupt;
+        interruptPointer[STOP] = _stopInterrupt;
     }
 
     void init() {
-        goState = '0';
-        stopState = '0';
+        state[GO] = '0';
+        state[STOP] = '0';
         pinMode(GoPin, INPUT);
         pinMode(StopPin, INPUT);
-        attachInterrupt(digitalPinToInterrupt(GoPin), *goInterruptPointer, RISING);
-        attachInterrupt(digitalPinToInterrupt(StopPin), *stopInterruptPointer, RISING);
+        attachInterrupt(digitalPinToInterrupt(GoPin), *(interruptPointer[GO]), CHANGE);
+        attachInterrupt(digitalPinToInterrupt(StopPin), *(interruptPointer[STOP]), CHANGE);
     }
 
-    void goInterrupt() {
+    void interrupt(const size_t& whichButton) {
         long time = millis();
 
-        if (time - lastInterruptCallTimeGo > SEPARATE_INTERRUPT_CALLS)
-            goState = '1';
+        if (time - lastInterruptCallTime[whichButton] > MIN_TIME_PRESS &&
+            time - lastInterruptCallTime[whichButton] < MAX_TIME_PRESS)
+            state[whichButton] = '1';
 
-        lastInterruptCallTimeGo = time;
-    }
-
-    void stopInterrupt() {
-        long time = millis();
-
-        if (time - lastInterruptCallTimeStop > SEPARATE_INTERRUPT_CALLS)
-            stopState = '1';
-
-        lastInterruptCallTimeStop = time;
+        lastInterruptCallTime[whichButton] = time;
     }
 
     char getGoState() const {
-        return goState;
+        return state[GO];
     }
 
     char getStopState() const {
-        return stopState;
+        return state[STOP];
     }
 };
 

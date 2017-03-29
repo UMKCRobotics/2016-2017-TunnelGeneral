@@ -59,10 +59,10 @@ void stopInterruptFunction();
 Buttons buttons(goInterruptFunction, stopInterruptFunction);
 
 void goInterruptFunction() {
-    buttons.goInterrupt();
+    buttons.interrupt(Buttons::GO);
 }
 void stopInterruptFunction() {
-    buttons.stopInterrupt();
+    buttons.interrupt(Buttons::STOP);
 }
 
 // motor interface
