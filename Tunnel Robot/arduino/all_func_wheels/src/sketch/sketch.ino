@@ -55,22 +55,14 @@ String response; //used to store response to main program
 // buttons
 void goInterruptFunction();
 void stopInterruptFunction();
-void goDownInterruptFunction();
-void stopDownInterruptFunction();
 
-Buttons buttons(goInterruptFunction, stopInterruptFunction, goDownInterruptFunction, stopDownInterruptFunction);
+Buttons buttons(goInterruptFunction, stopInterruptFunction);
 
 void goInterruptFunction() {
-    buttons.goInterrupt();
+    buttons.interrupt(Buttons::GO);
 }
 void stopInterruptFunction() {
-    buttons.stopInterrupt();
-}
-void goDownInterruptFunction() {
-    buttons.goDown();
-}
-void stopDownInterruptFunction() {
-    buttons.stopDown();
+    buttons.interrupt(Buttons::STOP);
 }
 
 // motor interface
