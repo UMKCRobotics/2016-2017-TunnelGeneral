@@ -1,5 +1,4 @@
 // stop and go buttons
-// static class, no instance
 
 #ifndef ALL_FUNC_WHEELS_BUTTONS_H
 #define ALL_FUNC_WHEELS_BUTTONS_H
@@ -13,27 +12,39 @@ class Buttons
 {
 public:  // private
     static const int SEPARATE_INTERRUPT_CALLS = 100;
+    
+    volatile char goState;
+    volatile char stopState;
 
-    static volatile char goState;
-    static volatile char stopState;
+    long lastInterruptCallTimeGo;
+    long lastInterruptCallTimeStop;
 
-    static long lastInterruptCallTimeGo;
-    static long lastInterruptCallTimeStop;
+    void (*goInterruptPointer)();
+    void (*stopInterruptPointer)();
+    void (*goDownPointer)();
+    void (*stopDownPointer)();
 
 public:
-    static void init() {
+    Buttons(void (*_goInterrupt)(), void (*_stopInterrupt)(), void (*_goDown)(), void (*_stopDown)()) {
+        goInterruptPointer = _goInterrupt;
+        stopInterruptPointer = _stopInterrupt;
+        goDownPointer = _goDown;
+        stopDownPointer = _stopDown;
+    }
+
+    void init() {
         goState = '0';
         stopState = '0';
         pinMode(GoPin, INPUT);
         pinMode(StopPin, INPUT);
-        attachInterrupt(digitalPinToInterrupt(GoPin), goInterrupt, RISING);
-        attachInterrupt(digitalPinToInterrupt(StopPin), stopInterrupt, RISING);
-
-        attachInterrupt(digitalPinToInterrupt(GoPin), goDown, FALLING);
-        attachInterrupt(digitalPinToInterrupt(StopPin), stopDown, FALLING);
+        attachInterrupt(digitalPinToInterrupt(GoPin), *goInterruptPointer, RISING);
+        attachInterrupt(digitalPinToInterrupt(StopPin), *stopInterruptPointer, RISING);
+        attachInterrupt(digitalPinToInterrupt(GoPin), *goDownPointer, FALLING);
+        attachInterrupt(digitalPinToInterrupt(StopPin), *stopDownPointer, FALLING);
     }
 
-    static void goInterrupt() {
+    void goInterrupt() {
+        Serial.println("go up");
         long time = millis();
 
         if (time - lastInterruptCallTimeGo > SEPARATE_INTERRUPT_CALLS)
@@ -42,7 +53,7 @@ public:
         lastInterruptCallTimeGo = time;
     }
 
-    static void stopInterrupt() {
+    void stopInterrupt() {
         long time = millis();
 
         if (time - lastInterruptCallTimeStop > SEPARATE_INTERRUPT_CALLS)
@@ -51,20 +62,20 @@ public:
         lastInterruptCallTimeStop = time;
     }
 
-    static char getGoState() const {
-        return goState;
-    }
-
-    static char getStopState() const {
-        return stopState;
-    }
-
-    static void goDown() {
+    void goDown() {
         Serial.println("go down");
     }
 
-    static void stopDown() {
+    void stopDown() {
         Serial.println("stop down");
+    }
+
+    char getGoState() const {
+        return goState;
+    }
+
+    char getStopState() const {
+        return stopState;
     }
 };
 
