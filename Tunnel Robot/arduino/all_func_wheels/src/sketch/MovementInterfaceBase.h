@@ -18,6 +18,7 @@ class MovementInterfaceBase
 public:  // protected
 
     MotorInterfaceBase* motorInterface;
+    Buttons* buttons;
 
     long startEncoderValues[MOTOR_COUNT];
 
@@ -42,9 +43,10 @@ public:  // protected
     }
 
 public:
-    MovementInterfaceBase(MotorInterfaceBase* _motorInterface)
+    MovementInterfaceBase(MotorInterfaceBase* _motorInterface, Buttons* _buttons)
     {
         motorInterface = _motorInterface;
+        buttons = _buttons;
         reset();
     }
 
