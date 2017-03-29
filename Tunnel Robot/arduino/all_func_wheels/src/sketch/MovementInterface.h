@@ -73,7 +73,7 @@ public:  // private
     {
         coordinates.x[LEFT] = 0;
         coordinates.y[LEFT] = 0;
-        coordinates.x[RIGHT] = WIDTH;
+        coordinates.x[RIGHT] = WHEEL_WIDTH;
         coordinates.y[RIGHT] = 0;
 
         travelSegmentsRemaining = TRAVEL_SEGMENT_COUNT;
@@ -114,14 +114,14 @@ public:  // private
 
         if (whichMovement == FORWARD)
         {
-            xDifference = (whichWheel * WIDTH) - coordinates.x[whichWheel];
+            xDifference = (whichWheel * WHEEL_WIDTH) - coordinates.x[whichWheel];
             yDifference = TWELVE_INCH_DISTANCE - coordinates.y[whichWheel];
             if (yDifference < 0)  // too far
                 return 0;
         }
         else  // LEFT or RIGHT
         {
-            xDifference = WIDTH / 2 - coordinates.x[whichWheel];
+            xDifference = WHEEL_WIDTH / 2 - coordinates.x[whichWheel];
             if (xDifference < 0 && whichWheel == LEFT)  // too far
                 return 0;
             if (xDifference > 0 && whichWheel == RIGHT)  // too far
@@ -129,11 +129,11 @@ public:  // private
 
             if (whichMovement == LEFT)
             {
-                yDifference = (WIDTH * (whichWheel - 0.5)) - coordinates.y[whichWheel];
+                yDifference = (WHEEL_WIDTH * (whichWheel - 0.5)) - coordinates.y[whichWheel];
             }
             else  // RIGHT
             {
-                yDifference = (WIDTH * (0.5 - whichWheel)) - coordinates.y[whichWheel];
+                yDifference = (WHEEL_WIDTH * (0.5 - whichWheel)) - coordinates.y[whichWheel];
             }
         }
 

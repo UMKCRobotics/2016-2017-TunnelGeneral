@@ -68,7 +68,7 @@ public:
                 direction[LEFT] = 1;
                 direction[RIGHT] = -1;
             }
-            targetDistance = round(WIDTH * PI / 4);
+            targetDistance = round(WHEEL_WIDTH * PI / 4);
         }
 
         // get encoder readings before we start moving

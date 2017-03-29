@@ -27,14 +27,14 @@ public:  // protected
     {
         // http://math.stackexchange.com/questions/2183324/cartesian-coordinates-on-2-circles
 
-        // utur = untranslated unrotated (left wheel started at 0, 0 and right wheel started at WIDTH,0)
+        // utur = untranslated unrotated (left wheel started at 0, 0 and right wheel started at WHEEL_WIDTH,0)
         RobotCoordinates utur;
 
         // utr = untranslated rotated
         RobotCoordinates utr;
 
         // angle of the distance around a circle that the robot traveled (radians)
-        double t = (double)(distance[LEFT] - distance[RIGHT]) / WIDTH;
+        double t = (double)(distance[LEFT] - distance[RIGHT]) / WHEEL_WIDTH;
 
         double cos_t = cos(t);
         double sin_t = sin(t);
@@ -45,10 +45,10 @@ public:  // protected
         {
             r = distance[RIGHT] / t;
 
-            utur.x[LEFT] = (r+WIDTH) * (1 - cos_t);
-            utur.y[LEFT] = (r+WIDTH) * sin_t;
+            utur.x[LEFT] = (r+WHEEL_WIDTH) * (1 - cos_t);
+            utur.y[LEFT] = (r+WHEEL_WIDTH) * sin_t;
 
-            utur.x[RIGHT] = (r + WIDTH) - (r * cos_t);
+            utur.x[RIGHT] = (r + WHEEL_WIDTH) - (r * cos_t);
             utur.y[RIGHT] = r * sin_t;
         }
         else  // robot went straight
@@ -56,7 +56,7 @@ public:  // protected
             utur.x[LEFT] = 0;
             utur.y[LEFT] = distance[LEFT];
 
-            utur.x[RIGHT] = WIDTH;
+            utur.x[RIGHT] = WHEEL_WIDTH;
             utur.y[RIGHT] = distance[RIGHT];
         }
 
@@ -89,7 +89,7 @@ public:  // protected
     {
         coordinates.x[LEFT] = 0;
         coordinates.y[LEFT] = 0;
-        coordinates.x[RIGHT] = WIDTH;
+        coordinates.x[RIGHT] = WHEEL_WIDTH;
         coordinates.y[RIGHT] = 0;
     }
 };
