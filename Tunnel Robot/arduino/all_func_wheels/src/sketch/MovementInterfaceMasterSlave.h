@@ -79,10 +79,15 @@ public:
 
         while (distanceTraveled[MASTER] < targetDistance  && buttons->getStopState() == '0')
         {
+            Serial.println("beginning of while loop");
+
             // slower at start and end
             distanceTraveledRatio = (float)distanceTraveled[MASTER] / targetDistance;
             if (distanceTraveledRatio > 1)
                 distanceTraveledRatio = 1;
+
+            Serial.println("after setting distance traveled ratio");
+
             // The range that we want to use for the master motor power is
             // from MIN_MOTOR_POWER + 1/8 of the difference (between min and max)
             // to MAX_MOTOR_POWER - 1/8 of the difference.
@@ -104,8 +109,12 @@ public:
             motorInterface->setMotorPower(LEFT, powerToGive[LEFT], direction[LEFT]);
             motorInterface->setMotorPower(RIGHT, powerToGive[RIGHT], direction[RIGHT]);
 
+            Serial.println("after setting power");
+
             currentEncoderReading[LEFT] = motorInterface->readEncoder(LEFT);
             currentEncoderReading[RIGHT] = motorInterface->readEncoder(RIGHT);
+
+            Serial.println("after reading encoder");
 
             distanceTraveled[LEFT] = (currentEncoderReading[LEFT] - startEncoderValues[LEFT]) * direction[LEFT];
             distanceTraveled[RIGHT] = (currentEncoderReading[RIGHT] - startEncoderValues[RIGHT]) * direction[RIGHT];
@@ -123,6 +132,8 @@ public:
                                      (1-WEIGHT_FOR_PREVIOUS_STMR) * slaveToMasterRatio * distanceTraveled[MASTER] / distanceTraveled[SLAVE];
 
            
+            Serial.println("after setting stmr");
+
             // limit stmr to where it will stay in motor power limits
             slaveToMasterRatio = min(slaveToMasterRatio, MAX_MOTOR_POWER / (MAX_MOTOR_POWER - (motorPowerRange)/8.0));
             
