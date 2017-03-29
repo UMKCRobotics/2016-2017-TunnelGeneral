@@ -44,9 +44,10 @@ public:
 
         getAllIRValues();
 
-        threshold = ((((values[0] + values[1] + values[5] + values[6]) / 4)
-                      + ((values[2] + values[3] + values[4]) / 3))
-                     / 3);  // TODO: magic number 3 to try to err on the side of false positives
+        threshold = (int)round( ( ((values[0] + values[1] + values[5] + values[6]) / 4.0)
+                                  + ((values[2] + values[3] + values[4]) / 3.0) )
+                                / 2.8);  // TODO: magic number 2.8 to try to err on the side of false positives
+                                         // (above 2 should be false positive)
 
 #ifdef VERBOSE
         Serial.print("obstacle threshold set to ");
