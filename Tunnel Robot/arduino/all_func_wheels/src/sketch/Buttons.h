@@ -17,7 +17,7 @@ public:
     static const size_t STOP = 1;
     static const size_t BUTTON_COUNT = 2;
 
-    static const pin pins[BUTTON_COUNT] = {GoPin, StopPin};
+    pin pins[BUTTON_COUNT];
   
 public:  // private
     static const int MIN_TIME_PRESS = 250;
@@ -36,6 +36,8 @@ public:
     }
 
     void init() {
+        pins[GO] = GoPin;
+        pins[STOP] = StopPin;
         state[GO] = '0';
         state[STOP] = '0';
         pinMode(pins[GO], INPUT);
