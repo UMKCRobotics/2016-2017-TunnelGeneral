@@ -446,6 +446,7 @@ class Robot:
             # 0 right, 1 front, 2 left, 3 back
             which_sensor = (((direction - self.facing) % 4) + 1) % 4  # do we need the middle mod 4?
             return int(self.wait_till_done(self.robot_interface.readSensor(1))[which_sensor])
+            # TODO: serial comm error makes ValueError in int
 
     def visit(self):
         print("visiting: " + str(self.position))
