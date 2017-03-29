@@ -9,17 +9,17 @@
 #include "MovementInterfaceBase.h"
 #include "Buttons.h"
 
-#define SAMPLE_COUNT 300  // the number of sensor samples to average together
-
-#define BACK_CALIBRATION_THRESHOLD 3
-#define THRESHOLD_FOR_BIG_NUDGE 30
-
-#define SIDE_PIVOT_THRESHOLD 7
-#define THRESHOLD_FOR_SIDE_DISTANCE 100
-
 class Calibrator
 {
 public:  // private
+    static const int SAMPLE_COUNT = 300;  // the number of sensor samples to average together
+
+    static const int BACK_CALIBRATION_THRESHOLD = 5;
+    static const int THRESHOLD_FOR_BIG_NUDGE = 30;
+
+    static const int SIDE_PIVOT_THRESHOLD = 8;
+    static const int THRESHOLD_FOR_SIDE_DISTANCE = 100;
+
     MovementInterfaceBase* movementInterface;
     Buttons* buttons;
 

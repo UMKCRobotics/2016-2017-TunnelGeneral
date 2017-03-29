@@ -7,11 +7,11 @@
 #include "IRPins.h"
 #include "MiscDefinitions.h"
 
-#define SAMPLE_COUNT 300
-
 class ObstacleFinder
 {
 public:  // private
+    static const int SAMPLE_COUNT = 300;
+
     int threshold;
     int values[IR_COUNT];
 
@@ -32,7 +32,7 @@ public:  // private
 
         // calculate average
         for (size_t i = 0; i < IR_COUNT; ++i) {
-            values[i] = (int)(totals[i] / SAMPLE_COUNT);
+            values[i] = totals[i] / SAMPLE_COUNT;
         }
     }
 

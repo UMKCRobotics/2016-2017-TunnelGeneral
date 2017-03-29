@@ -141,6 +141,8 @@ set(SOURCE_FILES
         src/sketch/MiscDefinitions.h
         src/sketch/IRPins.h
         src/sketch/Buttons.h
-        src/sketch/ObstacleFinder.h)
+        src/sketch/ObstacleFinder.h
+        src/sketch/WireFinder.h
+        src/sketch/Display.h)
 
 add_executable(all_func_wheels ${SOURCE_FILES})

@@ -1,51 +1,28 @@
-#include "Adafruit_GFX.h"
-#include "Adafruit_NeoMatrix.h"
-#include "Adafruit_NeoPixel.h"
-
 // lots of debug messages to serial
 // TODO: remove this, but only if we've done enough testing without it
 #define VERBOSE
 
-#include "PID.h"
+// #include "PID.h"  // TODO: is this used anywhere?
 
 // #include "MovementInterface.h"  // old cartesian strategy
 #include "MovementInterfaceMasterSlave.h"
 #include "Calibrator.h"
 #include "Buttons.h"
 #include "ObstacleFinder.h"
+#include "WireFinder.h"
+#include "Display.h"
 
 #ifndef PSTR
 #define PSTR // Make Arduino Due happy
 #endif
 
-
-//test LED pins
-#define LED1 22
-#define LED2 23
-//EMF PINS
-#define EMF1 A0
+/** EMF pin is defined in WireFinder.h */
 
 /** IR pins are defined in IRPins.h */
 
 /** movement motor pins are defined in MotorInterface.h */
 
 /** button pins are defined in Buttons.h */
-
-//8x8 pin
-#define PINM 6
-#define MATRIX_READY_LIGHT_PIXEL 56
-//matrix setup
-Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PINM,
-                                               NEO_MATRIX_TOP + NEO_MATRIX_RIGHT +
-                                               NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
-                                               NEO_GRB + NEO_KHZ800);
-
-//7 segment pins
-#define DATA 7     // serial pin
-#define LATCH 9   // register clock pin
-#define CLK 8     // serial clock pin
-//digit representations
-int digits[10] = {190, 6, 218, 206, 102, 236, 252, 134, 254, 238};
 
 //parsing inputs
 String command; //used to store command from serial
@@ -105,30 +82,16 @@ Calibrator calibrator(&movementInterface, &buttons);
 // obstacle finder
 ObstacleFinder obstacleFinder;
 
+
 void setup() {
-    //initialize led pins
-    pinMode(LED1, OUTPUT);
-    pinMode(LED2, OUTPUT);
-    //initialize matrix
-    matrix.begin();
-    matrix.setBrightness(20);
-    matrix.show(); //set all to off
-    //setup 7 digit display and clear it
-    pinMode(LATCH, OUTPUT);
-    pinMode(CLK, OUTPUT);
-    pinMode(DATA, OUTPUT);
-    clearDigit();
-    //start serial
+    Display::init();
+
     Serial.begin(115200);
-    //start serial1 to motor controller
-    //Serial1.begin(115200);
-    //initialize encoders/motors
+
     motorInterface.encoderInit();
     motorInterface.motorInit();
+
     buttons.init();
-    //Serial1.write("1f0\r");
-    //delayMicroseconds(500);
-    //Serial1.write("2f0\r");
 
     //send READY byte
     Serial.write('1');
@@ -260,7 +223,7 @@ String interpretCommand(String command, String value) {
         // 7 segment stuff
     else if (command == "N") {
         // do 7 segment stuff
-        displayDigit(value.toInt());
+        Display::displayDigit(value.toInt());
         responseString = responseHeader;
         responseString += value;
     }
@@ -278,16 +241,16 @@ String interpretCommand(String command, String value) {
 
         // 8x8
     else if (command == "R") {  // ready light
-        setReadyLight();
+        Display::setReadyLight();
         responseString = responseHeader;
     } else if (command == "T") {  // objective tunnel
-        setToOT(value.toInt());
+        Display::setToOT((uint16_t)value.toInt());
         responseString = responseHeader;
     } else if (command == "D") {  // dead end tunnel
-        setToDE(value.toInt());
+        Display::setToDE((uint16_t)value.toInt());
         responseString = responseHeader;
     } else if (command == "E") {  // nothing (turn light off)
-        setToEM(value.toInt());
+        Display::setToEM((uint16_t)value.toInt());
         responseString = responseHeader;
     }
 
@@ -295,11 +258,11 @@ String interpretCommand(String command, String value) {
         // either "e" or "S|E" for wire sensing
     else if (command == "e") {
         responseString = responseHeader;
-        responseString += String(readEMF());
+        responseString += String(WireFinder::read());
     } else if (command == "S") {
         if (value == "E") {
             responseString = responseHeader;
-            responseString += String(readEMF());
+            responseString += String(WireFinder::read());
         } else if (value == "O") {
             responseString = responseHeader;
             responseString += obstacleFinder.getReport();
@@ -315,81 +278,3 @@ String interpretCommand(String command, String value) {
     }
     return responseString;
 }
-
-// EMF SENSOR STUFF
-int readEMF() {
-    return getEMFreading(EMF1);
-}
-
-int getEMFreading(int port) {
-    int count = 0;
-    long int sum = 0;
-    for (int i = 0; i < 500; i++) {
-        int reading = analogRead(port);
-        if (reading != 0) {
-            count++;
-            //sum += reading*reading;
-            sum += pow(reading, 2);
-            //sum += abs(reading);
-        }
-    }
-    long int average = 0;
-    if (count > 0)
-        average = sum / count;
-    return average;
-}
-//END OF EMF SENSOR STUFF
-
-
-//START OF DISPLAY STUFF
-/**
- * 7 segment for displaying number on die
- * @param dig the number to display
- */
-void displayDigit(int dig) {
-    for (int i = digits[dig]; i <= digits[dig] + 1; i++) {
-        digitalWrite(LATCH, HIGH);
-        int number = i;
-        shiftOut(DATA, CLK, MSBFIRST, ~(char) number); // digitOne
-        digitalWrite(LATCH, LOW);
-        delay(1);
-    }
-}
-
-void clearDigit() {
-    digitalWrite(LATCH, HIGH);
-    int number = 0;
-    shiftOut(DATA, CLK, MSBFIRST, ~(char) number); // digitOne
-    digitalWrite(LATCH, LOW);
-    delay(1);
-}
-
-void setReadyLight() {
-    matrix.setPixelColor(MATRIX_READY_LIGHT_PIXEL, 255, 255, 0);  // TODO: confirm this color is yellow
-    matrix.show();
-}
-
-void setToOT(int index) {
-    if (index != MATRIX_READY_LIGHT_PIXEL)  // don't change the ready light
-    {
-        matrix.setPixelColor(index, 255, 0, 0);
-        matrix.show();
-    }
-}
-
-void setToDE(int index) {
-    if (index != MATRIX_READY_LIGHT_PIXEL)  // don't change the ready light
-    {
-        matrix.setPixelColor(index, 0, 255, 255);  // TODO: confirm this color is blue
-        matrix.show();
-    }
-}
-
-void setToEM(int index) {
-    if (index != MATRIX_READY_LIGHT_PIXEL)  // don't change the ready light
-    {
-        matrix.setPixelColor(index, 0, 0, 0);
-        matrix.show();
-    }
-}
-//END OF DISPLAY STUFF
