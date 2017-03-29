@@ -17,6 +17,8 @@
 class MovementInterface : public MovementInterfaceBase
 {
 public:  // private
+    /** maximum time (milliseconds) that we try to move (in one movement) */
+    static const int MOVE_TIME_LIMIT = 4000;
 
     double slaveToMasterRatio;  // multiply master power by this number to get slave power
 
@@ -34,6 +36,8 @@ public:
         const int motorPowerRange = MAX_MOTOR_POWER - MIN_MOTOR_POWER;
 
         reset();
+
+        const long stopTime = millis() + MOVE_TIME_LIMIT;
 
         long currentEncoderReading[MOTOR_COUNT];
         long distanceTraveled[MOTOR_COUNT];
@@ -77,7 +81,7 @@ public:
         distanceTraveled[LEFT] = 0;
         distanceTraveled[RIGHT] = 0;
 
-        while (distanceTraveled[MASTER] < targetDistance  && buttons->getStopState() == '0')
+        while (distanceTraveled[MASTER] < targetDistance && buttons->getStopState() == '0' && millis() < stopTime)
         {
             Serial.println("beginning of while loop");
 
