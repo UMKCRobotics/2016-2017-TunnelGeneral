@@ -20,14 +20,19 @@
 #define SEVEN_SEGMENT_LATCH 9   // register clock pin
 #define SEVEN_SEGMENT_CLK 8     // serial clock pin
 
+// setup matrix
+Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, MATRIX_PIN,
+                                                          NEO_MATRIX_TOP + NEO_MATRIX_RIGHT +
+                                                          NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
+                                                          NEO_GRB + NEO_KHZ800);
+
+// digit representations
+static const int digits[10] = {190, 6, 218, 206, 102, 236, 252, 134, 254, 238};
+
 class Display
 {
 public:  // private
-    static Adafruit_NeoMatrix matrix;
     static const uint16_t MATRIX_READY_LIGHT_PIXEL = 56;
-
-    // digit representations
-    static const int digits[10] = {190, 6, 218, 206, 102, 236, 252, 134, 254, 238};
 
 public:
     static void init() {
@@ -35,11 +40,6 @@ public:
         pinMode(LED1, OUTPUT);
         pinMode(LED2, OUTPUT);
 
-        // setup matrix
-        matrix = Adafruit_NeoMatrix(8, 8, MATRIX_PIN,
-                                    NEO_MATRIX_TOP + NEO_MATRIX_RIGHT +
-                                    NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
-                                    NEO_GRB + NEO_KHZ800);
         // initialize matrix
         matrix.begin();
         matrix.setBrightness(20);

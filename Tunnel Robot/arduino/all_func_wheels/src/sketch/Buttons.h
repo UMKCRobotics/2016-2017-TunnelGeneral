@@ -6,8 +6,8 @@
 #include "Arduino.h"
 #include "MiscDefinitions.h"
 
-#define GoPin 18  // Go button - INTERRUPT PIN
-#define StopPin 19  // Stop button - INTERRUPT PIN
+#define GoPin 19  // Go button - INTERRUPT PIN
+#define StopPin 18  // Stop button - INTERRUPT PIN
 
 class Buttons
 {

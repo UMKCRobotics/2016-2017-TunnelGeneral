@@ -128,7 +128,7 @@ void loop() {
     }
     else{
         Serial.println("STOPPED");
-        delay(20);
+        delay(3000);
     }
 }
 
