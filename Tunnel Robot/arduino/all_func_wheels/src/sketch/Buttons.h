@@ -40,28 +40,30 @@ public:
         pins[STOP] = StopPin;
         state[GO] = '0';
         state[STOP] = '0';
+        lastInterruptCallTime[GO] = 0 - MAX_TIME_PRESS;
+        lastInterruptCallTime[GO] = 0 - MAX_TIME_PRESS;
         pinMode(pins[GO], INPUT);
         pinMode(pins[STOP], INPUT);
         attachInterrupt(digitalPinToInterrupt(pins[GO]), *(interruptPointer[GO]), CHANGE);
         attachInterrupt(digitalPinToInterrupt(pins[STOP]), *(interruptPointer[STOP]), CHANGE);
     }
 
-    void interrupt(const size_t& whichButton) {
+    void lowInterrupt(const size_t& whichButton) {
+        lastInterruptCallTime[whichButton] = millis();
+    }
+
+    void highInterrupt(const size_t& whichButton) {
         long time = millis();
-
-        int pinRead = digitalRead(pins[whichButton]);
-
-        if (pinRead == LOW)
+        
+        if (time - lastInterruptCallTime[whichButton] > MIN_TIME_PRESS &&
+            time - lastInterruptCallTime[whichButton] < MAX_TIME_PRESS)
         {
-            lastInterruptCallTime[whichButton] = time;
+            state[whichButton] = '1';
         }
-        else if (pinRead == HIGH)
+        else  // this wasn't a real button press
         {
-            if (time - lastInterruptCallTime[whichButton] > MIN_TIME_PRESS &&
-                time - lastInterruptCallTime[whichButton] < MAX_TIME_PRESS)
-            {
-                state[whichButton] = '1';
-            }
+            // reset last button down
+            lastInterruptCallTime[whichButton] = 0 - MAX_TIME_PRESS;
         }
     }
 

@@ -58,11 +58,29 @@ void stopInterruptFunction();
 
 Buttons buttons(goInterruptFunction, stopInterruptFunction);
 
+// for some reason I can't put a digital read inside the button class
+// I think it's an arduino library error
 void goInterruptFunction() {
-    buttons.interrupt(Buttons::GO);
+    int pinRead = digitalRead(GoPin);
+    if (pinRead == LOW)
+    {
+        buttons.lowInterrupt(Buttons::GO);
+    }
+    else if (pinRead == HIGH)
+    {
+        buttons.highInterrupt(Buttons::GO);
+    }
 }
 void stopInterruptFunction() {
-    buttons.interrupt(Buttons::STOP);
+    int pinRead = digitalRead(StopPin);
+    if (pinRead == LOW)
+    {
+        buttons.lowInterrupt(Buttons::STOP);
+    }
+    else if (pinRead == HIGH)
+    {
+        buttons.highInterrupt(Buttons::STOP);
+    }
 }
 
 // motor interface
