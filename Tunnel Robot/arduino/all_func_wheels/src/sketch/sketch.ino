@@ -132,7 +132,8 @@ void loop() {
 
 String power_on_self_test() {
     if (obstacleFinder.test_ir() &&
-        true)  // just in case I want to add anything else
+        WireFinder::read() < 800 &&
+        WireFinder::read() > 0)  // TODO: add anything else we can test
     {
         Display::setReadyLightGood();
         return "1";

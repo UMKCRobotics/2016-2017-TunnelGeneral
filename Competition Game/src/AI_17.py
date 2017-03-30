@@ -240,7 +240,7 @@ class Robot:
     SLEEP_TIME = 0.1
     TIME_LIMIT = 350  # seconds (6 minutes minus some safety time)
     WEIGHT_FOR_TIME_AVERAGE = .9
-    TEMP_WIRE_THRESHOLD = 3  # TODO: pick a good number threshold for EMF
+    TEMP_WIRE_THRESHOLD = 100  # TODO: pick a good number threshold for EMF
 
     def __init__(self, outside_grid_or_robot_interface, outside_buttons=None):
         self.gridData = GridData()
