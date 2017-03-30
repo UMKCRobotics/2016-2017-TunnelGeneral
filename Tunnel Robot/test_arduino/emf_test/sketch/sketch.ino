@@ -1,13 +1,11 @@
 #include "Arduino.h"
 
-#ifndef PSTR
- #define PSTR // Make Arduino Due happy
-#endif
+
 //test LED pins
 #define LED1 22
 #define LED2 23
 //EMF PINS
-#define EMF1 A0
+#define EMF1 A1
 
 void setup() {
   //initialize led pins
@@ -24,8 +22,23 @@ void setup() {
 }
 
 void loop() {
-  getEMFReading();
-  Serial.write('\n');
+  int reading = getReadingMax(EMF1);
+  int readings = 1;
+  if(reading > 5)
+  {
+    Serial.println(reading);
+    while(reading > 5)
+    {
+      reading = getReadingMax(EMF1);
+      readings += 1;
+    }
+    Serial.print(" emf readings ");
+    Serial.println(readings);
+  }
+  
+  
+  //getEMFReading();
+  //Serial.write('\n');
 }
 
 
@@ -65,10 +78,17 @@ int getReadingMax(int whichPin) {
 }
 
 void getEMFReading() {
-  int emf1 = getReadingAverage(EMF1);
+  //int emf1 = analogRead(EMF1);
+  int emf1 = getReadingMax(EMF1);
+  int readings = 1;
+  while(emf1 > 5)
+  {
+    emf1 = getReadingMax(EMF1);
+    readings += 1;
+  }
 
   //check right
-  sensorReport("emf1", emf1);
+  sensorReport("emf1", readings);
 }
 
 //END OF SENSOR STUFF
