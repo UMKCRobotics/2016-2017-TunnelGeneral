@@ -393,6 +393,7 @@ class Robot:
         else:  # 180
             # TODO: alternate 2 lefts and 2 rights in case of inaccuracies
             self.left()
+            time.sleep(.2)  # to not maintain too much speed from first turn to second
             self.left()
         print("just turned: " + str(self.facing))
         # recalibrate if possible
@@ -746,7 +747,7 @@ class Robot:
                     continue
 
             print("here's the wire with that threshold")
-            print(self.display_grid_in_console)
+            self.display_grid_in_console()
 
             # figure out wire(OT) under obstacles
             edge_coordinates_with_wire = []
