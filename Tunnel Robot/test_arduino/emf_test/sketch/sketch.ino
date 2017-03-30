@@ -13,6 +13,7 @@ void setup() {
   //initialize led pins
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
+  pinMode(EMF1, INPUT);
   //start serial
   Serial.begin(115200);
   //start serial1 to motor controller
@@ -41,7 +42,7 @@ void sensorReport(String name, int number) {
   // Serial.write(' ');
 }
 
-int getIRReading(int whichPin) {
+int getReadingAverage(int whichPin) {
   // average of lots of readings
   const long sampleCount = 200;
   long total = 0;
@@ -52,32 +53,22 @@ int getIRReading(int whichPin) {
   return total / sampleCount;
 }
 
-String getEMFReading() {
-  int emf1 = getIRReading(EMF1);
+int getReadingMax(int whichPin) {
+  // average of lots of readings
+  const long sampleCount = 200;
+  long maxim = 0;
+  for (int i = sampleCount; i > 0; --i) {
+    maxim = max(maxim, analogRead(whichPin));
+  }
 
-  String report = "";
-  //report format: right,front,left,back
-  int threshold = 190; //set this to something reasonable
+  return maxim;
+}
+
+void getEMFReading() {
+  int emf1 = getReadingAverage(EMF1);
+
   //check right
   sensorReport("emf1", emf1);
-  return report;
 }
 
-int getEMFReading(int port) {
-  int count = 0;
-  long int sum = 0;
-  for (int i = 0; i < 500; i++) {
-    int reading = analogRead(port);
-    if (reading != 0) {
-      count++;
-      //sum += reading*reading;
-      sum += pow(reading,2);
-      //sum += abs(reading);
-    }
-  }
-  long int average = 0;
-  if (count > 0)
-    average = sum/count;
-  return average;
-}
 //END OF SENSOR STUFF
