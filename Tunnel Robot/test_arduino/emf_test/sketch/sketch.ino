@@ -22,6 +22,7 @@ void setup() {
 }
 
 void loop() {
+  /*
   int reading = getReadingMax(EMF1);
   int readings = 1;
   if(reading > 5)
@@ -33,12 +34,40 @@ void loop() {
       readings += 1;
     }
     Serial.print(" emf readings ");
-    Serial.println(readings);
+    
+    Serial.println(analogRead(EMF1));
   }
+  */
+
+  // Serial.println(analogRead(EMF1));
   
-  
+  //test_timing();
+  test_min_max();
   //getEMFReading();
   //Serial.write('\n');
+}
+
+void test_timing() {
+  long a = millis();
+  for (int i = 300; i > 0; --i) {
+    analogRead(EMF1);
+  }
+  Serial.println(millis() - a);
+}
+
+void test_min_max() {
+  int minRead = 1023;
+  int maxRead = 0;
+  int reading;
+  for (int i = 300; i > 0; --i) {
+    reading = analogRead(EMF1);
+    if (reading < minRead)
+      minRead = reading;
+    if (reading > maxRead)
+      maxRead = reading;
+  }
+
+  Serial.println(maxRead - minRead);
 }
 
 

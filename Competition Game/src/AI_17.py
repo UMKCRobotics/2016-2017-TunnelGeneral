@@ -600,7 +600,7 @@ class Robot:
             self.wait_till_done(self.robot_interface.goCalibrateIR('B'))
             self.wait_till_done(self.robot_interface.beginningLeftCalibration())
 
-    def explore3(self):
+    def explore3short(self):
         self.beginning_stuff()
 
         # forward, turn around, back to start
@@ -620,7 +620,7 @@ class Robot:
 
         self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
 
-    def explore3full(self):
+    def explore3(self):
         print("explore function has been called")
         """ visit all possible grid spaces
             go back to sides, when away for a long time """
