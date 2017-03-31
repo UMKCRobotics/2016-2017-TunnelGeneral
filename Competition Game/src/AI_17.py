@@ -603,6 +603,9 @@ class Robot:
             # go button was just pushed, start timer
             self.timer.start()
 
+            # make a guess on the seven segment for the die
+            self.wait_till_done(self.robot_interface.set7segment(3))
+
             # beginning calibration
             self.wait_till_done(self.robot_interface.beginningObstacleThresholdCalibration())
             self.wait_till_done(self.robot_interface.beginningRightCalibration())
@@ -653,7 +656,14 @@ class Robot:
             dfs_stack.pop()
             print(dfs_stack)
 
-        # TODO: look for dice in caches
+        readings_analyzed = False
+
+        # if we didn't run out of time analyze readings now
+        if not len(self.gridData.needToVisit):
+            self.analyze_readings()
+            readings_analyzed = True
+
+            # TODO: look for dice in caches
 
         # find directions to start
         directions = self.gridData.find_shortest_known_path(self.position, Coordinate(0, 0), self.facing)
@@ -677,7 +687,8 @@ class Robot:
         self.travel_these(directions, None, None, True)
 
         # analyze readings to find tunnel and wire
-        self.analyze_readings()
+        if not readings_analyzed:
+            self.analyze_readings()
 
         # turn robot's back to field side and calibrate on it (to make sure we are fully in the starting square)
         if self.facing == Direction.south:
