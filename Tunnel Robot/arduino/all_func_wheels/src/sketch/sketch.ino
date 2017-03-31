@@ -140,7 +140,7 @@ String power_on_self_test() {
         return "1";
     }
     Display::setReadyLightBad();
-    return 0;
+    return "0";
 }
 
 String interpretCommand(String command, String value) {
