@@ -660,10 +660,42 @@ class Robot:
 
         # if we didn't run out of time analyze readings now
         if not len(self.gridData.needToVisit):
-            self.analyze_readings()
+            cache_locations = self.analyze_readings()
             readings_analyzed = True
 
             # TODO: look for dice in caches
+            # find out which cache will be a shorter path
+            paths_to_cache = [[] for i in range(len(cache_locations))]
+            paths_to_start = [[] for i in range(len(cache_locations))]
+            minimum_path_index = 0
+            for index in range(len(cache_locations)):
+                paths_to_cache[index] = self.gridData.find_shortest_known_path(self.position,
+                                                                               cache_locations[index],
+                                                                               self.facing)
+                paths_to_start[index] = self.gridData.find_shortest_known_path(cache_locations[index],
+                                                                               Coordinate(0, 0),
+                                                                               paths_to_cache[index][-1])
+                if len(paths_to_cache[index]) + len(paths_to_start[index]) < \
+                   len(paths_to_cache[minimum_path_index]) + len(paths_to_start[minimum_path_index]):
+                    minimum_path_index = index
+
+            # paths...[minimum_path_index] are now the shortest path to cache and then to start
+
+            # see if we have time to travel to this closest cache
+            estimated_move_time = (self.average_time_for_calibration +
+                                   self.average_time_for_turn +
+                                   self.average_time_for_forward)
+            if self.timer.get_elapsed_time() + (estimated_move_time * (len(paths_to_cache[minimum_path_index]) +
+                                                                       len(paths_to_start[minimum_path_index]) +
+                                                                       2)) > \
+                    Robot.TIME_LIMIT:  # + 2 for extra time it takes to lift lid
+                # we have enough time
+                # TODO: go to cache and look at die
+                # self.travel_these(paths_to_cache[minimum_path_index], None, None, False)
+                # lift lid
+                # look at die
+                # set number on seven segment
+                pass
 
         # find directions to start
         directions = self.gridData.find_shortest_known_path(self.position, Coordinate(0, 0), self.facing)
@@ -749,7 +781,8 @@ class Robot:
     def analyze_readings(self):
         """
         analyze readings to find where wire and tunnel are
-        :return:
+        :return: edge coordinates with wire
+        :rtype: list
         """
         print("starting to analyze readings")
 
@@ -776,6 +809,7 @@ class Robot:
         force_using_this_threshold = False  # if all fail, use the first one
         wire_index = 0
         tunnel_index = 0
+        edge_coordinates_with_wire = []
 
         while not found_good_threshold:
             wire_threshold = list_of_wire_thresholds[wire_index]
@@ -914,6 +948,7 @@ class Robot:
                     self.wait_till_done(self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col,
                                                                                                              row)),
                                                                     "E"))
+        return edge_coordinates_with_wire
 
     def fail_threshold(self, reason, wire_index, list_of_wire_thresholds, force_using_this_threshold, reset_data):
         """
