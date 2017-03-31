@@ -101,6 +101,7 @@ def unit_tests():
     print("all tests passed")
 
 
+# TODO: run this on the pi
 def main():
     unit_tests()
 

@@ -10,6 +10,7 @@ from Grid_Util import *
 from Static_Decorator import static_vars
 from ThresholdFinder import ThresholdFinder
 from hampath import HamiltonianPath
+from Timer import Timer
 
 PRIORITY_FOR_AVOIDING_TURNS = 1
 
@@ -237,6 +238,9 @@ class GridData:
 
 class Robot:
     SLEEP_TIME = 0.1
+    TIME_LIMIT = 350  # seconds (6 minutes minus some safety time)
+    WEIGHT_FOR_TIME_AVERAGE = .9
+    TEMP_WIRE_THRESHOLD = 3  # TODO: pick a good number threshold for EMF
 
     def __init__(self, outside_grid_or_robot_interface, outside_buttons=None):
         self.gridData = GridData()
@@ -260,6 +264,13 @@ class Robot:
         # this is to correct calibration after seeing how forwards have been influenced by calibration
         self.forward_count = 0
 
+        # end before 6 minutes
+        self.timer = Timer()
+        # weighted averages
+        self.average_time_for_forward = 4
+        self.average_time_for_turn = 2
+        self.average_time_for_calibration = 2
+
     @staticmethod
     def wait_till_done(resp):
         intermediate_delay = 0.01
@@ -269,6 +280,9 @@ class Robot:
         return resp.getResponse()
 
     def forward(self):
+        # keep average forward time
+        before_start = self.timer.get_elapsed_time()
+
         print("about to move forward from " + str(self.position))
         self.move_where_i_think_i_am(1)
         if self.using_outside_grid:
@@ -281,7 +295,15 @@ class Robot:
 
         self.forward_count += 1
 
+        # update average forward time
+        self.average_time_for_forward = Robot.WEIGHT_FOR_TIME_AVERAGE * self.average_time_for_forward + \
+            (1 - Robot.WEIGHT_FOR_TIME_AVERAGE) * (self.timer.get_elapsed_time() - before_start)
+        print("average time for forward:", self.average_time_for_forward)
+
     def calibrate(self):
+        # keep average calibration time
+        before_start = self.timer.get_elapsed_time()
+
         # figure out what side we can calibrate on
         can_calibrate_back = False
         can_calibrate_left = False
@@ -366,6 +388,11 @@ class Robot:
             Robot.sleep_wait()
         print("calibration done")
 
+        # if calibrated, update average calibration time
+        if can_calibrate_right or can_calibrate_left or can_calibrate_back:
+            self.average_time_for_calibration = Robot.WEIGHT_FOR_TIME_AVERAGE * self.average_time_for_calibration + \
+                (1 - Robot.WEIGHT_FOR_TIME_AVERAGE) * (self.timer.get_elapsed_time() - before_start)
+
     def reverse(self):
         # TODO: this hasn't been updated for a long time (because it's not used)
         self.move_where_i_think_i_am(-1)
@@ -382,6 +409,9 @@ class Robot:
             self.position.y -= move_amount
 
     def turn(self, desired_direction):
+        # keep average of turn times
+        before_start = self.timer.get_elapsed_time()
+
         print("about to turn: " + str(desired_direction))
         if self.facing == desired_direction:
             pass  # don't evaluate elif expressions
@@ -401,7 +431,10 @@ class Robot:
             self.display_grid_wait_enter()
         else:  # simulation
             self.display_grid_in_console()
-        return
+
+        # update average time
+        self.average_time_for_turn = Robot.WEIGHT_FOR_TIME_AVERAGE * self.average_time_for_turn + \
+            (1 - Robot.WEIGHT_FOR_TIME_AVERAGE) * (self.timer.get_elapsed_time() - before_start)
 
     def right(self):
         """ use turn """
@@ -501,6 +534,10 @@ class Robot:
                 self.robot_interface.MAP.markDeadend()
             """
 
+            # temporary wire light in case we don't get to the end
+            if self.gridData.get(self.position).wireReading > Robot.TEMP_WIRE_THRESHOLD:
+                self.wait_till_done(self.robot_interface.set8x8(translate_coordinate_to_index(self.position), "T"))
+
     def explore(self):
         """ visit all possible grid spaces """
         # old one, probably missing something
@@ -551,6 +588,8 @@ class Robot:
         # front and left IR somewhere around 20
         # (not 500 to 600)
 
+        self.timer.start()  # so it's started if not using_outside_grid
+
         # perform if running a bot
         if not self.using_outside_grid:
             # light up yellow READY light on 8x8 (A7)
@@ -561,13 +600,16 @@ class Robot:
                 time.sleep(0.25)
             # """
 
-        # beginning calibration
-        self.wait_till_done(self.robot_interface.beginningObstacleThresholdCalibration())
-        self.wait_till_done(self.robot_interface.beginningRightCalibration())
-        self.wait_till_done(self.robot_interface.beginningBackCalibration())
-        self.turn(Direction.north)
-        self.wait_till_done(self.robot_interface.goCalibrateIR('B'))
-        self.wait_till_done(self.robot_interface.beginningLeftCalibration())
+            # go button was just pushed, start timer
+            self.timer.start()
+
+            # beginning calibration
+            self.wait_till_done(self.robot_interface.beginningObstacleThresholdCalibration())
+            self.wait_till_done(self.robot_interface.beginningRightCalibration())
+            self.wait_till_done(self.robot_interface.beginningBackCalibration())
+            self.turn(Direction.north)
+            self.wait_till_done(self.robot_interface.goCalibrateIR('B'))
+            self.wait_till_done(self.robot_interface.beginningLeftCalibration())
 
         # ready to go
         keep_going = True
@@ -575,7 +617,9 @@ class Robot:
         dfs_stack = deque()
         dfs_stack.append(Coordinate(self.position.x, self.position.y))
         print("about to enter main explore loop")
-        while len(self.gridData.needToVisit) and keep_going:
+        while len(self.gridData.needToVisit) and self.time_left() and keep_going:
+            print("elapsed time: " + str(self.timer.get_elapsed_time()))
+
             coord_at_top = dfs_stack[-1]
             if coord_at_top in self.gridData.needToVisit:
                 # find directions
@@ -609,15 +653,31 @@ class Robot:
             dfs_stack.pop()
             print(dfs_stack)
 
-        # analyze readings to find tunnel and wire
-        self.analyze_readings()
-
         # TODO: look for dice in caches
 
-        # go back to start
+        # find directions to start
         directions = self.gridData.find_shortest_known_path(self.position, Coordinate(0, 0), self.facing)
+
+        # in case we stopped because of the time limit,
+        # remove everything that's not in these final directions from need_to_visit,
+        # and mark them as obstacles
+        if len(self.gridData.needToVisit):
+            coordinates_in_final_path = []
+            current_position_in_this_traversal = self.position
+            for direction in directions:
+                current_position_in_this_traversal += COORDINATE_CHANGE[direction]
+                coordinates_in_final_path.append(current_position_in_this_traversal)
+            need_to_visit_list = list(self.gridData.needToVisit)
+            for coordinate in need_to_visit_list:
+                if coordinate not in coordinates_in_final_path:
+                    self.gridData.needToVisit.remove(coordinate)
+                    self.gridData.get(coordinate).set_obstacle(True)
+
         # go there
-        self.travel_these(directions, None, None, False)
+        self.travel_these(directions, None, None, True)
+
+        # analyze readings to find tunnel and wire
+        self.analyze_readings()
 
         # turn robot's back to field side and calibrate on it (to make sure we are fully in the starting square)
         if self.facing == Direction.south:
@@ -830,9 +890,19 @@ class Robot:
         for row in range(GRID_HEIGHT):
             for col in range(GRID_WIDTH):
                 if self.gridData.get(col, row).wireHere == Knowledge.yes:
-                    self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col, row)), "T")
+                    self.wait_till_done(self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col,
+                                                                                                             row)),
+                                                                    "T"))
                 elif self.gridData.get(col, row).tunnelHere == Knowledge.yes:
-                    self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col, row)), "D")
+                    self.wait_till_done(self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col,
+                                                                                                             row)),
+                                                                    "D"))
+                elif col == 0 and row == 0:
+                    self.wait_till_done(self.robot_interface.setReadyLight())
+                else:
+                    self.wait_till_done(self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col,
+                                                                                                             row)),
+                                                                    "E"))
 
     def fail_threshold(self, reason, wire_index, list_of_wire_thresholds, force_using_this_threshold, reset_data):
         """
@@ -884,6 +954,14 @@ class Robot:
             space.wireHere = reset_data[index][0]
             space.tunnelHere = reset_data[index][1]
             index += 1
+
+    def time_left(self):
+        directions_to_start = self.gridData .find_shortest_known_path(self.position, Coordinate(0, 0), self.facing)
+        estimated_time = (self.average_time_for_forward +
+                          self.average_time_for_turn +
+                          self.average_time_for_calibration) * len(directions_to_start)
+
+        return self.timer.get_elapsed_time() + estimated_time < Robot.TIME_LIMIT
 
 
 class OutsideGrid:
