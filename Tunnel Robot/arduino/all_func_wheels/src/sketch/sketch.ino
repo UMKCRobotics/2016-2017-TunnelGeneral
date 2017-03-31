@@ -132,6 +132,16 @@ void loop() {
     }
 }
 
+String power_on_self_test() {
+    if (obstacleFinder.test_ir() &&
+        true)  // just in case I want to add anything else
+    {
+        Display::setReadyLightGood();
+        return "1";
+    }
+    Display::setReadyLightBad();
+    return 0;
+}
 
 String interpretCommand(String command, String value) {
 #ifdef VERBOSE
@@ -241,8 +251,8 @@ String interpretCommand(String command, String value) {
 
         // 8x8
     else if (command == "R") {  // ready light
-        Display::setReadyLight();
-        responseString = responseHeader;
+        returnString = power_on_self_test();
+        responseString = responseHeader + returnString;
     } else if (command == "T") {  // objective tunnel
         Display::setToOT((uint16_t)value.toInt());
         responseString = responseHeader;
@@ -271,6 +281,10 @@ String interpretCommand(String command, String value) {
             // check for foam
         }
     }
+    else if (command == "P") {  // test bad ready light color
+        Display::setReadyLightBad();
+        responseString = responseHeader;
+    }
 
     //check if any BADs were obtained
     if (returnString == "BAD") {
@@ -278,3 +292,4 @@ String interpretCommand(String command, String value) {
     }
     return responseString;
 }
+

@@ -79,8 +79,13 @@ public:
         digitalWrite(FOUR_DIGIT, LOW);
     }
 
-    static void setReadyLight() {
+    static void setReadyLightGood() {
         matrix.setPixelColor(MATRIX_READY_LIGHT_PIXEL, 255, 151, 0);  // yellow
+        matrix.show();
+    }
+
+    static void setReadyLightBad() {
+        matrix.setPixelColor(MATRIX_READY_LIGHT_PIXEL, 151, 255, 0);  // more green
         matrix.show();
     }
 

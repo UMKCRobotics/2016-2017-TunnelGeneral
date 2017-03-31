@@ -37,6 +37,22 @@ public:  // private
     }
 
 public:
+    bool test_ir() {
+        getAllIRValues();
+
+        return values[2] < 200 &&
+               values[3] < 200 &&
+               values[4] < 200 &&
+               values[0] > 50 &&
+               values[0] < 450 &&
+               values[1] > 50 &&
+               values[1] < 450 &&
+               values[5] > 50 &&
+               values[5] < 450 &&
+               values[6] > 50 &&
+               values[6] < 450;
+    }
+
     void calibrateThreshold() {
         // In the starting position, there is wood to the right and to the back
         // and nothing to the front and left.

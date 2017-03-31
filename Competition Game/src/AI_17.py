@@ -53,8 +53,8 @@ def unit_tests_for_translate_coordinates_to_index():
     assert translate_coordinate_to_index(Coordinate(6, 1)) == 54
     assert translate_coordinate_to_index(Coordinate(2, 2)) == 42
 
-# TODO: comment out this line for faster loading in deployment:
-unit_tests_for_translate_coordinates_to_index()
+# comment out this line for faster loading in deployment:
+# unit_tests_for_translate_coordinates_to_index()
 
 
 class GridSpaceData:
@@ -517,7 +517,6 @@ class Robot:
                     self.gridData.canMoveHere.add(coord_to_check)
                     self.gridData.needToVisit.add(coord_to_check)
 
-        # TODO: take readings
         # take readings of capacity + EMF
         if self.using_outside_grid:
             pass  # TODO:
@@ -560,7 +559,6 @@ class Robot:
                 if self.position in self.gridData.needToVisit:
                     self.visit()
             # put adjacent unvisited nodes in stack and visit them
-            # TODO: change this to use COORDINATE_CHANGE? (keep order)
             # order: south north west east, to touch walls often and fill holes early
             found_adjacent_block_to_visit = False
             for direction in (Direction.south, Direction.north, Direction.west, Direction.east):
@@ -576,11 +574,6 @@ class Robot:
             dfs_stack.pop()
 
     def beginning_stuff(self):
-        # TODO: POST (power on self test)
-        # right and back IR somewhere around 180
-        # front and left IR somewhere around 20
-        # (not 500 to 600)
-
         self.timer.start()  # so it's started if not using_outside_grid
 
         # perform if running a bot
