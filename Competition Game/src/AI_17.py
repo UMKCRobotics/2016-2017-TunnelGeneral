@@ -959,7 +959,7 @@ class Robot:
                 else:
                     self.wait_till_done(self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col,
                                                                                                              row)),
-                                                                    "E"))
+                                                                    "T"))
         return edge_coordinates_with_wire
 
     def fail_threshold(self, reason, wire_index, list_of_wire_thresholds, force_using_this_threshold, reset_data):
