@@ -80,7 +80,7 @@ public:
     }
 
     static void setReadyLight() {
-        matrix.setPixelColor(MATRIX_READY_LIGHT_PIXEL, 255, 255, 0);  // TODO: confirm this color is yellow
+        matrix.setPixelColor(MATRIX_READY_LIGHT_PIXEL, 255, 151, 0);  // yellow
         matrix.show();
     }
 
@@ -95,7 +95,7 @@ public:
     static void setToDE(uint16_t index) {
         if (index != MATRIX_READY_LIGHT_PIXEL)  // don't change the ready light
         {
-            matrix.setPixelColor(index, 0, 255, 255);  // TODO: confirm this color is blue
+            matrix.setPixelColor(index, 0, 255, 255);
             matrix.show();
         }
     }
