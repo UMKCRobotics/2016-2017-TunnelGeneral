@@ -7,6 +7,7 @@
 #include "Adafruit_GFX.h"
 #include "Adafruit_NeoMatrix.h"
 #include "Adafruit_NeoPixel.h"
+#include "MiscDefinitions.h"
 
 // test LED pins
 #define LED1 22
@@ -16,18 +17,19 @@
 #define MATRIX_PIN 6
 
 // 7 segment pins
-#define SEVEN_SEGMENT_DATA 7    // serial pin
-#define SEVEN_SEGMENT_LATCH 9   // register clock pin
-#define SEVEN_SEGMENT_CLK 8     // serial clock pin
+#define ONE_DIGIT 7    // binary digit
+#define FOUR_DIGIT 9
+#define TWO_DIGIT 8
+
+const pin sevenPins[3] = {9, 8, 7};
+
+
 
 // setup matrix
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, MATRIX_PIN,
                                                           NEO_MATRIX_TOP + NEO_MATRIX_RIGHT +
                                                           NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
                                                           NEO_GRB + NEO_KHZ800);
-
-// digit representations
-static const int digits[10] = {190, 6, 218, 206, 102, 236, 252, 134, 254, 238};
 
 class Display
 {
@@ -46,9 +48,9 @@ public:
         matrix.show();  // set all to off
 
         // setup 7 digit display and clear it
-        pinMode(SEVEN_SEGMENT_LATCH, OUTPUT);
-        pinMode(SEVEN_SEGMENT_CLK, OUTPUT);
-        pinMode(SEVEN_SEGMENT_DATA, OUTPUT);
+        pinMode(FOUR_DIGIT, OUTPUT);
+        pinMode(TWO_DIGIT, OUTPUT);
+        pinMode(ONE_DIGIT, OUTPUT);
         clearDigit();
     }
 
@@ -57,21 +59,15 @@ public:
      * @param dig the number to display
      */
     static void displayDigit(int dig) {
-        for (int i = digits[dig]; i <= digits[dig] + 1; i++) {
-            digitalWrite(SEVEN_SEGMENT_LATCH, HIGH);
-            int number = i;
-            shiftOut(SEVEN_SEGMENT_DATA, SEVEN_SEGMENT_CLK, MSBFIRST, ~(char) number);  // digitOne
-            digitalWrite(SEVEN_SEGMENT_LATCH, LOW);
-            delay(1);
-        }
+        digitalWrite(ONE_DIGIT, HIGH);
+        digitalWrite(TWO_DIGIT, HIGH);
+        digitalWrite(FOUR_DIGIT, LOW);
     }
 
     static void clearDigit() {
-        digitalWrite(SEVEN_SEGMENT_LATCH, HIGH);
-        int number = 0;
-        shiftOut(SEVEN_SEGMENT_DATA, SEVEN_SEGMENT_CLK, MSBFIRST, ~(char) number); // digitOne
-        digitalWrite(SEVEN_SEGMENT_LATCH, LOW);
-        delay(1);
+        digitalWrite(ONE_DIGIT, LOW);
+        digitalWrite(TWO_DIGIT, LOW);
+        digitalWrite(FOUR_DIGIT, LOW);
     }
 
     static void setReadyLight() {
