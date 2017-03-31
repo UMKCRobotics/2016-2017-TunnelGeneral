@@ -656,6 +656,8 @@ class Robot:
             dfs_stack.pop()
             print(dfs_stack)
 
+        print("out of main explore loop - number of places not visited: " + str(len(self.gridData.needToVisit)))
+
         readings_analyzed = False
 
         # if we didn't run out of time analyze readings now
@@ -717,6 +719,7 @@ class Robot:
 
         # go there
         self.travel_these(directions, None, None, True)
+        print("done traveling back to start: " + str(self.position))
 
         # analyze readings to find tunnel and wire
         if not readings_analyzed:
