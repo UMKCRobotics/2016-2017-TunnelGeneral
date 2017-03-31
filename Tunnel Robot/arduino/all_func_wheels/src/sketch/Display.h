@@ -23,7 +23,16 @@
 
 const pin sevenPins[3] = {9, 8, 7};
 
-
+const byte digits[10][3] = {{LOW, LOW, LOW},
+                            {LOW, LOW, HIGH},
+                            {LOW, HIGH, LOW},
+                            {LOW, HIGH, HIGH},
+                            {HIGH, LOW, LOW},
+                            {HIGH, LOW, HIGH},
+                            {HIGH, HIGH, LOW},
+                            {HIGH, HIGH, HIGH},
+                            {LOW, LOW, LOW},
+                            {LOW, LOW, LOW}};
 
 // setup matrix
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, MATRIX_PIN,
@@ -59,9 +68,9 @@ public:
      * @param dig the number to display
      */
     static void displayDigit(int dig) {
-        digitalWrite(ONE_DIGIT, HIGH);
-        digitalWrite(TWO_DIGIT, HIGH);
-        digitalWrite(FOUR_DIGIT, LOW);
+        digitalWrite(ONE_DIGIT, digits[dig][2]);
+        digitalWrite(TWO_DIGIT, digits[dig][1]);
+        digitalWrite(FOUR_DIGIT, digits[dig][0]);
     }
 
     static void clearDigit() {
