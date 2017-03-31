@@ -19,6 +19,7 @@ class MovementInterface : public MovementInterfaceBase
 public:  // private
     /** maximum time (milliseconds) that we try to move (in one movement) */
     static const int MOVE_TIME_LIMIT = 4000;
+    static const double NOC = 6.0;  // number of chunks to divide motor power range into
 
     double slaveToMasterRatio;  // multiply master power by this number to get slave power
 
@@ -93,14 +94,14 @@ public:
             Serial.println("after setting distance traveled ratio");
 
             // The range that we want to use for the master motor power is
-            // from MIN_MOTOR_POWER + 1/8 of the difference (between min and max)
-            // to MAX_MOTOR_POWER - 1/8 of the difference.
-            // The size of that range is 3/4 of motorPowerRange (1 - 2/8).
+            // from MIN_MOTOR_POWER + 1/NOC of the difference (between min and max)
+            // to MAX_MOTOR_POWER - 1/NOC of the difference.
+            // The size of that range is (NOC-2)/n of motorPowerRange.
             // The function  y = -4 * x^2 + 4 * x
             // will give us a smooth curve to move through that range.
-            powerToGive[MASTER] = motorSpeedLimit(round(MIN_MOTOR_POWER + motorPowerRange / 8.0 +
+            powerToGive[MASTER] = motorSpeedLimit(round(MIN_MOTOR_POWER + motorPowerRange / NOC +
                                                         motorPowerRange * (-4 * distanceTraveledRatio * distanceTraveledRatio +
-                                                                           4 * distanceTraveledRatio) * 3 / 4.0));
+                                                                           4 * distanceTraveledRatio) * (NOC - 2) / NOC));
             powerToGive[SLAVE] = motorSpeedLimit(round(powerToGive[MASTER] * slaveToMasterRatio));
 
 #ifdef VERBOSE
@@ -139,9 +140,9 @@ public:
             Serial.println("after setting stmr");
 
             // limit stmr to where it will stay in motor power limits
-            slaveToMasterRatio = min(slaveToMasterRatio, MAX_MOTOR_POWER / (MAX_MOTOR_POWER - (motorPowerRange)/8.0));
+            slaveToMasterRatio = min(slaveToMasterRatio, MAX_MOTOR_POWER / (MAX_MOTOR_POWER - (motorPowerRange)/NOC));
             
-            slaveToMasterRatio = max(slaveToMasterRatio, MIN_MOTOR_POWER / (MIN_MOTOR_POWER + (motorPowerRange)/8.0));
+            slaveToMasterRatio = max(slaveToMasterRatio, MIN_MOTOR_POWER / (MIN_MOTOR_POWER + (motorPowerRange)/NOC));
 
 #ifdef VERBOSE
             /*
