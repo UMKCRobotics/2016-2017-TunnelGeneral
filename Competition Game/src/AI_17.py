@@ -300,7 +300,7 @@ class Robot:
             (1 - Robot.WEIGHT_FOR_TIME_AVERAGE) * (self.timer.get_elapsed_time() - before_start)
         print("average time for forward:", self.average_time_for_forward)
 
-    def calibrate(self):
+    def calibrate(self, need_to_be_facing=None):
         # keep average calibration time
         before_start = self.timer.get_elapsed_time()
 
@@ -370,6 +370,10 @@ class Robot:
                     if good_distance == '0':
                         self.turn(direction_to_put_back_on_wood)
                         self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
+                        # in case directions were interrupted
+                        if need_to_be_facing is not None:
+                            self.turn(need_to_be_facing)
+                            self.wait_till_done(self.robot_interface.goCalibrateIR("L"))
                 elif self.forward_count == 2:
                     # left calibration to correct left calibration
                     good_distance = self.wait_till_done(self.robot_interface.goCalibrateIR("l"))
@@ -385,6 +389,10 @@ class Robot:
                 if good_distance == '0':
                     self.turn(direction_to_put_back_on_wood)
                     self.wait_till_done(self.robot_interface.goCalibrateIR("B"))
+                    # in case directions were interrupted
+                    if need_to_be_facing is not None:
+                        self.turn(need_to_be_facing)
+                        self.wait_till_done(self.robot_interface.goCalibrateIR("R"))
             Robot.sleep_wait()
         print("calibration done")
 
@@ -773,7 +781,7 @@ class Robot:
                 return False
 
             self.turn(direction)
-            self.calibrate()
+            self.calibrate(direction)
             self.forward()
             self.calibrate()
 
