@@ -84,14 +84,14 @@ public:
 
         while (distanceTraveled[MASTER] < targetDistance && buttons->getStopState() == '0' && millis() < stopTime)
         {
-            Serial.println("beginning of while loop");
+            /* Serial.println("beginning of while loop"); */
 
             // slower at start and end
             distanceTraveledRatio = (float)distanceTraveled[MASTER] / targetDistance;
             if (distanceTraveledRatio > 1)
                 distanceTraveledRatio = 1;
 
-            Serial.println("after setting distance traveled ratio");
+            /* Serial.println("after setting distance traveled ratio"); */
 
             // The range that we want to use for the master motor power is
             // from MIN_MOTOR_POWER + 1/NOC of the difference (between min and max)
@@ -105,30 +105,37 @@ public:
             powerToGive[SLAVE] = motorSpeedLimit(round(powerToGive[MASTER] * slaveToMasterRatio));
 
 #ifdef VERBOSE
+            /*
             Serial.print("giving this power: ");
             Serial.print(powerToGive[LEFT]);
             Serial.print(' ');
             Serial.println(powerToGive[RIGHT]);
+            */
 #endif  // VERBOSE
-            
+            delay(2);
+
             motorInterface->setMotorPower(LEFT, powerToGive[LEFT], direction[LEFT]);
             motorInterface->setMotorPower(RIGHT, powerToGive[RIGHT], direction[RIGHT]);
 
-            Serial.println("after setting power");
+            delay(2);
+            /* Serial.println("after setting power"); */
 
             currentEncoderReading[LEFT] = motorInterface->readEncoder(LEFT);
             currentEncoderReading[RIGHT] = motorInterface->readEncoder(RIGHT);
 
-            Serial.println("after reading encoder");
+            /*Serial.println("after reading encoder");*/
+            delay(2);
 
             distanceTraveled[LEFT] = (currentEncoderReading[LEFT] - startEncoderValues[LEFT]) * direction[LEFT];
             distanceTraveled[RIGHT] = (currentEncoderReading[RIGHT] - startEncoderValues[RIGHT]) * direction[RIGHT];
 
 #ifdef VERBOSE
+            /*
             Serial.print("the distance each wheel traveled ");
             Serial.print(distanceTraveled[LEFT]);
             Serial.print(' ');
             Serial.println(distanceTraveled[RIGHT]);
+            */
 #endif  // VERBOSE
 
             // update slave master ratio
@@ -137,7 +144,7 @@ public:
                                      (1-WEIGHT_FOR_PREVIOUS_STMR) * slaveToMasterRatio * distanceTraveled[MASTER] / distanceTraveled[SLAVE];
 
            
-            Serial.println("after setting stmr");
+            /* Serial.println("after setting stmr"); */
 
             // limit stmr to where it will stay in motor power limits
             slaveToMasterRatio = min(slaveToMasterRatio, MAX_MOTOR_POWER / (MAX_MOTOR_POWER - (motorPowerRange)/NOC));
@@ -148,12 +155,14 @@ public:
             /*
             Serial.print("after max stmr set to: ");
             Serial.println(slaveToMasterRatio, 6);
-            */
+
             Serial.print("distanceTraveled ");
             Serial.print(distanceTraveled[MASTER]);
             Serial.print(" and target ");
             Serial.println(targetDistance);
+            */
 #endif  // VERBOSE
+            delay(2);
         }
 
         // reached target distance

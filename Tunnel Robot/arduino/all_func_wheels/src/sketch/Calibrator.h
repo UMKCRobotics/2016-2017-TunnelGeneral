@@ -65,6 +65,7 @@ public:  // private
                                 int goodDistanceForThisSide)
     {
         int difference;
+        double threshold = SIDE_PIVOT_THRESHOLD;
 
         while (abs(difference = getDifferenceBetweenIRs(IRPinLeftOfWheel,
                                                         IRPinRightOfWheel,
@@ -90,6 +91,8 @@ public:  // private
             {
                 movementInterface->smallPivot(LEFT, 1);
             }
+
+            threshold += .5;
         }
 
         // if too close or too far away,
@@ -110,6 +113,8 @@ public:  // private
 
         int needToMoveLeft;
         int needToMoveRight;
+
+        double threshold = BACK_CALIBRATION_THRESHOLD;
 
         while (! finished)
         {
@@ -169,6 +174,8 @@ public:  // private
             Serial.println(needToMoveRight);
 
             movementInterface->nudge(needToMoveLeft, needToMoveRight);
+
+            threshold += .5;
 
             // stop button stops calibration loop
             if ((rightGood && leftGood) || buttons->getStopState() == '1')
