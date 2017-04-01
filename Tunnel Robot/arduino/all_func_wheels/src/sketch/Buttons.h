@@ -58,7 +58,7 @@ public:
         if (time - lastInterruptCallTime[whichButton] > MIN_TIME_PRESS &&
             time - lastInterruptCallTime[whichButton] < MAX_TIME_PRESS)
         {
-            state[whichButton] = '0';  // TODO: re enable buttons
+            state[whichButton] = '1';  // '0' to disable
         }
         else  // this wasn't a real button press
         {

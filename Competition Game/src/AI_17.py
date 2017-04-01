@@ -587,10 +587,10 @@ class Robot:
             # light up yellow READY light on 8x8 (A7)
             self.wait_till_done(self.robot_interface.setReadyLight())
             # wait for Go Button to be pressed
-            """ comment this to wait for start button
+            # """ comment this to wait for start button
             while not int(self.wait_till_done(self.sim_buttons.getGoButton())):
                 time.sleep(0.25)
-            """
+            # """
 
             # go button was just pushed, start timer
             self.timer.start()
