@@ -865,9 +865,14 @@ class Robot:
                     else:  # not > threshold
                         space.tunnelHere = Knowledge.no
                 if space.wireReading is not None:
-                    if space.wireReading > wire_threshold:
-                        space.wireHere = Knowledge.yes
-                    else:  # not > threshold
+                    try:
+                        if space.wireReading > wire_threshold or \
+                                (space.cacheHere == Knowledge.yes and
+                                 space.wireReading > 2.0 * wire_threshold / 3.0):
+                            space.wireHere = Knowledge.yes
+                        else:  # not > threshold
+                            space.wireHere = Knowledge.no
+                    except:
                         space.wireHere = Knowledge.no
 
             # make sure this didn't give us wire in the corners
