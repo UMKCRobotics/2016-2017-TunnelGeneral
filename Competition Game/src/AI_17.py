@@ -783,7 +783,10 @@ class Robot:
             self.turn(direction)
             self.calibrate(direction)
             self.forward()
-            self.calibrate()
+            if len(directions) > 1:
+                self.calibrate(direction)
+            else:
+                self.calibrate()
 
             if visit_and_explore_along_the_way:
                 # count if away from sides
