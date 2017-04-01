@@ -524,8 +524,14 @@ class Robot:
             # change color to mark visited
             self.robot_interface.MAP.grid[self.robot_interface.MAP.robotLoc[0]][self.robot_interface.MAP.robotLoc[1]].color = (75, 75, 75)
             # TODO: That ^ is not very modular
-            self.gridData.get(self.position).wireReading = self.wait_till_done(self.robot_interface.readSensor(2))[0]
-            self.gridData.get(self.position).tunnelReading = self.wait_till_done(self.robot_interface.readSensor(3))[0]
+            try:
+                self.gridData.get(self.position).wireReading = int(self.wait_till_done(self.robot_interface.readSensor(2))[0])
+            except ValueError:
+                self.gridData.get(self.position).wireReading = Knowledge.unknown
+            try:
+                self.gridData.get(self.position).tunnelReading = int(self.wait_till_done(self.robot_interface.readSensor(3))[0])
+            except ValueError:
+                self.gridData.get(self.position).tunnelReading = Knowledge.unknown
             """ uncomment this to re-enable old sim map marking
             if self.gridData.get(self.position).wireReading == 1:
                 self.robot_interface.MAP.markOT()
@@ -963,7 +969,7 @@ class Robot:
                 else:
                     self.wait_till_done(self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col,
                                                                                                              row)),
-                                                                    "T"))
+                                                                    "E"))
         return edge_coordinates_with_wire
 
     def fail_threshold(self, reason, wire_index, list_of_wire_thresholds, force_using_this_threshold, reset_data):
