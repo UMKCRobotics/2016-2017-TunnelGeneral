@@ -82,10 +82,10 @@ class Robot_Impl():
     def getEMFreading(self):
         # get readings from EMF sensor
         # uncomment next line if has working EMF set up
-        # return self.arduinofuncs.getEMFreading()
-        commandObj = CommRequest('S' + '|E')
-        commandObj.setResponse([0])
-        return commandObj
+        return self.arduinofuncs.getEMFreading()
+        # commandObj = CommRequest('S' + '|E')
+        # commandObj.setResponse([0])
+        # return commandObj
 
     def getIfFoam(self):
         # get readings from Capacitive sensor(s) via a list
