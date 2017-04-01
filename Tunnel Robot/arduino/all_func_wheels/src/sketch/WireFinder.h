@@ -15,12 +15,18 @@ public:  // private
 public:
     static int read() {
 
-        long sum = 0;
+        int minRead = 1023;
+        int maxRead = 0;
+        int reading;
         for (int i = SAMPLE_COUNT; i > 0; --i) {
-            sum += analogRead(EMF_PIN);
+            reading = analogRead(EMF_PIN);
+            if (reading < minRead)
+                minRead = reading;
+            if (reading > maxRead)
+                maxRead = reading;
         }
 
-        return sum / SAMPLE_COUNT;
+        return maxRead - minRead;
     }
 };
 
