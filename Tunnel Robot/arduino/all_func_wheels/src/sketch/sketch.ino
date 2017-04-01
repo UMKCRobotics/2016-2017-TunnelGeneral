@@ -2,8 +2,6 @@
 // TODO: remove this, but only if we've done enough testing without it
 #define VERBOSE
 
-// #include "PID.h"  // TODO: is this used anywhere?
-
 // #include "MovementInterface.h"  // old cartesian strategy
 #include "MovementInterfaceMasterSlave.h"
 #include "Calibrator.h"
