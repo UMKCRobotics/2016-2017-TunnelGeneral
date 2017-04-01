@@ -60,6 +60,8 @@ class SerialComm:
                 while (not debug_messages.endswith('\t')) and (not debug_messages.endswith('\n')):
                     debug_messages += self.serial.read()
                 print("debug messages received: " + debug_messages)
+                if "STOPPED" in debug_messages:
+                    exit()
                 if not debug_messages.endswith('\t'):
                     debug_messages = ""
 
