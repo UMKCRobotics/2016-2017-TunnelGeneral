@@ -975,19 +975,19 @@ class Robot:
             for row in range(GRID_HEIGHT):
                 for col in range(GRID_WIDTH):
                     if self.gridData.get(col, row).wireHere == Knowledge.yes:
-                        self.wait_till_done(self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col,
-                                                                                                                 row)),
-                                                                        "T"))
+                        self.wait_till_done(self.robot_interface.set8x8(
+                            translate_coordinate_to_index(Coordinate(col, row)),
+                            "T"))
                     elif self.gridData.get(col, row).tunnelHere == Knowledge.yes:
-                        self.wait_till_done(self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col,
-                                                                                                                 row)),
-                                                                        "D"))
+                        self.wait_till_done(self.robot_interface.set8x8(
+                            translate_coordinate_to_index(Coordinate(col, row)),
+                            "D"))
                     elif col == 0 and row == 0:
                         self.wait_till_done(self.robot_interface.setReadyLight())
                     else:
-                        self.wait_till_done(self.robot_interface.set8x8(translate_coordinate_to_index(Coordinate(col,
-                                                                                                                 row)),
-                                                                        "E"))
+                        self.wait_till_done(self.robot_interface.set8x8(
+                            translate_coordinate_to_index(Coordinate(col, row)),
+                            "E"))
         return edge_coordinates_with_wire
 
     def fail_threshold(self, reason, wire_index, list_of_wire_thresholds, force_using_this_threshold, reset_data):
